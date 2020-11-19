@@ -13,6 +13,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from perftimer import Timer
+t = Timer()
+
 
 os.chdir(r'D:\VP\Viewpoint_data\test')
 print(os.listdir())
@@ -23,7 +26,16 @@ df = pd.read_csv(files[1],sep = '\t',encoding = 'utf-16')
 
 ## pre data treatment
 #1. split into locomotion and quantization
-dfs_data = [g for _, g in df.groupby('datatype')]
+print('Groupby method:')
+t.start()
+df_loc,df_quant = [g for _, g in df.groupby('datatype')]
+t.stop()
+
+print('Explicit method:')
+t.start()
+df_loc = df[df['datatype']=='Locomotion']
+df_quant = df[df['datatype']=='Quantization']
+t.stop()
 
 #reorder? - all values present but not all in the correct order
 

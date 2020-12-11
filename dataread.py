@@ -19,10 +19,11 @@ from datetime import timedelta
 #t = Timer()
 
 
-os.chdir(r'D:\VP\Viewpoint_data\test')
+os.chdir(r'D:\VP\Viewpoint_data\Exp_semaine_10_11\764\av_dope')
+files = os.listdir()
 
-#start with only df group
-df = pd.read_csv('av_dope_2500_764.csv',sep = '\t',encoding = 'utf-16')
+#start with only df group only use 2500 lines
+df = pd.read_csv(files[0],sep = '\t',encoding = 'utf-16')
 df = df[df['datatype'] == 'Locomotion']
 
 #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.

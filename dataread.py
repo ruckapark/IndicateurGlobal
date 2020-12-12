@@ -11,27 +11,25 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import plotly.express as px
 import seaborn as sns
 from datetime import timedelta
 
 #from perftimer import Timer
 #t = Timer()
 
-
-os.chdir(r'D:\VP\Viewpoint_data\Exp_semaine_10_11\764\av_dope')
+os.chdir(r'D:\VP\Viewpoint_data\TxM767-PC')
 files = os.listdir()
 
 #start with only df group only use 2500 lines
-df = pd.read_csv(files[0],sep = '\t',encoding = 'utf-16')
+df = pd.read_csv(files[1],sep = '\t',encoding = 'utf-16')
 df = df[df['datatype'] == 'Locomotion']
 
 #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
 df = df.sort_values(by = ['sn','pn','location','aname'])
 df = df.reset_index(drop = True)
 
-#treat time variable
-df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'])
+#treat time variable - this gets the days and months the wrong way round
+df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
 
 #E01 etc.
 mapping = lambda a : {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}[a[0]]
@@ -65,7 +63,7 @@ df['channel'] = 19139235
 Datetime is in nanoseconds, //10e9 to get seconds
 Can zero this value
 """
-#recreate abtime as seconds since first value
+#recreate abtime as seconds since first value - For some reason creates a huge diff day to day
 df['abtime'] = df['time'].astype('int64')//1e9 #convert nano
 df['abtime'] = df['abtime'] - df['abtime'][0]
 
@@ -77,23 +75,26 @@ df['protocole'] = 1
 
 #%% IGT
 
-start = pd.Timestamp('2020-10-11 15:17:53')
+# start = pd.Timestamp('2020-10-11 15:17:53')
 # stop = timedelta or whatever
 
 #only go to value divisible by 48
 maxrows = len(df)//48
-if len(df) != maxrows*48:
-    df = df.iloc[:maxrows*48]
-    
-#gammarus - make function where we input the specie
+print('Before adjustment: total rows{}'.format(len(df)))
+df = df.iloc[:maxrows*48]
+print('After adjustment: total rows{}'.format(len(df)))
+
 df = df[df['specie']=='Gammarus']
 
-#total distance
+#total distance inadist is only zeros?
 df['dist'] = df['inadist'] + df['smldist'] + df['lardist']
 
 #plot all animals
-fig = px.line(df, x = 'time', y = 'dist', color = 'animal')
-fig.show()
+fig = plt.figure()
+axe = fig.add_axes([0.1,0.1,0.8,0.8])
+for i in range(16):
+    axe.plot(df[df['animal']==(i+1)]['time'],df[df['animal']==(i+1)]['dist'],label = 'gamm{}'.format(i+1))
+axe.set_title('Mean values for Gammare')
 
 """
 #timestep in minutes for plotting interval (sometimes they only take 20 minutes)
@@ -105,8 +106,11 @@ df = df[df['abtime'].isin(timesteps)]
 """
 
 #take the mean upto the first timestep for that cell
+
+# this does not work
 timestep = 1*60 # 1 minute
-df['timestep'] = df['abtime']//timestep * timestep 
+df['timestep'] = df['abtime']//timestep * timestep
+
 
 timesteps = df['timestep'].unique().astype(int)
 animals = range(1,17)
@@ -121,17 +125,25 @@ for i in animals:
     df_mean_dist[i] = mean_distance
     
 #plot all the signals averaged out
-fig = px.line(df_mean_dist, x = df_mean_dist.index,y = df_mean_dist.columns)
-fig.show()
+fig_mean_tstep = plt.figure()
+axe_mean_tstep = fig_mean_tstep.add_axes([0.1,0.1,0.8,0.8])
+for i in animals:
+    axe_mean_tstep.plot(df_mean_dist.index,df_mean_dist[i],label = 'gamm {}'.format(i))
+fig_mean_tstep.show()
 
 #plot all the means across cells
 mean_dist = df_mean_dist.mean(axis = 1)
-fig_mean = px.line(mean_dist, x = mean_dist.index, y = mean_dist)
+
+fig_mean = plt.figure()
+axe_mean = fig_mean.add_axes([0.1,0.1,0.8,0.8])
+axe_mean.plot(mean_dist.index,mean_dist)
 fig_mean.show()
 
 #plot quantile 0.05 across cells
 quantile_dist = df_mean_dist.quantile(q = 0.05, axis = 1)**2
-fig_quant = px.line(mean_dist, x = mean_dist.index, y = mean_dist)
+fig_quant = plt.figure()
+axe_quant = fig_quant.add_axes([0.1,0.1,0.8,0.8])
+axe_quant.plot(quantile_dist.index,quantile_dist)
 fig_quant.show()
 
 # plot both in seperate figures

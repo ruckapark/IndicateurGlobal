@@ -38,28 +38,28 @@ def merge_dfs(dfs):
     else:
         return df
 
-
-#os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
-os.chdir(r'D:\VP\Viewpoint_data\TxM763-PC')
-files = os.listdir()
-
-print('The following files will be merged:')
-print(files)
-
-dfs = []
-for file in files:
-    df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')    #read each df in directory df
-    df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
-    maxrows = len(df)//48
-    df = df.iloc[:maxrows*48]
-
-    #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
-    df = df.sort_values(by = ['sn','pn','location','aname'])
-    df = df.reset_index(drop = True)
-
-    #treat time variable - this gets the days and months the wrong way round
-    df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
-    dfs.append(df)
-        
-  
-df = merge_dfs(dfs)
+if __name__ == '__main__':
+    #os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
+    os.chdir(r'D:\VP\Viewpoint_data\TxM763-PC')
+    files = os.listdir()
+    
+    print('The following files will be merged:')
+    print(files)
+    
+    dfs = []
+    for file in files:
+        df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')    #read each df in directory df
+        df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
+        maxrows = len(df)//48
+        df = df.iloc[:maxrows*48]
+    
+        #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
+        df = df.sort_values(by = ['sn','pn','location','aname'])
+        df = df.reset_index(drop = True)
+    
+        #treat time variable - this gets the days and months the wrong way round
+        df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+        dfs.append(df)
+            
+      
+    df = merge_dfs(dfs)

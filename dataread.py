@@ -17,29 +17,33 @@ from datetime import timedelta
 #from perftimer import Timer
 #t = Timer()
 
-def main(Tox,species,file):
+def main(Tox,species):
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
-    os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
+    #os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
+    os.chdir(r'D:\VP\Viewpoint_data\TxM763-PC')
     files = os.listdir()
     
+    print('The following files will be merged:')
     print(files)
     
-    #start with only df group only use 2500 lines
-    df = pd.read_csv(files[file],sep = '\t',encoding = 'utf-16')
-    df = df[df['datatype'] == 'Locomotion']
+    dfs = {}
+    for file in files:
+        date = file.split('.')[0]
+        df = pd.read_csv(files[file],sep = '\t',encoding = 'utf-16')    #read each df in directory df
+        df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
     
     # Error VPCore2
-    #conc,subs = df['Conc']
+    #conc,subs = df['Conc'].iloc[0],df['Sub'].iloc[0]
     
-    #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
-    df = df.sort_values(by = ['sn','pn','location','aname'])
-    df = df.reset_index(drop = True)
+        #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
+        df = df.sort_values(by = ['sn','pn','location','aname'])
+        df = df.reset_index(drop = True)
     
-    #treat time variable - this gets the days and months the wrong way round
-    df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
-    
+        #treat time variable - this gets the days and months the wrong way round
+        df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+        
     #E01 etc.
     mapping = lambda a : {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}[a[0]]
     df['specie'] = df['location'].map(mapping)

@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import timedelta
 from data_merge import merge_dfs
+from dope_reg import dope_read
 
 sns.set_style('darkgrid', {"xtick.major.size": 8, "ytick.major.size": 8})
 sns.set_context('paper')
@@ -150,6 +151,23 @@ xticks = [df.iloc[i*len(df)//no_xticks]['time'] for i in range(no_xticks)]
 axe.set_xticks(xticks)
 axe.set_xticklabels([xticklabel(i,days) for i in xticks])
 plt.xticks(rotation = 10)
+
+
+#shade in doping in orange with a red line and the 40-60 seconds after interval
+dope_df = dope_read()
+date = dfs[-1].iloc[0]['time'].strftime('%d/%m/%Y')
+
+##  DEBUG - occuring because 04/12/2020 -> 00:00:00. Therefore it happens again.
+date_range = [
+    dope_df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date)]['Start'],
+    dope_df[(dope_df['TxM'] == Tox) & (dope_df['End'].dt.strftime('%d/%m/%Y') == date)]['End']
+    ]
+
+#column tox = tox, date = date
+axe.axvspan(date_range[0].item(), date_range[1].item(), alpha=0.7, color='orange')
+
+#assume it is around 60 seconds after I note.
+axe.axvline(date_range[0].item() + pd.Timedelta(minutes = 1), color = 'red')
 
 #%%
 

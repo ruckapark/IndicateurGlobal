@@ -37,249 +37,272 @@ from dope_reg import dope_read
 sns.set_style('darkgrid', {"xtick.major.size": 8, "ytick.major.size": 8})
 sns.set_context('paper')
 
-Tox,species = 763,'G'
+# Tox,species = 767,'G'
+
+def main(Tox, species = 'G'):        
+    specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
-specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-
-#os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
-os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
-files = os.listdir()
-
-print('The following files will be merged:')
-print(files)
-
-dfs = []
-for file in files:
-    df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')    #read each df in directory df
-    df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
-
-    #Error VPCore2
-    #conc,subs = df['Conc'].iloc[0],df['Sub'].iloc[0]
-
-    #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
-    df = df.sort_values(by = ['sn','pn','location','aname'])
-    df = df.reset_index(drop = True)
-
-    #treat time variable - this gets the days and months the wrong way round
-    df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+    #os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
+    os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
+    files = os.listdir()
     
-    maxrows = len(df)//48
-    print('Before adjustment: total rows{}'.format(len(df)))
-    df = df.iloc[:maxrows*48]
-    print('After adjustment: total rows{}'.format(len(df)))
-    dfs.append(df)
+    print('The following files will be merged:')
+    print(files)
     
-df = merge_dfs(dfs)
+    dfs = []
+    for file in files:
+        df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')    #read each df in directory df
+        df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
     
-#E01 etc.
-mapping = lambda a : {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}[a[0]]
-df['specie'] = df['location'].map(mapping)
-
-#moi le column 'animal' n'a que des NaNs
-good_cols = ['time','location','stdate','specie','entct','inact','inadur','inadist','smlct','smldur','smldist','larct','lardur','lardist','emptyct','emptydur']
-df = df[good_cols]
-
-#create animal column from location E01
-df['animal'] = df['location'].str[1:].astype(int)
-
-df['dose'] = '72ug/L'
-df['etude'] = 'ETUDE001'
-df['lot'] = 'Zn'
-
-isnull = df.isnull().sum() #can check var explorer
-plt.figure()
-sns.heatmap(df.isnull(), yticklabels = False, cbar = False)
-
-#sml distance all nans? replace with zeros
-df['smldist'] = df['smldist'].fillna(0)
-
-# doesn't appear necessary - what is it?
-df = df.drop('entct',axis = 1)
-
-# add channel column (doesn't seem to be used in IGT script)
-df['channel'] = 19139235
-
-#%% data manipulation
-"""
-Datetime is in nanoseconds, //10e9 to get seconds
-Can zero this value
-"""
-#recreate abtime as seconds since first value - For some reason creates a huge diff day to day
-df['abtime'] = df['time'].astype('int64')//1e9 #convert nano
-df['abtime'] = df['abtime'] - df['abtime'][0]
-
-#create threshold columns
-df['threshold'] = 10
-df['thresholdHigh'] = 20
-df['thresholdLow'] = 5
-df['protocole'] = 1
-
-
-
-#species is input
-df = df[df['specie'] == specie[species]]
-
-#total distance inadist is only zeros?
-df['dist'] = df['inadist'] + df['smldist'] + df['lardist']
-
-#%%
-
-def dataplot_time():
-        fig = plt.figure(figsize = (20,10), dpi = 100)
-        axe = fig.add_axes([0.1,0.1,0.8,0.8])
-        return fig,axe
-
-def xticklabel_gen(timestamp,lang = 'fr'):
-        """
-        return from timestamp weekday and time HH:MM xtick_label
+        #Error VPCore2
+        #conc,subs = df['Conc'].iloc[0],df['Sub'].iloc[0]
+    
+        #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
+        df = df.sort_values(by = ['sn','pn','location','aname'])
+        df = df.reset_index(drop = True)
+    
+        #treat time variable - this gets the days and months the wrong way round
+        df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
         
-        change lang if we want dates in english
-        """
-        if lang == 'fr':
-            days = dict(zip([0,1,2,3,4,5,6],'lu ma me je ve sa di'.split()))
-        else:
-            days = dict(zip([0,1,2,3,4,5,6],'mo tu we th fr sa su'.split()))
+        maxrows = len(df)//48
+        print('Before adjustment: total rows{}'.format(len(df)))
+        df = df.iloc[:maxrows*48]
+        print('After adjustment: total rows{}'.format(len(df)))
+        dfs.append(df)
         
-        wday = days[timestamp.weekday()]
-        hour = timestamp.hour
-        minute = timestamp.minute
-        if hour < 10:
-            hour = '0'+ str(hour)
-        else:
-            hour = str(hour)
+    df = merge_dfs(dfs)
+        
+    #E01 etc.
+    mapping = lambda a : {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}[a[0]]
+    df['specie'] = df['location'].map(mapping)
+    
+    #moi le column 'animal' n'a que des NaNs
+    good_cols = ['time','location','stdate','specie','entct','inact','inadur','inadist','smlct','smldur','smldist','larct','lardur','lardist','emptyct','emptydur']
+    df = df[good_cols]
+    
+    #create animal column from location E01
+    df['animal'] = df['location'].str[1:].astype(int)
+    
+    df['dose'] = '72ug/L'
+    df['etude'] = 'ETUDE001'
+    df['lot'] = 'Zn'
+    
+    isnull = df.isnull().sum() #can check var explorer
+    plt.figure()
+    sns.heatmap(df.isnull(), yticklabels = False, cbar = False)
+    
+    #sml distance all nans? replace with zeros
+    df['smldist'] = df['smldist'].fillna(0)
+    
+    # doesn't appear necessary - what is it?
+    df = df.drop('entct',axis = 1)
+    
+    # add channel column (doesn't seem to be used in IGT script)
+    df['channel'] = 19139235
+    
+    #%% data manipulation
+    """
+    Datetime is in nanoseconds, //10e9 to get seconds
+    Can zero this value
+    """
+    #recreate abtime as seconds since first value - For some reason creates a huge diff day to day
+    df['abtime'] = df['time'].astype('int64')//1e9 #convert nano
+    df['abtime'] = df['abtime'] - df['abtime'][0]
+    
+    #create threshold columns
+    df['threshold'] = 10
+    df['thresholdHigh'] = 20
+    df['thresholdLow'] = 5
+    df['protocole'] = 1
+    
+    #species is input
+    df = df[df['specie'] == specie[species]]
+    
+    #total distance inadist is only zeros?
+    df['dist'] = df['inadist'] + df['smldist'] + df['lardist']
+    
+    
+    
+    #%% FUNCTIONS
+    
+    
+    
+    def dataplot_time():
+            fig = plt.figure(figsize = (20,10), dpi = 100)
+            axe = fig.add_axes([0.1,0.1,0.8,0.8])
+            return fig,axe
+    
+    def xticklabel_gen(timestamp,lang = 'fr'):
+            """
+            return from timestamp weekday and time HH:MM xtick_label
             
-        if minute < 10:
-            minute = '0'+str(minute)
-        else:
-            minute = str(minute)
+            change lang if we want dates in english
+            """
+            if lang == 'fr':
+                days = dict(zip([0,1,2,3,4,5,6],'lu ma me je ve sa di'.split()))
+            else:
+                days = dict(zip([0,1,2,3,4,5,6],'mo tu we th fr sa su'.split()))
             
-        return wday + '-' + hour + ':' + minute
-
-def dataplot_time_params(axe,title,xticks,ylab = None,xlab = None,
-                             ylim = None,xlim = None, rot = 10
-                             ):
-        axe.set_title(title)
-        axe.legend()
-        axe.set_ylabel(ylab)
-        axe.set_xlabel(xlab)
-        if ylim: axe.set_ylim(ylim[0],ylim[1])
-        if xlim: axe.set_xlim(xlim[0],xlim[1])    
-        axe.set_xticks(xticks)
-        axe.set_xticklabels([xticklabel_gen(i) for i in xticks])
-        plt.xticks(rotation = rot)
+            wday = days[timestamp.weekday()]
+            hour = timestamp.hour
+            minute = timestamp.minute
+            if hour < 10:
+                hour = '0'+ str(hour)
+            else:
+                hour = str(hour)
+                
+            if minute < 10:
+                minute = '0'+str(minute)
+            else:
+                minute = str(minute)
+                
+            return wday + '-' + hour + ':' + minute
     
-def dataplot_mark_dopage(axe,dope_df,date,Tox):
-        """
-        Shade the doping period and mark the doping moment thoroughly
-        """
-        date_range = [
-        dope_df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date_dopage)]['Start'],
-        dope_df[(dope_df['TxM'] == Tox) & (dope_df['End'].dt.strftime('%d/%m/%Y') == date_dopage)]['End']
-        ]
+    def dataplot_time_params(axe,title,xticks,ylab = None,xlab = None,
+                                 ylim = None,xlim = None, rot = 10
+                                 ):
+            axe.set_title(title)
+            axe.legend()
+            axe.set_ylabel(ylab)
+            axe.set_xlabel(xlab)
+            if ylim: axe.set_ylim(ylim[0],ylim[1])
+            if xlim: axe.set_xlim(xlim[0],xlim[1])    
+            axe.set_xticks(xticks)
+            axe.set_xticklabels([xticklabel_gen(i) for i in xticks])
+            plt.xticks(rotation = rot)
         
-        #shade over doping period - item extracts value from pandas series
-        axe.axvspan(date_range[0].item(), date_range[1].item(), alpha=0.7, color='orange')
+    def dataplot_mark_dopage(axe,dope_df,date,Tox):
+            """
+            Shade the doping period and mark the doping moment thoroughly
+            """
+            date_range = [
+            dope_df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date_dopage)]['Start'],
+            dope_df[(dope_df['TxM'] == Tox) & (dope_df['End'].dt.strftime('%d/%m/%Y') == date_dopage)]['End']
+            ]
+            
+            #shade over doping period - item extracts value from pandas series
+            axe.axvspan(date_range[0].item(), date_range[1].item(), alpha=0.7, color='orange')
+            
+            #plot vertical line at estimated moment of dopage
+            axe.axvline(date_range[0].item() + pd.Timedelta(minutes = 2), color = 'red')
         
-        #plot vertical line at estimated moment of dopage
-        axe.axvline(date_range[0].item() + pd.Timedelta(minutes = 2), color = 'red')
+        #could add possibility to put xtick in location of doping?
     
-    #could add possibility to put xtick in location of doping?
-
+    def distplot(df):
+        plt.figure()
+        plt.xlim(0,1000)
+        df[df['dist']>0]['dist'].hist(bins = 1000)
+        plt.axvline(x = 200, color = 'red')
+        plt.title('Valeurs nulles: {}%, Valeurs 1-200: {}%, Valeurs 200+: {}%'.format(int(100*len(df[(df.dist == 0)])/len(df)),int(100*len(df[(df.dist > 0) & (df.dist < 200)])/len(df)),int(100*len(df[df.dist > 200])/len(df))))
     
-
-fig,axe = dataplot_time()
-for i in range(1,17):
-    axe.plot(df[df['animal']==i]['time'], df[df['animal']==i]['dist'], label = i)
-
-no_xticks = 10
-xticks = [df.iloc[i*len(df)//no_xticks]['time'] for i in range(no_xticks)]
-
-dataplot_time_params(
-    axe,
-    '20s distance - {}'.format(specie[species]),
-    xticks,
-    ylab = 'Distance',
-    ylim = [0,df['dist'].quantile(0.9999)]
-    )
-
-dope_df = dope_read()
-date_dopage = dfs[-1].iloc[0]['time'].strftime('%d/%m/%Y')
-dataplot_mark_dopage(axe,dope_df,date_dopage,Tox)
-
-
-#%%
-
-# this does not work
-timestep = 1*60 # 1 minute
-df['timestep'] = df['abtime']//timestep * timestep
-
-
-timesteps = df['timestep'].unique().astype(int)
-timestamps = [df[df['timestep'] == timestep]['time'].iloc[0] for timestep in timesteps]
-
-animals = range(1,17)
-
-#GIVING NANS
-
-
-
-
-
-
-
-
-
-
-
-#append mean distance 1 by 1
-df_mean_dist = pd.DataFrame(index = timestamps)
-
-#groupby animal method? - create df with column as cell and mean distances
-for i in animals:
-    temp_df = df[df['animal'] == i]
-    mean_distance = temp_df.groupby(['timestep']).mean()['dist']
-    df_mean_dist[i] = mean_distance
+    #%% plot
     
-#%% OO plot
-
-fig_means,axe_means = dataplot_time()
-for i in range(1,17):
-    axe_means.plot(df_mean_dist.index,df_mean_dist[i], label = i)
-
-no_xticks = 10
-xticks = [df.iloc[i*len(df)//no_xticks]['time'] for i in range(no_xticks)]
-
-dataplot_time_params(
-    axe_means,
-    '{}s mean distance - {}'.format(timestep,specie[species]),
-    xticks,
-    ylab = 'Distance'
-    )
-
-dope_df = dope_read()
-date_dopage = dfs[-1].iloc[0]['time'].strftime('%d/%m/%Y')
-dataplot_mark_dopage(axe,dope_df,date_dopage,Tox)
-
-#%%
+    distplot(df)
+        
+    """
+    all time data
+    """
     
-#plot all the signals averaged out
-fig_mean_tstep = plt.figure()
-axe_mean_tstep = fig_mean_tstep.add_axes([0.1,0.1,0.8,0.8])
-for i in animals:
-    axe_mean_tstep.plot(df_mean_dist.index,df_mean_dist[i],label = 'gamm {}'.format(i))
-fig_mean_tstep.show()
-
-#plot all the means across cells
-mean_dist = df_mean_dist.mean(axis = 1)
-
-fig_mean = plt.figure()
-axe_mean = fig_mean.add_axes([0.1,0.1,0.8,0.8])
-axe_mean.plot(mean_dist.index,mean_dist)
-fig_mean.show()
-
-#plot quantile 0.05 across cells
-quantile_dist = df_mean_dist.quantile(q = 0.05, axis = 1)**2
-fig_quant = plt.figure()
-axe_quant = fig_quant.add_axes([0.1,0.1,0.8,0.8])
-axe_quant.plot(quantile_dist.index,quantile_dist)
-fig_quant.show()
+    fig,axe = dataplot_time()
+    for i in range(1,17):
+        axe.plot(df[df['animal']==i]['time'], df[df['animal']==i]['dist'], label = i)
+    
+    no_xticks = 10
+    xticks = [df.iloc[i*len(df)//no_xticks]['time'] for i in range(no_xticks)]
+    
+    dataplot_time_params(
+        axe,
+        '20s distance - {}'.format(specie[species]),
+        xticks,
+        ylab = 'Distance',
+        ylim = [0,df['dist'].quantile(0.9999)]
+        )
+    
+    dope_df = dope_read()
+    date_dopage = dfs[-1].iloc[0]['time'].strftime('%d/%m/%Y')
+    dataplot_mark_dopage(axe,dope_df,date_dopage,Tox)
+    
+    
+    #%% generate
+    """
+    df with distances, each individual in column
+    """
+    
+    # this does not work
+    timestep_min = 1
+    timestep = timestep_min*60 # seconds
+    df['timestep'] = df['abtime']//timestep * timestep
+    
+    
+    timesteps = df['timestep'].unique().astype(int)
+    timestamps = [df[df['timestep'] == timestep]['time'].iloc[0] for timestep in timesteps]
+    
+    animals = range(1,17)
+    
+    #append mean distance 1 by 1
+    df_mean_dist = pd.DataFrame(index = timestamps)
+    
+    #groupby animal method? - create df with column as cell and mean distances
+    for i in animals:
+        temp_df = df[df['animal'] == i]
+        mean_distance = temp_df.groupby(['timestep']).mean()['dist']
+        #use .values to avoid index errors
+        df_mean_dist[i] = mean_distance.values
+        
+    #%% plot
+    """
+    mean individual distances
+    """
+    
+    fig_means,axe_means = dataplot_time()
+    for i in range(1,17):
+        axe_means.plot(df_mean_dist.index,df_mean_dist[i], label = i)
+    
+    no_xticks = 10
+    xticks = [df.iloc[i*len(df)//no_xticks]['time'] for i in range(no_xticks)]
+    
+    dataplot_time_params(
+        axe_means,
+        '{}s mean distance - {}'.format(timestep,specie[species]),
+        xticks,
+        ylab = 'Distance'
+        )
+    
+    dataplot_mark_dopage(axe_means,dope_df,date_dopage,Tox)
+    
+    #%% calculate
+    """
+    population mean
+    IGT
+    """
+    
+    #plot all the means across cells
+    mean_dist = df_mean_dist.mean(axis = 1)
+    quantile_dist = df_mean_dist.quantile(q = 0.05, axis = 1)**2
+    
+    #%%
+    """
+    population mean plot
+    IGT plot
+    """
+    
+    fig_mean_all,axe_mean_all = dataplot_time()
+    axe_mean_all.plot(mean_dist.index,mean_dist)
+    dataplot_time_params(
+        axe_mean_all,
+        '{} - Mean cadre'.format(specie[species]),
+        xticks,
+        ylab = 'Distance')
+    dataplot_mark_dopage(axe_mean_all,dope_df,date_dopage,Tox)
+    
+    fig_IGT,axe_IGT = dataplot_time()
+    axe_IGT.plot(quantile_dist.index,quantile_dist)
+    dataplot_time_params(
+        axe_IGT,
+        '{} - IGT'.format(specie[species]),
+        xticks,
+        ylab = 'IGT')
+    dataplot_mark_dopage(axe_IGT,dope_df,date_dopage,Tox)
+    
+for i in range(763,767):
+    main(i)

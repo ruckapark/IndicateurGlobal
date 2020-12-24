@@ -83,10 +83,6 @@ def main(Tox, species = 'G'):
     #create animal column from location E01
     df['animal'] = df['location'].str[1:].astype(int)
     
-    df['dose'] = '72ug/L'
-    df['etude'] = 'ETUDE001'
-    df['lot'] = 'Zn'
-    
     isnull = df.isnull().sum() #can check var explorer
     plt.figure()
     sns.heatmap(df.isnull(), yticklabels = False, cbar = False)
@@ -176,8 +172,8 @@ def main(Tox, species = 'G'):
             Shade the doping period and mark the doping moment thoroughly
             """
             date_range = [
-            dope_df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date_dopage)]['Start'],
-            dope_df[(dope_df['TxM'] == Tox) & (dope_df['End'].dt.strftime('%d/%m/%Y') == date_dopage)]['End']
+            dope_df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date)]['Start'],
+            dope_df[(dope_df['TxM'] == Tox) & (dope_df['End'].dt.strftime('%d/%m/%Y') == date)]['End']
             ]
             
             #shade over doping period - item extracts value from pandas series
@@ -195,7 +191,31 @@ def main(Tox, species = 'G'):
         plt.axvline(x = 200, color = 'red')
         plt.title('Valeurs nulles: {}%, Valeurs 1-200: {}%, Valeurs 200+: {}%'.format(int(100*len(df[(df.dist == 0)])/len(df)),int(100*len(df[(df.dist > 0) & (df.dist < 200)])/len(df)),int(100*len(df[df.dist > 200])/len(df))))
     
+    def dope_params(df, Tox, date):
+        
+        # row value of experiment in dope reg
+        conc = df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date)]['Concentration']
+        sub = df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date)]['Substance']
+        molecule = df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date)]['Molecule']
+        
+        """
+        etude is the number of the week of the experiment.
+        Etude1 would be my first week of experiments
+        """
+        etude = df[(dope_df['TxM'] == Tox) & (dope_df['Start'].dt.strftime('%d/%m/%Y') == date)].index[0]//5 + 1
+        return conc,sub,molecule,etude
+        
+    
     #%% plot
+        
+    date_dopage = dfs[-1].iloc[0]['time'].strftime('%d/%m/%Y')
+    dope_df = dope_read()
+    conc,sub,molecule,etude = dope_params(dope_df,Tox,date_dopage)
+    
+    df['dose'] = conc
+    df['etude'] = 'ETUDE{}'.format(etude)
+    df['lot'] = sub
+    df['formule'] = molecule
     
     distplot(df)
         
@@ -218,8 +238,6 @@ def main(Tox, species = 'G'):
         ylim = [0,df['dist'].quantile(0.9999)]
         )
     
-    dope_df = dope_read()
-    date_dopage = dfs[-1].iloc[0]['time'].strftime('%d/%m/%Y')
     dataplot_mark_dopage(axe,dope_df,date_dopage,Tox)
     
     

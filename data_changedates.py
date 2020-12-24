@@ -27,33 +27,35 @@ def convert_date(filename):
 
 #two system inputs argv[1] and argv[2]
 
-file = r'{}'.format(sys.argv[1])
+#file = r'{}'.format(sys.argv[1])
 #file = r'D:\VP\Viewpoint_data\TxM767-PC\20201204-100452.xls'
+ 
+def main(file):    
+
+    #extract date from target_file (it is a .xls but should be read as csv)
+    true_date = convert_date(file.split('\\')[-1])
     
-#extract date from target_file (it is a .xls but should be read as csv)
-true_date = convert_date(file.split('\\')[-1])
-
-#read in data
-df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')
-
-#make new np vector/array of all the combines datetimes (lambda function)
-df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
-
-#redo dates
-false_date = df['time'].min()
-if false_date < true_date:
-    diff = true_date - false_date
-    df['time'] = df['time'] + diff
-else:
-    diff = false_date - true_date
-    df['time'] = df['time'] - diff
-
-# from time column, rewrite 'stdate' and 'sttime'
-df['stdate'] = df['time'].dt.strftime('%d/%m/%Y')
-df['sttime'] = df['time'].dt.strftime('%H:%M:%S')
+    #read in data
+    df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')
     
-# delete time column
-df = df.drop('time',1)
-
-#make new_file (add copy at end without deleting original first)
-df.to_csv(file.split('.')[0] + '-copy.xls', sep = '\t', encoding = 'utf-16')
+    #make new np vector/array of all the combines datetimes (lambda function)
+    df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+    
+    #redo dates
+    false_date = df['time'].min()
+    if false_date < true_date:
+        diff = true_date - false_date
+        df['time'] = df['time'] + diff
+    else:
+        diff = false_date - true_date
+        df['time'] = df['time'] - diff
+    
+    # from time column, rewrite 'stdate' and 'sttime'
+    df['stdate'] = df['time'].dt.strftime('%d/%m/%Y')
+    df['sttime'] = df['time'].dt.strftime('%H:%M:%S')
+        
+    # delete time column
+    df = df.drop('time',1)
+    
+    #make new_file (add copy at end without deleting original first)
+    df.to_csv(file.split('.')[0] + '-copy.xls', sep = '\t', encoding = 'utf-16')

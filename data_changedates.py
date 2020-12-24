@@ -2,7 +2,7 @@
 """
 Created on Thu Dec 24 08:32:47 2020
 
-@author: Admin
+@author: George
 """
 
 
@@ -23,16 +23,13 @@ def convert_date(filename):
     
     date = day_formatted + ' ' + hour_formatted
     
-    return pd.to_datetime(date, format = "%Y/%m/%d %H:%M:%S")
+    return pd.to_datetime(date, format = "%Y/%m/%d %H:%M:%S") - pd.Timedelta(seconds = 30)
 
 #two system inputs argv[1] and argv[2]
 
-#file = r'{}'.format(sys.argv[1])
-file = r'D:\VP\Viewpoint_data\TxM767-PC\20201204-100452.xls'
+file = r'{}'.format(sys.argv[1])
+#file = r'D:\VP\Viewpoint_data\TxM767-PC\20201204-100452.xls'
     
-# error handling    
-
-
 #extract date from target_file (it is a .xls but should be read as csv)
 true_date = convert_date(file.split('\\')[-1])
 

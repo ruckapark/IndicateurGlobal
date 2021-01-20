@@ -20,6 +20,9 @@ def merge_dfs(dfs):
     merges a list of TWO dfs, - this is thus made recursive
     """
     
+    if len(dfs) == 1:
+        return dfs[0]
+    
     merge_date = dfs[-1]['time'].iloc[0]
     end_date_toshift = dfs[-2]['time'].iloc[-1]
     end_date_shifted = merge_date - pd.Timedelta(seconds = 20)
@@ -30,11 +33,13 @@ def merge_dfs(dfs):
     df = df.reset_index(drop = True)
     
     if len(dfs) > 2:
+        #remove last two one by one and replace with new
         dfs.pop(-1)
-        dfs.pop(-2)
+        dfs.pop(-1)
         dfs.append(df)
         
-        merge_dfs(dfs)
+        #recursive
+        return merge_dfs(dfs)
     else:
         return df
 

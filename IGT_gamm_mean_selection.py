@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Dec 29 12:11:40 2020
+Created on Fri Jan  8 15:11:53 2021
 
-IGT gammare_dev
-
-First good example with cobalt.
+Selection of moving mean for IGT performance in Gammare
 
 @author: Admin
 """
+
 
 #%% IMPORTS
 
@@ -26,7 +25,7 @@ from dope_reg import dope_read
 #%% FUNCTIONS - plotting functions could also be put into another module
 
 def dataplot_time():
-        fig = plt.figure(figsize = (20,10), dpi = 100)
+        fig = plt.figure(figsize = (14,7), dpi = 100)
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         return fig,axe
 
@@ -244,188 +243,65 @@ df_dist = pd.DataFrame(index = timestamps)
 for i in animals:
     temp_df = df[df['animal'] == i]
     df_dist[i] = temp_df['dist'].values
-
-fig,axe = dataplot_time()
-for i in range(1,17):
-    axe.plot(df_dist.index, df_dist[i], label = i, color = colors[i-1])
-
-no_xticks = 10
-xticks = [df.iloc[i*len(df)//no_xticks]['time'] for i in range(no_xticks)]
-
-dataplot_time_params(
-    axe,
-    '20s distance - {}'.format(specie[species]),
-    xticks,
-    ylab = 'Distance',
-    ylim = [0,df['dist'].quantile(0.9999)],
-    text = '{} \n{} \n{}'.format(sub,conc,molecule)
-    )
-
-dataplot_mark_dopage(axe,date_range)
-
-
-#%% moving means instead
-"""
-df with distances, each individual in column
-"""
-
-# this does not work
-timestep_min = 120
-mean_window = (timestep_min * 60) // 20
-
-#append mean distance 1 by 1    
-df_mean_dist = df_dist.rolling(mean_window).mean().dropna()
-
-fig_means,axe_means = dataplot_time()
-for i in range(1,17):
-    axe_means.plot(df_mean_dist.index,df_mean_dist[i], label = i, color = colors[i-1])
-
-no_xticks = 10
-xticks = [df_mean_dist.index[i*len(df_mean_dist)//no_xticks] for i in range(no_xticks)]
-
-dataplot_time_params(
-    axe_means,
-    '{}mins moving mean - {}'.format(timestep_min,specie[species]),
-    xticks,
-    ylab = 'Distance'
-    )
-
-dataplot_mark_dopage(axe_means,date_range)
-
-#%% calculate
-"""
-population mean
-IGT
-"""
-
-#plot all the means across cells
-mean_dist = df_mean_dist.mean(axis = 1)
-quantile_dist = df_mean_dist.quantile(q = 0.05, axis = 1)**2
-
-#%%
-"""
-population mean plot
-IGT plot
-"""
-
-fig_mean_all,axe_mean_all = dataplot_time()
-axe_mean_all.plot(mean_dist.index,mean_dist)
-
-dataplot_time_params(
-    axe_mean_all,
-    '{} - Mean cadre'.format(specie[species]),
-    xticks,
-    ylab = 'Distance')
-dataplot_mark_dopage(axe_mean_all,date_range)
-
-#############
-
-fig_IGT,axe_IGT = dataplot_time()
-axe_IGT.plot(quantile_dist.index,quantile_dist)
-dataplot_time_params(
-    axe_IGT,
-    '{} - IGT    {}   {}   {}'.format(specie[species],sub,conc,etude),
-    xticks,
-    ylab = 'IGT')
-dataplot_mark_dopage(axe_IGT,date_range)
-
-############
-
-"""
-plot gammares 1 by 1 on a 16 by 16 subplot - how to use sharey ?
-"""
-fig_indi, axs_indi = plt.subplots(4,4,sharex = True, sharey = True, figsize = (18,14))
-fig_indi.suptitle('Distances individuelles')
-means = []
-for i in animals:
-    ax_r,ax_c = (i-1)//4, (i-1)%4
-    axs_indi[ax_r,ax_c].plot(df[df['animal']==i]['time'], df[df['animal']==i]['dist'], color = colors[i-1])
-    axs_indi[ax_r,ax_c].set_title(i)
-    means.append(df[df['animal']==i]['dist'].mean())
     
-means = pd.Series(means)    
 
-#%% calculate
-"""
-redo taking out dead gammares
-"""
+### test IGT mean selection value
+moving_means = [2*i for i in range(90)]
+resolution = []
 
-#plot all the means across cells
-morts = [2,11]
-df_mean_dist = df_mean_dist.drop([2,11], axis = 1)
-for m in morts[::-1]:
-    animals.pop(m-1)
+df_morts = df_dist.rolling(400).std().dropna()
+morts_test = list(df_morts.min()[df_morts.min() < 1].index)
 
-mean_dist = df_mean_dist.mean(axis = 1)
-quantile_dist = df_mean_dist.quantile(q = 0.05, axis = 1)**2
 
-fig_mean_all,axe_mean_all = dataplot_time()
-axe_mean_all.plot(mean_dist.index,mean_dist)
-
-dataplot_time_params(
-    axe_mean_all,
-    '{} - Mean cadre'.format(specie[species]),
-    xticks,
-    ylab = 'Distance')
-dataplot_mark_dopage(axe_mean_all,date_range)
-
-#############
-
-fig_IGT,axe_IGT = dataplot_time()
-axe_IGT.plot(quantile_dist.index,quantile_dist)
-dataplot_time_params(
-    axe_IGT,
-    '{} - IGT    {}   {}   {}'.format(specie[species],sub,conc,etude),
-    xticks,
-    ylab = 'IGT')
-dataplot_mark_dopage(axe_IGT,date_range)
-
-############
-
-#%% Normalise df - multiple versions
-
-# normalized_df = (df_mean_dist - df_mean_dist.mean())/df_mean_dist.std()
-normalized_df = (df_dist - df_mean_dist)/df_dist.std().dropna()
-
-fig_indi_n, axs_indi_n = plt.subplots(4,4,sharex = True, sharey = True, figsize = (18,14))
-fig_indi_n.suptitle('Distances normalised')
-means = []
-for i in animals:
-    ax_r,ax_c = (i-1)//4, (i-1)%4
-    axs_indi_n[ax_r,ax_c].plot(normalized_df.index, normalized_df[i], color = colors[i-1])
-    axs_indi_n[ax_r,ax_c].set_title(i)
+# for some reason this ruins the IGT
+for i in morts_test:
+    # df_dist[i] = df_dist[i].where(df_morts[i] < 1)
+    df_dist[i][df_dist.index > df_morts[df_morts[i] < 1].index[0]] = np.nan
     
-means = pd.Series(means)
+    
+# morts = [2,11]
+# df_dist = df_dist.drop(morts_test, axis = 1)
+    
+"""
+Strategy of leaving all columns and replacing by nas doesn't seem to work so well. Very long to plot nas
 
-mean_dist = normalized_df.mean(axis = 1)
-quantile_dist = normalized_df.quantile(q = 0.05, axis = 1)**2
+Why is it so slow?
 
-fig_mean_all,axe_mean_all = dataplot_time()
-axe_mean_all.plot(mean_dist.index,mean_dist)
+Line 282 I left dropna in the code.
+"""
 
-dataplot_time_params(
-    axe_mean_all,
-    '{} - Mean cadre'.format(specie[species]),
-    xticks,
-    ylab = 'Distance normalised')
-dataplot_mark_dopage(axe_mean_all,date_range)
 
-#############
-
-fig_IGT,axe_IGT = dataplot_time()
-axe_IGT.plot(quantile_dist.index,quantile_dist)
-dataplot_time_params(
-    axe_IGT,
-    '{} - IGT    {}   {}   {}'.format(specie[species],sub,conc,etude),
-    xticks,
-    ylab = 'IGT normalised')
-dataplot_mark_dopage(axe_IGT,date_range)
-
-#%% Choose best moving mean for the gammares
-
-# moving mean in sets of 2 minutes
-moving_means = [i for i in range()]
-
-# take the IGT 24 hours before the dopage and the 6 hours after the dopage - take the maximum value between the IGT
-
-#%% standardised - 
+for i in moving_means:
+    timestep = i
+    mean_window = (timestep * 60)//20
+    
+    #get IGT for given sliding window
+    if mean_window == 0:
+        df_mean_dist = df_dist
+    else:
+        df_mean_dist = df_dist.rolling(mean_window).mean().dropna()
+    quantile_dist = df_mean_dist.quantile(q = 0.05, axis = 1)**2
+    
+    #find pre dopage max value (minus 30 mins for margin of error)
+    pre_dope_max = quantile_dist[quantile_dist.index < (dopage - pd.Timedelta(minutes = 30))].max()
+    post_dope_max = quantile_dist[quantile_dist.index > (dopage - pd.Timedelta(minutes = 2))].max()
+    
+    
+    resolution.append(100*(post_dope_max/pre_dope_max - 1))
+    
+    if i % 10 == 0:
+        
+        no_xticks = 10
+        xticks = [df_mean_dist.index[i*len(df_mean_dist)//no_xticks] for i in range(no_xticks)]
+        
+        fig_IGT,axe_IGT = dataplot_time()
+        axe_IGT.plot(quantile_dist.index,quantile_dist)
+        dataplot_time_params(
+            axe_IGT,
+            '{} - IGT    {}   {}   {}      Moving mean:{}mins'.format(specie[species],sub,conc,etude,timestep),
+            xticks,
+            ylab = 'IGT')
+        dataplot_mark_dopage(axe_IGT,date_range)
+        
+plt.figure()
+plt.plot(moving_means,resolution)

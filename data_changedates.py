@@ -18,12 +18,15 @@ def convert_date(filename):
     day_unformatted = filename.split('-')[0]
     day_formatted = day_unformatted[:4] + '/' + day_unformatted[4:6] + '/' + day_unformatted[6:]
     
-    hour_unformatted = filename.split('-')[1].split('.')[0]
+    if len(filename.split('-')) > 2:
+        hour_unformatted = filename.split('-')[1]    
+    else:
+        hour_unformatted = filename.split('-')[1].split('.')[0]
     hour_formatted = hour_unformatted[:2] + ':' + hour_unformatted[2:4] + ':' + hour_unformatted[4:]
-    
+        
     date = day_formatted + ' ' + hour_formatted
     
-    return pd.to_datetime(date, format = "%Y/%m/%d %H:%M:%S") - pd.Timedelta(seconds = 30)
+    return pd.to_datetime(date, format = "%Y/%m/%d %H:%M:%S")
 
 #two system inputs argv[1] and argv[2]
 

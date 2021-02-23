@@ -67,3 +67,11 @@ def dope_read():
     df['End'] = pd.to_datetime(df['End'],format = '%d/%m/%Y %H:%M:%S')
     df = df.sort_values(by = ['Start','TxM'])
     return df
+
+"""
+
+Example of dope_write
+
+dope_write(763,Zinc,Zn(SO4)_7(H20),'10ug,'17/12/2020 09:55:00','17/12/2020 09:55:00')
+
+"""

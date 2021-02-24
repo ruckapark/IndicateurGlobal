@@ -29,7 +29,7 @@ colors = [
 
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-species = 'G'
+species = 'E'
 
 print('The following files will NOT be merged:')
 print(files)
@@ -115,13 +115,13 @@ df_dist_mean = df_dist_mean.set_index(df_dist_mean.index.map(index_map))
 fig_mean = plt.figure()
 axe_mean = fig_mean.add_axes([0.1,0.1,0.8,0.8])
 for i in animals:
-    axe_mean.plot(df_dist_mean.index,df_dist_mean[i],color = colors[i-1],label = '{}{}'.format(species,i))
+    axe_mean.plot(df_dist.index,df_dist[i],color = colors[i-1],label = '{}{}'.format(species,i))
 plt.legend()
 
 
 fig,axe = plt.subplots(4,4,sharex = True, figsize = (20,12))
 for i in animals:
-    axe[(i-1)//4,(i-1)%4].plot(df_dist_mean.index,df_dist_mean[i],color = colors[i-1])
+    axe[(i-1)//4,(i-1)%4].plot(df_dist.index,df_dist[i],color = colors[i-1])
     
 ###################################    
 #### Functions
@@ -227,7 +227,7 @@ def slide_max_zero(df):
 ###################################
     
 # separe df, vivant et mort
-df_train_vivant = sub_df(df_dist, 13, animals)
+df_train_vivant = sub_df(df_dist, 15, [2,])
 df_train_mort = sub_df(df_dist, 15, animals)
 
 # count zeros every (timestemp_mins) minutes

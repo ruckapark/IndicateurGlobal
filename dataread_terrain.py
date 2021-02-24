@@ -27,7 +27,7 @@ colors = [
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 species = 'G'
 
-thresholds = {'G':250,'E':190,'R':80}
+thresholds = {'G':250,'E':300,'R':80}
 
 
 ### functions

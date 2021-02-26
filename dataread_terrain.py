@@ -11,9 +11,9 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-from datetime import timedelta
-from data_merge import merge_dfs
+#import seaborn as sns
+#from datetime import timedelta
+#from data_merge import merge_dfs
 
 #### General parameters (could be made into class)
 
@@ -27,7 +27,7 @@ colors = [
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 species = 'G'
 
-thresholds = {'G':250,'E':300,'R':80}
+thresholds = {'G':2500,'E':3000,'R':1000}
 
 
 ### functions
@@ -96,7 +96,7 @@ def read_all_terrain_files(files,merge = False):
     
     #we may want to merge the dfs into one bigger one, or not...
     if merge:
-        return 'swag'
+        return None
     else:
         return dfs
 
@@ -141,8 +141,8 @@ def df_distance(dfs):
         
     return dfs
 
-def remove_org(dfs,thresh_life = {'G':15,'E':10,'R':5},
-               thresh_dead = {'G':250,'E':500,'R':1000},
+def remove_org(dfs,thresh_life = {'G':12,'E':12,'R':24},
+               thresh_dead = {'G':180,'E':540,'R':360},
                remove = True):
     """
     Assuming remove is true, we just get rid of any organisms with na values above threshold
@@ -246,17 +246,13 @@ def read_data_terrain(files,plot = True,timestep = 10):
     
     dfs_spec = {}
     
+    #print(df.columns)
     dfs_spec.update({'G': df[df['specie'] == 'Gammarus']})
     dfs_spec.update({'E': df[df['specie'] == 'Erpobdella']})
     dfs_spec.update({'R': df[df['specie'] == 'Radix']})
     
     dfs_spec = df_distance(dfs_spec)
     dfs_spec = apply_threshold(dfs_spec,thresholds)
-    
-    print(dfs_spec['G'].columns)
-    
-    #remove dead organisms
-    #dfs_spec = remove_org(dfs_spec)
     
     dfs_spec_mean = df_movingmean(dfs_spec,timestep)
     

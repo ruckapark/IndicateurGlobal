@@ -39,6 +39,18 @@ def predict(x,A,b):
     """ Return approx from above function"""
     return A*np.exp(b*x)
 
+def sigmoid_coeffs(n,species):
+    
+    a = {'G':2.5,'E':2,'R':2}
+    b = {'G':5.5,'E':7,'R':4}
+    
+    if n == 0: 
+        return np.array([0])
+    elif n == 1:
+        return np.array([2])
+    else:
+        x = np.linspace(1,16,n)
+        return 2* (-1/(1+a[species]**(-x+b[species])) + 1)
 
 ### Main
 
@@ -53,7 +65,7 @@ if __name__ == '__main__':
     
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '.csv' in f]
+    files = [f for f in os.listdir() if '02.csv' in f]
     
     print('The following files will be studied:')
     print(files)
@@ -63,7 +75,7 @@ if __name__ == '__main__':
     
     timestep = 10
     
-    species = 'G'
+    species = 'R'
     df_dist = dfs[species]
     df_dist_mean = dfs_mean[species]
     
@@ -135,7 +147,8 @@ if __name__ == '__main__':
     #try to use it as an inverse weighting curve
     #coeffs = 2* pred[::-1]/pred[::-1][0]
     
-    coeffs = 2 / ((mean_distribution + 2))
+    # coeffs = 2 / ((mean_distribution + 2))
+    coeffs = sigmoid_coeffs(16,species)
     
     #square to nothing
     IGT_new = np.sum(values**coeffs,axis = 1)
@@ -144,5 +157,7 @@ if __name__ == '__main__':
     plt.figure()
     plt.plot(df_dist.index,IGT_new)
     
-    
     # find a linear interpolation, depending on how many organisms are alive (dictionary)
+    
+    #SIGMOID function
+    

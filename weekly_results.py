@@ -28,9 +28,9 @@ def plot_16(df):
     """
     Plot a 16 square subplots
     """
-    fig,axe = plt.subplots(4,4,sharex = True, figsize = (20,12))
+    fig,axe = plt.subplots(4,4,sharex = True,sharey = True,figsize = (20,12))
     for i in df.columns:
-        axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[i-1])
+        axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[2])
         axe[(i-1)//4,(i-1)%4].tick_params(axis='x', rotation=90)
         
     return fig,axe
@@ -264,6 +264,34 @@ def rolling_mean(df,timestep):
     timestep = (timestep * 60)//20
     return df.rolling(timestep).mean().dropna()
     
+def remove_dead(df,species):
+    
+    #maybe this isnt even necessary
+    threshold_dead = {'G':1000,'E':1000,'R':2000}
+    
+    #assume all organisms that die should be removed completely
+    max_counts = []
+    for col in df.columns:
+        
+        # find max zero counter excluding single peaks
+        counter = 0
+        max_count = 0
+        for i in range(1,df.shape[0]):
+            if df[col].iloc[i]:
+                if df[col].iloc[i-1]:
+                    if counter > max_count: max_count = counter
+                    counter = 0
+            else:
+                counter += 1
+            
+        if counter > max_count: max_count = counter
+        
+        max_counts.append(max_count)
+        
+    print(max_counts)
+    return [col+1 for col,val in enumerate(max_counts) if val > threshold_dead[species]]
+            
+              
 
 #%% SETUP
 
@@ -277,7 +305,7 @@ colors = [
     ]
 
    
-Tox,species,etude_ = 763,'G','Etude009'
+Tox,species,etude_ = 766,'G','Etude012'
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
 os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,etude_))
@@ -288,6 +316,10 @@ dfs = preproc(df)
 
 # could also seperate out over time
 df = dfs[species]
+
+df = df.drop(columns = remove_dead(df,species))
+#df = df[[1,2,3,5,6,7,8,9,10,11,12,13,14,16]]
+
 distplot(df)
 
 #%% plot

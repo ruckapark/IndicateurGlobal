@@ -40,6 +40,7 @@ def single_plot(series,title = '',ticks = None):
     axe = fig.add_axes([0.1,0.1,0.8,0.8])
     axe.plot(series.index,series)
     axe.set_title(title)
+    axe.tick_params(axis = 'x', rotation = 90)
     if ticks:
         axe.set_xticks(ticks)
         axe.set_xticklabels([xticklabel_gen(i) for i in ticks])
@@ -52,6 +53,7 @@ def single_plot16(df,species,title = '',ticks = None):
     axe = fig.add_axes([0.1,0.1,0.8,0.8])
     for i in df.columns:
         axe.plot(df.index,df[i],label = '{}{}'.format(species,i),color = colors[i-1])
+    axe.tick_params(axis = 'x', rotation = 90)
     
     #xticks
     if ticks:
@@ -120,7 +122,7 @@ def dataplot_mark_dopage(axe,date_range):
     
     #plot vertical line at estimated moment of dopage
     #could add dopage as function parameter
-    axe.axvline(date_range[0] + pd.Timedelta(seconds = 90), color = 'red')
+    axe.axvline(date_range[0] + pd.Timedelta(seconds = 30), color = 'red')
     
     #could add possibility to put xtick in location of doping?
 
@@ -305,7 +307,7 @@ colors = [
     ]
 
    
-Tox,species,etude_ = 766,'G','Etude012'
+Tox,species,etude_ = 766,'G','Etude020'
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
 os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,etude_))
@@ -332,7 +334,7 @@ dopage,date_range,conc,sub,molecule,etude = dope_params(dope_df,Tox,df.index[0],
 no_xticks = 10
 xticks = [df.index[i*len(df)//no_xticks] for i in range(no_xticks)]
 
-fig,axe = single_plot16(df, species, title = '20s distance - {}'.format(specie[species]),ticks = xticks)
+fig,axe = single_plot16(df, species, title = '20s distance - {}'.format(specie[species]))
 dataplot_mark_dopage(axe,date_range)
 
 
@@ -340,7 +342,7 @@ dataplot_mark_dopage(axe,date_range)
 
 t_mins = 5
 df_mean = rolling_mean(df,t_mins)
-fig,axe = single_plot16(df_mean, species, title = '{} Moving mean - {}'.format(t_mins,specie[species]), ticks = xticks[1:])
+fig,axe = single_plot16(df_mean, species, title = '{} Moving mean - {}'.format(t_mins,specie[species]))
 dataplot_mark_dopage(axe,date_range)
 fig,axe = plot_16(df_mean)
 
@@ -354,18 +356,18 @@ IGT
 mean_dist = df_mean.mean(axis = 1)
 quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
 
-fig,axe = single_plot(mean_dist,title = 'Mean distance',ticks = xticks[1:])
+fig,axe = single_plot(mean_dist,title = 'Mean distance')
 dataplot_mark_dopage(axe,date_range)
 
 title_ = 'ToxIndex: {}({}), {}   {}-{}'.format(sub,molecule,conc,date_range[0].strftime('%d/%m'),date_range[1].strftime('%d/%m'))
 
-fig,axe = single_plot(quantile_dist, title = title_, ticks = xticks[1:])
+fig,axe = single_plot(quantile_dist, title = title_)
 dataplot_mark_dopage(axe,date_range)
 
 #2 hour
 IGT = quantile_dist.loc[date_range[0] - pd.Timedelta(minutes = 20) : date_range[0] + pd.Timedelta(minutes = 90)]
 xticks = [IGT.index[i*len(IGT)//no_xticks] for i in range(no_xticks)]
-fig,axe = single_plot(IGT, title = title_, ticks = xticks)
+fig,axe = single_plot(IGT, title = title_)
 axe.set_xlabel('Tox Ind')
 dataplot_mark_dopage(axe,date_range)
 

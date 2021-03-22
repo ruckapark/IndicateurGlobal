@@ -58,9 +58,12 @@ def dope_write(arg1,arg2,arg3,arg4,arg5,arg6):
     print('Date: {}'.format(arg5))
         
         
-def dope_read():
+def dope_read(reg = None):
     
-    df = pd.read_csv(r'D:\VP\Viewpoint_data\code\dope_reg.csv',delimiter = '\t',header = None)
+    if reg: 
+        df = pd.read_csv(r'D:\VP\Viewpoint_data\code\{}.csv'.format(reg),delimiter = '\t',header = None)
+    else:
+        df = pd.read_csv(r'D:\VP\Viewpoint_data\code\dope_reg.csv',delimiter = '\t',header = None)
     cols = ['TxM','Substance','Molecule','Concentration','Start','End']
     df.columns = cols
     df['Start'] = pd.to_datetime(df['Start'],format = '%d/%m/%Y %H:%M:%S')

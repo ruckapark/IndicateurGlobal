@@ -277,10 +277,61 @@ def plot_16(df):
     """
     fig,axe = plt.subplots(4,4,sharex = True, figsize = (20,12))
     for i in df.columns:
-        axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[i-1])
+        axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[2])
         axe[(i-1)//4,(i-1)%4].tick_params(axis='x', rotation=90)
         
     return fig,axe
+
+
+def search_dead(data,species):
+    
+    """
+    Search for death in historical data    
+    """
+    
+    #mins (*3 timestep 20s)
+    threshold_death = {'E':180*3,'G':60*3,'R':120*3}
+    thresh_life = {'G':4*3,'E':4*3,'R':6*3}
+    
+    data_alive = np.ones_like(data) 
+    data_counters = np.zeros_like(data)
+    
+    # live storage
+    counters = np.zeros(16)
+    alive = np.ones(16)
+    
+    # through full dataset
+    for i in range(thresh_life[species], len(data)):
+        
+        # through 16
+        for x in range(len(data[0])):
+            
+            # if they are alive
+            if alive[x]:
+                
+                if data[i][x]:
+                    
+                    if data[i-1][x]:
+                        counters[x] = 0
+                    else:
+                        counters[x] += 1
+                    
+                else:
+                    counters[x] += 1
+            
+            #if they are dead        
+            else:
+                if 0 not in data[(i- thresh_life[species]):i,x]:
+                    alive[x] = 1
+                    counters[x] = 0
+                    
+            if counters[x] >= threshold_death[species]:
+                alive[x] = 0
+                
+            data_alive[i] = alive
+            data_counters[i] = counters
+            
+    return data_alive,data_counters
 
 if __name__ == '__main__':
 

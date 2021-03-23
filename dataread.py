@@ -15,8 +15,57 @@ import seaborn as sns
 from datetime import timedelta
 from data_merge import merge_dfs
 
-#from perftimer import Timer
-#t = Timer()
+
+# Covert date for corrupt VPCore2 files
+
+def convert_date(filename):
+    """
+    format 20201230-093312.xls becomes dt(dd30/mm12/YYYY2020) and dt(09:33:12) 
+    """
+    day_unformatted = filename.split('-')[0]
+    day_formatted = day_unformatted[:4] + '/' + day_unformatted[4:6] + '/' + day_unformatted[6:]
+    
+    if len(filename.split('-')) > 2:
+        hour_unformatted = filename.split('-')[1]    
+    else:
+        hour_unformatted = filename.split('-')[1].split('.')[0]
+    hour_formatted = hour_unformatted[:2] + ':' + hour_unformatted[2:4] + ':' + hour_unformatted[4:]
+        
+    date = day_formatted + ' ' + hour_formatted
+    
+    return pd.to_datetime(date, format = "%Y/%m/%d %H:%M:%S")
+def correct_dates(file):    
+
+    #extract date from target_file (it is a .xls but should be read as csv)
+    true_date = convert_date(file.split('\\')[-1])
+    
+    #read in data
+    df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')
+    
+    #make new np vector/array of all the combines datetimes (lambda function)
+    df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+    
+    #redo dates
+    false_date = df['time'].min()
+    if false_date < true_date:
+        diff = true_date - false_date
+        df['time'] = df['time'] + diff
+    else:
+        diff = false_date - true_date
+        df['time'] = df['time'] - diff
+    
+    # from time column, rewrite 'stdate' and 'sttime'
+    df['stdate'] = df['time'].dt.strftime('%d/%m/%Y')
+    df['sttime'] = df['time'].dt.strftime('%H:%M:%S')
+        
+    # delete time column
+    df = df.drop('time',1)
+    
+    #make new_file (add copy at end without deleting original first)
+    df.to_csv(file.split('.')[0] + '-copy.xls', sep = '\t', encoding = 'utf-16')
+    
+# 
+
 
 def main(Tox,species):
     

@@ -5,9 +5,13 @@ Created on Thu Dec 24 08:32:47 2020
 @author: George
 """
 
+"""
+Development of function to correct xls file for a corrupt output date - if using the RAW or phr files, this will not work.
+
+Function should be added to dataread
+"""
 
 import pandas as pd
-import sys
 
 # FUNCTIONS
 
@@ -33,7 +37,7 @@ def convert_date(filename):
 #file = r'{}'.format(sys.argv[1])
 #file = r'D:\VP\Viewpoint_data\TxM767-PC\20201204-100452.xls'
  
-def main(file):    
+def correct_dates(file):    
 
     #extract date from target_file (it is a .xls but should be read as csv)
     true_date = convert_date(file.split('\\')[-1])

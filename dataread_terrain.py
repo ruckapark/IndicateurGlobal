@@ -362,6 +362,76 @@ def search_dead(data,species):
             
     return data_alive,data_counters
 
+
+## replay database functions
+    
+def sigmoid_coeffs(m,species):
+    
+    """
+    Return sigmoid function coefficients,
+    depend on # morts in system
+    """
+    
+    #n = number vivant
+    n = int(16*(1-m))
+    
+    a = {'G':3.5,'E':3.5,'R':6.0}
+    b = {'G':3.0,'E':2.5,'R':2.5}
+    
+    if n <= 1: 
+        return np.array([0])
+    elif (n > 1) & (n < 7):
+        x = np.arange(2,n+2)
+        return 2* (-1/(1+a[species]**(-x+b[species])) + 1) + 0.15
+    else:
+        x = np.arange(1,n+1)
+        return 2* (-1/(1+a[species]**(-x+b[species])) + 1) + 0.15
+    
+def percent_IGT(data,species):
+    
+    """
+    scale from sigmoid RAW -> %
+    """
+    # 0-10 %
+    data[data <= 40] = data[data <= 40] /4
+    # scale 10+ %
+    data[data > 40] = (np.log10(data[data > 40] - 30))*22 + 9
+    
+    #moving mean
+    data = np.array(pd.Series(data).rolling(10).mean().fillna(0))
+    
+    return data
+    
+def save_results(ind,IGT,m,species,filename):
+    
+    #make df to write values to .txt file for database
+    res = pd.DataFrame(columns = ['IGT','Mortality'],index = ind)
+    res['IGT'] = IGT
+    res['Mortality'] = m
+    return res
+
+def gen_txt(res,file,species,output = 'Suez_res'):
+    
+    root = os.getcwd()
+    os.chdir(r'D:\VP\Viewpoint_data\{}'.format(output))
+    
+    specs = {'G':'Gammarus','E':'Erpobdella','R':'Radix'}
+    spec = specs[species]
+    
+    os.chdir(r'D:\VP\Viewpoint_data\Suez_res')
+        
+    filename = file.split('.')[0] + species + '.txt'
+    
+    res['time'] = res.index.astype(np.int64)
+    
+    with open(filename, 'w', newline = '\n') as f:
+        
+        for i in range(res.shape[0]):
+            f.write('f5683285-b5fa-4be0-be99-6e20a112fad5,sensor={} mortality={},toxicityindex={} {}\n'.format(spec,res.iloc[i]['Mortality'],res.iloc[i]['IGT'],int(res.iloc[i]['time'])))
+    
+    os.chdir(root)
+
+
 if __name__ == '__main__':
 
     root = r'D:\VP\Viewpoint_data\Suez'

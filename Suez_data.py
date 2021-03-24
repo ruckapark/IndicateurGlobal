@@ -12,9 +12,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-import dataread_terrain as data_
-from remove_organism_terrain2 import search_dead
+import dataread_terrain as d_terr
 
 ### Main
 
@@ -27,70 +25,72 @@ colors = [
     '#e089b6','#a3a3a3','#7a7a7a','#303030'
     ]
 
-root = r'D:\VP\Viewpoint_data\Suez'
-os.chdir(root)
-files = [f for f in os.listdir() if '.csv' in f]
-
-print('The following files will be studied:')
-print(files)
-
-for file in files:
-
-    dfs,dfs_mean = data_.read_data_terrain([file])  
+def main(filename):
+    root = r'D:\VP\Viewpoint_data\Suez'
+    os.chdir(root)
+    files = filename
     
-    for species in ['E','G','R']:
+    print('The following files will be studied:')
+    print(files)
+    
+    for file in files:
+    
+        dfs,dfs_mean = d_terr.read_data_terrain([file])  
         
-        df = dfs[species]
-        df_mean = dfs_mean[species]
-        
-        # plot all on same figure - no mean and mean
-        data_.single_plot(df,species,title = 'Distance covered')
-        data_.single_plot(df_mean,species,title = 'Distance covered movingmean')
-        
-        # plot individually (plot16)
-        fig,axe = data_.plot_16(df)
-        
-        ## Main
-        
-        # Caluclate deaths
-        data = np.array(df)
-        data_alive,data_counters = search_dead(data,species)
-                
-        #form pandas
-        df_alive = pd.DataFrame(data_alive, index = df.index, columns = df.columns)
-        df_counters = pd.DataFrame(data_counters, index = df.index, columns = df.columns)
-        
-        #plot 
-        fig,axe = data_.plot_16(df_alive)
-        fig,axe = data_.plot_16(df_counters)
-        
-        #mins = df[df_alive == 1].min(axis = 1)**2
-        IGT = df[df_alive == 1].quantile(0.15,axis = 1)**1.75
-        if species == 'E':
-            IGT[IGT > 5000] = 5000
-        elif species == 'G':
-            IGT[IGT > 10000] = 10000
-        elif species == 'R':
-            IGT[IGT > 1200] = 1200
-        else:
-            break
+        for species in ['E','G','R']:
             
-        mortality = 1 - df_alive.sum(axis = 1)/16
-        
-        fig,ax1 = plt.subplots(figsize = (13,8))
-        fig.suptitle(species)
-        #ax1.plot(mins.index,mins,color = 'blue')
-        ax1.plot(IGT.index,IGT,color = 'red')
-        ax1.set_ylabel('IGT')
-        for tick in ax1.get_xticklabels():
-            tick.set_rotation(90)
-        
-        ax2 = ax1.twinx()
-        ax2.plot(mortality.index,mortality,color = 'orange')
-        ax2.set_ylabel('Mortalite')
-        
-        results = pd.DataFrame(columns = ['toxicityindex'],index = IGT.index)
-        results.index.names = ['time']
-        results['toxicityindex'] = IGT
-        #results['Mortalite'] = mortality
-        results.to_csv('{}data_{}.csv'.format(file.split('.')[0],species))
+            df = dfs[species]
+            df_mean = dfs_mean[species]
+            
+            # plot all on same figure - no mean and mean
+            d_terr.single_plot(df,species,title = 'Distance covered')
+            d_terr.single_plot(df_mean,species,title = 'Distance covered movingmean')
+            
+            # plot individually (plot16)
+            fig,axe = d_terr.plot_16(df)
+            
+            ## Main
+            
+            # Caluclate deaths
+            data = np.array(df)
+            data_alive,data_counters = d_terr.search_dead(data,species)
+                    
+            #form pandas
+            df_alive = pd.DataFrame(data_alive, index = df.index, columns = df.columns)
+            df_counters = pd.DataFrame(data_counters, index = df.index, columns = df.columns)
+            
+            #plot 
+            fig,axe = d_terr.plot_16(df_alive)
+            fig,axe = d_terr.plot_16(df_counters)
+            
+            #old style IGT
+            IGT = df[df_alive == 1].quantile(0.05,axis = 1)**2
+                
+            mortality = np.array(1 - df_alive.sum(axis = 1)/16)
+            #new style IGT in percentage
+            IGT_percent = d_terr.IGT_per(data,data_alive,mortality,species)
+            
+            fig,ax1 = plt.subplots(figsize = (13,8))
+            fig.suptitle(species)
+            ax1.plot(IGT.index,IGT,color = 'green')
+            ax1.set_ylabel('IGT')
+            for tick in ax1.get_xticklabels():
+                tick.set_rotation(90)
+            
+            ax2 = ax1.twinx()
+            ax2.plot(IGT.index,IGT_percent/100,color = 'blue')
+            ax2.plot(IGT.index,mortality,color = 'orange')
+            ax2.set_ylabel('Mortalite')
+            
+            results = pd.DataFrame(columns = ['toxicityindex'],index = IGT.index)
+            results.index.names = ['time']
+            results['toxicityindex'] = IGT
+            #results['Mortality'] = mortality
+            #results.to_csv('{}data_{}.csv'.format(file.split('.')[0],species))
+            
+            return IGT_percent
+            
+if __name__ == '__main__':
+    #filename couuld be list too
+    filename = [r'D:\VP\Viewpoint_data\Suez\toxmate_0102_1402.csv']
+    test = main(filename)

@@ -47,7 +47,7 @@ def join_text(directory,filename = 'output.txt'):
     with open(filename,'wb') as wfd:
         files = [header]
         files.extend([i for i in os.listdir() if '.txt' in i])
-        for f in fiels:
+        for f in files:
             with open(f,'rb') as fd:
                 shutil.copyfileobj(fd, wfd)
 
@@ -401,6 +401,19 @@ def percent_IGT(data,species):
     data = np.array(pd.Series(data).rolling(10).mean().fillna(0))
     
     return data
+
+def IGT_per(df,alive,m,species):
+    """
+    Combine functions simgoid and percentage to one function
+    """
+    data = np.array(df)
+    data[alive == 0] ==  np.nan
+    data.sort()
+    output = np.zeros_like(m)
+    for i in range(len(output)):
+        coeffs = sigmoid_coeffs(m[i],species)
+        output[i] = np.sum(data[i][:len(coeffs)]**coeffs)
+    return percent_IGT(output,species)
     
 def save_results(ind,IGT,m,species,filename):
     

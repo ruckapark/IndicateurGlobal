@@ -266,8 +266,10 @@ def single_plot(df,species,title = ''):
     axe = fig.add_axes([0.1,0.1,0.8,0.8])
     for i in df.columns:
         axe.plot(df.index,df[i],label = '{}{}'.format(species,i),color = colors[i-1])
+    axe.tick_params(axis='x', rotation=90)
     axe.set_title(title)
     plt.legend()
+    return fig,axe
     
     
 def plot_16(df):
@@ -280,6 +282,14 @@ def plot_16(df):
         axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[2])
         axe[(i-1)//4,(i-1)%4].tick_params(axis='x', rotation=90)
         
+    return fig,axe
+
+def combined_plot(series,species,title = ''):
+    fig = plt.figure(figsize = (13,8))
+    axe = fig.add_axes([0.1,0.1,0.8,0.8])
+    axe.plot(series.index,series)
+    axe.set_title(title)
+    axe.tick_params(axis='x', rotation=90)
     return fig,axe
 
 

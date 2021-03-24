@@ -37,7 +37,7 @@ dope_end = pd.Timestamp(year = 2021,month = 1, day = 14, hour = 15)
 date_range = [dope_start,dope_end]
 
 # plot
-fig,axe = d_terr.single_plot(df, species)
+fig,axe = d_terr.single_plot16(df, species)
 
 
 # this does not work
@@ -49,7 +49,7 @@ df_mean = df.groupby(['timestep']).mean()
 index_map = dict(zip(df['timestep'].unique(),[df[df['timestep'] == i].index[-1] for i in df['timestep'].unique()]))
 df_mean = df_mean.set_index(df_mean.index.map(index_map))
 
-fig,axe = d_terr.single_plot(df_mean, species, 'Groupby means')
+fig,axe = d_terr.single_plot16(df_mean, species, 'Groupby means')
 
 fig,axe = d_terr.plot_16(df_mean)
 
@@ -102,12 +102,12 @@ mean_distr = data_train.mean(axis = 0)
 
 #Euclidean distance
 df_mean['Eucl'] = EuclideanDist(mean_distr, data)
-fig,axe = d_terr.combined_plot(df_mean.Eucl,species,'L2 distance')
+fig,axe = d_terr.single_plot(df_mean.Eucl,species,'L2 distance')
 axe.axvspan(date_range[0], date_range[1], alpha=0.7, color='orange')
 
 #Mahalanobis distance
 df_mean['MD'] = MahalanobisDist(inv_cov, mean_distr, data)
-fig,axe = d_terr.combined_plot(df_mean.MD, species, 'Mahalanobis dist')
+fig,axe = d_terr.single_plot(df_mean.MD, species, 'Mahalanobis dist')
 axe.axvspan(date_range[0], date_range[1], alpha=0.7, color='orange')
 
 
@@ -128,10 +128,10 @@ mean_distr_x = data_train_x.mean(axis = 0)
 
 #Euclidean distance scaler (x)
 df_mean_x['Eucl'] = EuclideanDist(mean_distr_x, data_x)
-fig,axe = d_terr.combined_plot(df_mean_x.Eucl,species,'L2 distance standardised')
+fig,axe = d_terr.single_plot(df_mean_x.Eucl,species,'L2 distance standardised')
 axe.axvspan(date_range[0], date_range[1], alpha=0.7, color='orange')
 
 #Mahalanobis distance scaled (x)
 df_mean_x['MD'] = MahalanobisDist(inv_cov_x, mean_distr_x, data_x)
-fig,axe = d_terr.combined_plot(df_mean_x.MD, species, 'Mahalanobis dist standardised')
+fig,axe = d_terr.single_plot(df_mean_x.MD, species, 'Mahalanobis dist standardised')
 axe.axvspan(date_range[0], date_range[1], alpha=0.7, color='orange')

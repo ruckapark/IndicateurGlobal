@@ -10,6 +10,7 @@ Read terrain data
 import os
 import pandas as pd
 import numpy as np
+import shutil
 import matplotlib.pyplot as plt
 #import seaborn as sns
 #from datetime import timedelta
@@ -31,6 +32,24 @@ thresholds = {'G':2500,'E':3000,'R':1000}
 
 
 ### functions
+
+def join_text(directory,filename = 'output.txt'):
+    
+    """
+    When generating txt files to load into influx db
+    
+    Use join text to merge all results from a directory into a text file
+    """
+    header = r'D:\VP\Viewpoint_data\code\header.txt'
+    
+    os.chdir(r'{}'.format(directory))
+    
+    with open(filename,'wb') as wfd:
+        files = [header]
+        files.extend([i for i in os.listdir() if '.txt' in i])
+        for f in fiels:
+            with open(f,'rb') as fd:
+                shutil.copyfileobj(fd, wfd)
 
 
 def read_all_terrain_files(files,merge = False):
@@ -261,7 +280,7 @@ def read_data_terrain(files,plot = True,timestep = 10):
     return dfs_spec,dfs_spec_mean
 
 
-def single_plot(df,species,title = ''):
+def single_plot16(df,species,title = ''):
     fig = plt.figure(figsize = (13,8))
     axe = fig.add_axes([0.1,0.1,0.8,0.8])
     for i in df.columns:
@@ -284,7 +303,7 @@ def plot_16(df):
         
     return fig,axe
 
-def combined_plot(series,species,title = ''):
+def single_plot(series,species,title = ''):
     fig = plt.figure(figsize = (13,8))
     axe = fig.add_axes([0.1,0.1,0.8,0.8])
     axe.plot(series.index,series)

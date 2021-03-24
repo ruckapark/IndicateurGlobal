@@ -16,6 +16,7 @@ from sklearn import preprocessing
 from datetime import timedelta
 from data_merge import merge_dfs
 from dope_reg import dope_read
+import dataread as d_
 
 plt.close('all')
 
@@ -150,15 +151,6 @@ def dataplot_mark_dopage(axe,date_range):
 
 if __name__ == '__main__':
     
-    sns.set_style('darkgrid', {"xtick.major.size": 8, "ytick.major.size": 8})
-    sns.set_context('paper')
-    colors = [
-        '#42f5e0','#12aefc','#1612fc','#6a00a3',
-        '#8ef743','#3c8f01','#0a4001','#fc03ca',
-        '#d9d200','#d96c00','#942c00','#fc2803',
-        '#e089b6','#a3a3a3','#7a7a7a','#303030'
-        ]
-    
     # parametres a modifier
     Tox = 765
     species = 'G'
@@ -170,12 +162,12 @@ if __name__ == '__main__':
     files = [file for file in os.listdir() if os.path.isfile(file)]
     
     #read files and wrangle
-    df = read_merge(files)
-    dfs = preproc(df)
+    df = d_.read_merge(files)
+    dfs = d_.preproc(df)
     
     #select gammarus df
     df = dfs[species]
-    df = df.drop(columns = remove_dead_test(df))
+    df = df.drop(columns = d_.remove_dead(df))
     
     temoin_df = dope_read(reg = 'temoin_reg')
     
@@ -192,21 +184,21 @@ if __name__ == '__main__':
     df_post = df[(df.index > temoin['End']) & (df.index < (temoin['End']+pd.Timedelta(minutes = 30)))]
     
     t_mins = 5
-    df_mean = rolling_mean(df,t_mins)
+    df_mean = d_.rolling_mean(df,t_mins)
     
     #plot for 1 hour scale
     if df.index[-1] > (temoin['End'] + pd.Timedelta(hours = 1)):
-        plot_16(df_mean[df_mean.index < (temoin['End']+pd.Timedelta(hours = 1))],[temoin['Start'],temoin['End']],title = 'Distance/20s -  {}'.format(case))
+        d_.plot_16(df_mean[df_mean.index < (temoin['End']+pd.Timedelta(hours = 1))],[temoin['Start'],temoin['End']],title = 'Distance/20s -  {}'.format(case))
     else:
-        plot_16(df_mean,[temoin['Start'],temoin['End']],title = 'Distance/20s -  {}'.format(case))  
+        d_.plot_16(df_mean,[temoin['Start'],temoin['End']],title = 'Distance/20s -  {}'.format(case))  
     
     #plot for 15 minutes
     if temoin['Molecule'] != np.nan:
         short = df_mean[(df_mean.index > (temoin['Start']-pd.Timedelta(minutes = 6))) & ((df_mean.index < temoin['Start']+pd.Timedelta(minutes = 17)))]
-        plot_16(short,[temoin['Start'],temoin['End']],title = case)
+        d_.plot_16(short,[temoin['Start'],temoin['End']],title = case)
     
     
     #plot of means axis = 1
     means = df_mean.median(axis = 1)
-    fig,axe = single_plot(means,title = 'Mean -  {}'.format(case))
-    dataplot_mark_dopage(axe,[temoin['Start'],temoin['End']])
+    fig,axe = d_.single_plot(means,title = 'Mean -  {}'.format(case))
+    d_.dataplot_mark_dopage(axe,[temoin['Start'],temoin['End']])

@@ -15,8 +15,258 @@ import seaborn as sns
 from datetime import timedelta
 from data_merge import merge_dfs
 
+# FUNCTIONS
+
+sns.set_style('darkgrid', {"xtick.major.size": 8, "ytick.major.size": 8})
+sns.set_context('paper')
+colors = [
+    '#42f5e0','#12aefc','#1612fc','#6a00a3',
+    '#8ef743','#3c8f01','#0a4001','#fc03ca',
+    '#d9d200','#d96c00','#942c00','#fc2803',
+    '#e089b6','#a3a3a3','#7a7a7a','#303030'
+    ]
+
+def read_merge(files):
+    """
+    Merge all the data in the list files
+    
+    At a later point this could be made into the same function as terrain
+    """
+    
+    print('The following files will be merged:')
+    print(files)
+    
+    dfs = []
+    for file in files:
+        df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')    #read each df in directory df
+        df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
+    
+        #Error VPCore2
+        #conc,subs = df['Conc'].iloc[0],df['Sub'].iloc[0]
+    
+        #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
+        df = df.sort_values(by = ['sn','pn','location','aname'])
+        df = df.reset_index(drop = True)
+    
+        #treat time variable - this gets the days and months the wrong way round
+        df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+        
+        maxrows = len(df)//48
+        print('Before adjustment: total rows{}'.format(len(df)))
+        df = df.iloc[:maxrows*48]
+        print('After adjustment: total rows{}'.format(len(df)))
+        dfs.append(df)
+        
+    return merge_dfs(dfs)
+    
+    
+def preproc(df):
+    """
+    Preprocessing of the df to get it in correct form
+    Return dictionary of dfs for each species - only with distances
+    """
+    specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
+    
+    #column for specie
+    mapping = lambda a : {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}[a[0]]
+    df['specie'] = df['location'].map(mapping)
+    
+    #moi le column 'animal' n'a que des NaNs
+    good_cols = ['time','location','stdate','specie','inact','inadur','inadist','smlct','smldur','smldist','larct','lardur','lardist','emptyct','emptydur']
+    df = df[good_cols]
+    
+    #create animal 1-16 for all species
+    df['animal'] = df['location'].str[1:].astype(int)
+    
+    df['abtime'] = df['time'].astype('int64')//1e9 #convert nano
+    df['abtime'] = df['abtime'] - df['abtime'][0]
+    
+    #total distance inadist is only zeros?
+    df['dist'] = df['inadist'] + df['smldist'] + df['lardist']
+    
+    #seperate into three dfs
+    dfs = {}
+    for spec in specie:
+        
+        temp = df[df['specie'] == specie[spec]]   
+        timestamps = temp['time'].unique()
+        animals = temp['animal'].unique()   
+        df_dist = 0
+        df_dist = pd.DataFrame(index = timestamps,columns = animals)
+        
+        for i in animals:
+            temp_df = temp[temp['animal'] == i]
+            df_dist[i] = temp_df['dist'].values
+        
+        dfs.update({spec:df_dist})
+        
+    return dfs
+ 
+    
+def dataplot_mark_dopage(axe,date_range):
+    """
+    Shade the doping period and mark the doping moment thoroughly
+    """
+    #shade over doping period - item extracts value from pandas series
+    axe.axvspan(date_range[0], date_range[1], alpha=0.7, color='orange')
+    
+    #plot vertical line at estimated moment of dopage
+    #could add dopage as function parameter
+    axe.axvline(date_range[0] + pd.Timedelta(seconds = 30), color = 'red')
+    
+    #could add possibility to put xtick in location of doping?
+    
+def rolling_mean(df,timestep):
+    
+    #convert mins to number of 20 second intervals
+    timestep = (timestep * 60)//20
+    return df.rolling(timestep).mean().dropna()
+    
+    
+def remove_dead(df,species):
+    
+    """
+    If there are very few entries, remove with different strategy
+    """
+    
+    if df.shape[0] < 3000:
+        remove = []
+        for col in df.columns:
+            ratio = df[col].value_counts()[0]/df.shape[0]
+            if ratio > 0.95 : remove.append(col)
+            
+        return remove
+        
+        
+    else:
+        #maybe this isnt even necessary
+        threshold_dead = {'G':1000,'E':1000,'R':2000}
+        
+        #assume all organisms that die should be removed completely
+        max_counts = []
+        for col in df.columns:
+            
+            # find max zero counter excluding single peaks
+            counter = 0
+            max_count = 0
+            for i in range(1,df.shape[0]):
+                if df[col].iloc[i]:
+                    if df[col].iloc[i-1]:
+                        if counter > max_count: max_count = counter
+                        counter = 0
+                else:
+                    counter += 1
+                
+            if counter > max_count: max_count = counter
+            
+            max_counts.append(max_count)
+            
+        print(max_counts)
+        return [col+1 for col,val in enumerate(max_counts) if val > threshold_dead[species]]
+            
+           
+
+def savefig(name, fig):
+    os.chdir('Results')
+    fig.savefig(name)
+    os.chdir('..')
+
+def dope_params(df, Tox, start_date, end_date):
+    
+    #do not assume that the date is on a friday
+    dope_df = df[(df['Start'] > start_date) & (df['Start'] < end_date)]
+    dope_df = dope_df[dope_df['TxM'] == Tox]
+    
+    date_range = [
+        dope_df['Start'].iloc[0],
+        dope_df['End'].iloc[0]
+        ]
+    dopage = date_range[0] + pd.Timedelta(seconds = 90)
+    
+    # row value of experiment in dope reg
+    conc = dope_df['Concentration'].iloc[0]
+    sub = dope_df['Substance'].iloc[0]
+    molecule = dope_df['Molecule'].iloc[0]
+    
+    """
+    etude is the number of the week of the experiment.
+    Etude1 would be my first week of experiments
+    """
+    etude = df[(df['TxM'] == Tox) & (df['Start'] == date_range[0])].index[0]//5 + 1
+    return dopage,date_range,conc,sub,molecule,etude
+
+def plot_16(df):
+    
+    """
+    Plot a 16 square subplots
+    """
+    fig,axe = plt.subplots(4,4,sharex = True,sharey = True,figsize = (20,12))
+    for i in df.columns:
+        axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[2])
+        axe[(i-1)//4,(i-1)%4].tick_params(axis='x', rotation=90)
+        
+    return fig,axe
+
+def single_plot(series,title = '',ticks = None):
+    fig = plt.figure(figsize = (13,8))
+    axe = fig.add_axes([0.1,0.1,0.8,0.8])
+    axe.plot(series.index,series)
+    axe.set_title(title)
+    axe.tick_params(axis = 'x', rotation = 90)
+    if ticks:
+        axe.set_xticks(ticks)
+        axe.set_xticklabels([xticklabel_gen(i) for i in ticks])
+        plt.xticks(rotation = 15)
+        
+    return fig,axe
+
+def single_plot16(df,species,title = '',ticks = None):
+    fig = plt.figure(figsize = (13,8))
+    axe = fig.add_axes([0.1,0.1,0.8,0.8])
+    for i in df.columns:
+        axe.plot(df.index,df[i],label = '{}{}'.format(species,i),color = colors[i-1])
+    axe.tick_params(axis = 'x', rotation = 90)
+    
+    #xticks
+    if ticks:
+        axe.set_xticks(ticks)
+        axe.set_xticklabels([xticklabel_gen(i) for i in ticks])
+        plt.xticks(rotation = 15)
+        
+    #title    
+    axe.set_title(title)
+    plt.legend()
+    
+    return fig,axe
+
 
 # Covert date for corrupt VPCore2 files
+def study_no(etude):
+    if etude <10:
+        etude = 'Etude00{}'.format(etude)
+    elif etude < 100:
+        etude = 'Etude0{}'.format(etude)
+    else:
+        etude = 'Etude{}'.format(etude)
+        
+    return etude
+
+def distplot(df,species = 'G'):
+    
+    plt.figure()
+    plt.xlim(0,1000)
+    df[df != 0].stack().hist(bins = 500)
+    
+    thresh_map = {'E':190,'G':250,'R':80}
+    upper_threshold = thresh_map[species]
+    plt.axvline(x = upper_threshold, color = 'red')
+    
+    zeroed = int(100*((df == 0).sum().sum())/df.size)
+    centred = int(100*len(df[(df != 0) & (df < upper_threshold)].stack())/df.size)
+    upper = int(100*len(df[df > upper_threshold].stack())/df.size)
+    
+    plt.title('Valeurs nulles: {}%, Valeurs 1-200: {}%, Valeurs 200+: {}%'.format(zeroed,centred,upper)) 
+
 
 def convert_date(filename):
     """
@@ -34,6 +284,8 @@ def convert_date(filename):
     date = day_formatted + ' ' + hour_formatted
     
     return pd.to_datetime(date, format = "%Y/%m/%d %H:%M:%S")
+
+
 def correct_dates(file):    
 
     #extract date from target_file (it is a .xls but should be read as csv)
@@ -63,142 +315,3 @@ def correct_dates(file):
     
     #make new_file (add copy at end without deleting original first)
     df.to_csv(file.split('.')[0] + '-copy.xls', sep = '\t', encoding = 'utf-16')
-    
-# 
-
-
-def main(Tox,species):
-    
-    """
-    Directory must only include files from one experiment.
-    """
-    
-    specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-
-    #os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
-    os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC'.format(Tox))
-    files = os.listdir()
-    
-    print('The following files will be merged:')
-    print(files)
-    
-    dfs = []
-    for file in files:
-        df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')    #read each df in directory df
-        df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
-    
-        #Error VPCore2
-        #conc,subs = df['Conc'].iloc[0],df['Sub'].iloc[0]
-    
-        #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
-        df = df.sort_values(by = ['sn','pn','location','aname'])
-        df = df.reset_index(drop = True)
-    
-        #treat time variable - this gets the days and months the wrong way round
-        df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
-        
-        maxrows = len(df)//48
-        print('Before adjustment: total rows{}'.format(len(df)))
-        df = df.iloc[:maxrows*48]
-        print('After adjustment: total rows{}'.format(len(df)))
-        dfs.append(df)
-        
-    df = merge_dfs(dfs)
-        
-    #E01 etc.
-    mapping = lambda a : {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}[a[0]]
-    df['specie'] = df['location'].map(mapping)
-    
-    #moi le column 'animal' n'a que des NaNs
-    good_cols = ['time','location','stdate','specie','entct','inact','inadur','inadist','smlct','smldur','smldist','larct','lardur','lardist','emptyct','emptydur']
-    df = df[good_cols]
-    
-    #create animal column from location E01
-    df['animal'] = df['location'].str[1:].astype(int)
-    
-    df['dose'] = '72ug/L'
-    df['etude'] = 'ETUDE001'
-    df['lot'] = 'Zn'
-    
-    isnull = df.isnull().sum() #can check var explorer
-    plt.figure()
-    sns.heatmap(df.isnull(), yticklabels = False, cbar = False)
-    
-    #sml distance all nans? replace with zeros
-    df['smldist'] = df['smldist'].fillna(0)
-    
-    # doesn't appear necessary - what is it?
-    df = df.drop('entct',axis = 1)
-    
-    # add channel column (doesn't seem to be used in IGT script)
-    df['channel'] = 19139235
-    
-    #%%
-    """
-    Datetime is in nanoseconds, //10e9 to get seconds
-    Can zero this value
-    """
-    #recreate abtime as seconds since first value - For some reason creates a huge diff day to day
-    df['abtime'] = df['time'].astype('int64')//1e9 #convert nano
-    df['abtime'] = df['abtime'] - df['abtime'][0]
-    
-    #create threshold columns
-    df['threshold'] = 10
-    df['thresholdHigh'] = 20
-    df['thresholdLow'] = 5
-    df['protocole'] = 1
-    
-    
-    
-    #species is input
-    df = df[df['specie'] == specie[species]]
-    
-    #total distance inadist is only zeros?
-    df['dist'] = df['inadist'] + df['smldist'] + df['lardist']
-    
-    #plot all animals
-    fig = plt.figure()
-    axe = fig.add_axes([0.1,0.1,0.8,0.8])
-    for i in range(16):
-        axe.plot(df[df['animal']==(i+1)]['time'],df[df['animal']==(i+1)]['dist'],label = 'gamm{}'.format(i+1))
-    axe.set_title('Mean values for Gammare')
-    
-    
-    # this does not work
-    timestep = 1*60 # 1 minute
-    df['timestep'] = df['abtime']//timestep * timestep
-    
-    
-    timesteps = df['timestep'].unique().astype(int)
-    animals = range(1,17)
-    
-    #append mean distance 1 by 1
-    df_mean_dist = pd.DataFrame(index = timesteps)
-    
-    #groupby animal method? - create df with column as cell and mean distances
-    for i in animals:
-        temp_df = df[df['animal'] == i]
-        mean_distance = temp_df.groupby(['timestep']).mean()['dist']
-        df_mean_dist[i] = mean_distance
-        
-    #plot all the signals averaged out
-    fig_mean_tstep = plt.figure()
-    axe_mean_tstep = fig_mean_tstep.add_axes([0.1,0.1,0.8,0.8])
-    for i in animals:
-        axe_mean_tstep.plot(df_mean_dist.index,df_mean_dist[i],label = 'gamm {}'.format(i))
-    fig_mean_tstep.show()
-    
-    #plot all the means across cells
-    mean_dist = df_mean_dist.mean(axis = 1)
-    
-    fig_mean = plt.figure()
-    axe_mean = fig_mean.add_axes([0.1,0.1,0.8,0.8])
-    axe_mean.plot(mean_dist.index,mean_dist)
-    fig_mean.show()
-    
-    #plot quantile 0.05 across cells
-    quantile_dist = df_mean_dist.quantile(q = 0.05, axis = 1)**2
-    fig_quant = plt.figure()
-    axe_quant = fig_quant.add_axes([0.1,0.1,0.8,0.8])
-    axe_quant.plot(quantile_dist.index,quantile_dist)
-    fig_quant.show()

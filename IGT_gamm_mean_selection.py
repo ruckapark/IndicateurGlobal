@@ -263,11 +263,7 @@ for i in morts_test:
 # df_dist = df_dist.drop(morts_test, axis = 1)
     
 """
-Strategy of leaving all columns and replacing by nas doesn't seem to work so well. Very long to plot nas
-
-Why is it so slow?
-
-Line 282 I left dropna in the code.
+Find the best resolution for the moving means
 """
 
 

@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import timedelta
-from data_merge import merge_dfs
+from data_merge import merge_dfs,merge_dfs_nodatechange
 
 # FUNCTIONS
 
@@ -26,7 +26,7 @@ colors = [
     '#e089b6','#a3a3a3','#7a7a7a','#303030'
     ]
 
-def read_merge(files):
+def read_merge(files,datechange = True):
     """
     Merge all the data in the list files
     
@@ -57,7 +57,10 @@ def read_merge(files):
         print('After adjustment: total rows{}'.format(len(df)))
         dfs.append(df)
         
-    return merge_dfs(dfs)
+    if datechange:    
+        return merge_dfs(dfs)
+    else:
+        return merge_dfs_nodatechange(dfs)
     
     
 def preproc(df):
@@ -213,10 +216,10 @@ def single_plot(series,title = '',ticks = None):
     axe.plot(series.index,series)
     axe.set_title(title)
     axe.tick_params(axis = 'x', rotation = 90)
-    if ticks:
-        axe.set_xticks(ticks)
-        axe.set_xticklabels([xticklabel_gen(i) for i in ticks])
-        plt.xticks(rotation = 15)
+    # if ticks:
+    #     axe.set_xticks(ticks)
+    #     axe.set_xticklabels([xticklabel_gen(i) for i in ticks])
+    #     plt.xticks(rotation = 15)
         
     return fig,axe
 
@@ -227,11 +230,11 @@ def single_plot16(df,species,title = '',ticks = None):
         axe.plot(df.index,df[i],label = '{}{}'.format(species,i),color = colors[i-1])
     axe.tick_params(axis = 'x', rotation = 90)
     
-    #xticks
-    if ticks:
-        axe.set_xticks(ticks)
-        axe.set_xticklabels([xticklabel_gen(i) for i in ticks])
-        plt.xticks(rotation = 15)
+    # #xticks
+    # if ticks:
+    #     axe.set_xticks(ticks)
+    #     axe.set_xticklabels([xticklabel_gen(i) for i in ticks])
+    #     plt.xticks(rotation = 15)
         
     #title    
     axe.set_title(title)
@@ -286,7 +289,8 @@ def convert_date(filename):
     return pd.to_datetime(date, format = "%Y/%m/%d %H:%M:%S")
 
 
-def correct_dates(file):    
+def correct_dates(file):   
+    
 
     #extract date from target_file (it is a .xls but should be read as csv)
     true_date = convert_date(file.split('\\')[-1])

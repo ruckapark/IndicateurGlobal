@@ -12,7 +12,6 @@ File created for the weekly run of visualising data
 import os
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing

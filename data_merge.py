@@ -15,6 +15,16 @@ Method:
 import os
 import pandas as pd
 
+def merge_dfs_nodatechange(dfs):
+    
+    """No date modification - otherwise unchanged"""
+    if len(dfs) == 1:
+        return dfs[0]
+    else:
+        return pd.concat(dfs)
+    
+    
+
 def merge_dfs(dfs):
     """
     merges a list of TWO dfs, - this is thus made recursive

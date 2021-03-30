@@ -227,8 +227,8 @@ def slide_max_zero(df):
 ###################################
     
 # separe df, vivant et mort
-df_train_vivant = sub_df(df_dist, 15, [2,])
-df_train_mort = sub_df(df_dist, 15, animals)
+df_train_vivant = sub_df(df_dist, 15, [2,3,5,7,8,9,10,11,12,13,14,15,16])
+df_train_mort = sub_df(df_dist, 15, [1,4,6])
 
 # count zeros every (timestemp_mins) minutes
 timestep_mins = 5
@@ -240,7 +240,7 @@ fig_vivant,axe_vivant = plot_16(df_train_vivant,colors)
 fig_mort,axe_mort = plot_16(df_train_mort,colors)
 
 df_tr_vi_nonactif = df_train_vivant[[12,13,15]]
-df_tr_mo_actif = df_train_mort[[1,4,5]]
+df_tr_mo_actif = df_train_mort[[1,4]]
 
 xrange = np.linspace(0,100,401)
 
@@ -261,8 +261,9 @@ max_zero_mo = max_zero(df_train_mort)
 
 max_zero3 = []
 max_zero4 = []
-for i in animals:
+for i in df_train_vivant.columns:
     max_zero3.append(delete_counter(list(df_train_vivant[i])))
+for i in df_train_mort.columns:
     max_zero4.append(delete_counter(list(df_train_mort[i])))
     
     
@@ -338,7 +339,7 @@ df_alive = pd.DataFrame(index = df_dist.index,columns = df_dist.columns)
 df_counters = df_alive.fillna(0)
 df_alive = df_alive.fillna(1)
 
-threshold = 250
+threshold = 180 * 3
 #create np array of counters of for zero counter (using slider)
     
 #counters = dict(zip(df_alive.columns,np.zeros(16)))

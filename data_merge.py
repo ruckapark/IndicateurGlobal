@@ -21,7 +21,7 @@ def merge_dfs_nodatechange(dfs):
     if len(dfs) == 1:
         return dfs[0]
     else:
-        return pd.concat(dfs)
+        return pd.concat(dfs).reset_index(drop = True)
     
     
 

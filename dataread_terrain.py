@@ -449,7 +449,7 @@ if __name__ == '__main__':
 
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '.csv' in f]
+    files = [f for f in os.listdir() if '2903.csv' in f]
     
     print('The following files will be studied:')
     print(files)
@@ -460,13 +460,44 @@ if __name__ == '__main__':
     timestep = 10
     
     species = 'R'
-    df_dist = dfs[species]
-    df_dist_mean = dfs_mean[species]
+    df = dfs[species]
+    df_mean = dfs_mean[species]
     
     
     # plot all on same figure - no mean and mean
-    single_plot(df_dist,species,title = 'Distance covered')
-    single_plot(df_dist_mean,species,title = 'Distance covered movingmean')
+    single_plot(df,species,title = 'Distance covered')
+    single_plot(df_mean,species,title = 'Distance covered movingmean')
     
     # plot individually (plot16)
-    fig,axe = plot_16(df_dist_mean)    
+    fig,axe = plot_16(df)
+    fig,axe = plot_16(df_mean)    
+    
+    #plot IGT with mortality
+    data_alive,data_counters = search_dead(np.array(df),species)
+    m = np.ones(len(data_alive),dtype = float) - (np.sum(data_alive,axis = 1))/16
+    
+    values = np.array(df)
+    values[data_alive == 0] = np.nan
+    # values[i][0] < values[i][1] < values[i][2]
+    values.sort()
+    
+    IGT = np.zeros_like(m)
+    old_IGT = np.zeros_like(m)
+    for i in range(len(values)):
+        coeffs = sigmoid_coeffs(m[i],species)
+        IGT[i] = np.sum(values[i][:len(coeffs)]**coeffs)
+        #check if all values nan (100% mortality)
+        if np.isnan(values[i][0]):
+            old_IGT[i] = 0
+        else:
+            old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.05)**2
+       
+    # caluclate IGT from raw -> %    
+    IGT = percent_IGT(IGT, species)
+    
+    #compare old and new values
+    fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)
+    plt.suptitle('IGT 5% vs. percent new_IGT')
+    axe[0].plot(df.index,old_IGT,color = 'green')
+    axe[1].plot(df.index,IGT,color = 'green')
+    axe[1].tick_params(axis='x', rotation=90)

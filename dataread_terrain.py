@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import shutil
 import matplotlib.pyplot as plt
-#import seaborn as sns
+import seaborn as sns
 #from datetime import timedelta
 #from data_merge import merge_dfs
 
@@ -28,7 +28,7 @@ colors = [
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 species = 'G'
 
-thresholds = {'G':190,'E':180,'R':5000}
+thresholds = {'G':190,'E':180,'R':50}
 
 
 ### functions
@@ -120,13 +120,23 @@ def read_all_terrain_files(files,merge = False):
         return dfs
 
 
-def apply_threshold(dfs,thresholds):
+def apply_threshold(dfs,thresholds,distplot = False):
     """
     eliminate false values from the dataframes
     """
     
     #as per specie - delete extreme values
     for specie in dfs:
+        
+        #plot values
+        if distplot: 
+            fig = plt.figure(figsize = (14,8))
+            axe = fig.add_axes([0.1,0.1,0.8,0.8])
+            sns.hisplot(np.array(dfs[specie]),bins = 50,ax = axe)
+            axe.set_xlim(right = 2*thresholds[specie])
+            axe.axvline(thresholds[specie],color = 'r',linestyle = '--')
+            axe.set_title('Distribution avant trie - {}'.format(specie))
+            
         
         print('Filtering {}: {}/{}values'.format(specie,np.sum(dfs[specie] > thresholds[specie]).sum() , np.size(dfs[specie])))
         dfs[specie][dfs[specie] > thresholds[specie]] = 0
@@ -243,7 +253,7 @@ def df_movingmean(dfs,timestep):
     return dfs_mean
 
 
-def read_data_terrain(files,plot = True,timestep = 10):
+def read_data_terrain(files,plot = True,timestep = 10,startdate = None,distplot = False):
     """
     Parameters
     ----------
@@ -259,6 +269,9 @@ def read_data_terrain(files,plot = True,timestep = 10):
     dfs = read_all_terrain_files(files)
     df = dfs[0]
     
+    if startdate:
+        df = df[df['time'] > startdate]
+    
     df['animal'] = df['replica']
     
     df['dist'] = df['inadist'] + df['smldist'] + df['lardist']
@@ -271,7 +284,7 @@ def read_data_terrain(files,plot = True,timestep = 10):
     dfs_spec.update({'R': df[df['specie'] == 'Radix']})
     
     dfs_spec = df_distance(dfs_spec)
-    dfs_spec = apply_threshold(dfs_spec,thresholds)
+    dfs_spec = apply_threshold(dfs_spec,thresholds,distplot = distplot)
     
     dfs_spec_mean = df_movingmean(dfs_spec,timestep)
     
@@ -445,16 +458,21 @@ def gen_txt(res,file,species,output = 'Suez_res'):
     os.chdir(root)
 
 
+def main():
+    return None
+
 if __name__ == '__main__':
 
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '2903.csv' in f]
+    files = [f for f in os.listdir() if '0304.csv' in f]
+    start = None
+    start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
     
     print('The following files will be studied:')
     print(files)
     
-    dfs,dfs_mean = read_data_terrain(files)
+    dfs,dfs_mean = read_data_terrain(files,startdate = start,distplot = True)
     
     
     timestep = 10

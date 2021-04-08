@@ -132,8 +132,8 @@ def apply_threshold(dfs,thresholds,distplot = False):
         if distplot: 
             fig = plt.figure(figsize = (14,8))
             axe = fig.add_axes([0.1,0.1,0.8,0.8])
-            sns.hisplot(np.array(dfs[specie]),bins = 50,ax = axe)
-            axe.set_xlim(right = 2*thresholds[specie])
+            sns.histplot(np.array(dfs[specie]),bins = 500,ax = axe)
+            axe.set_xlim((0,3*thresholds[specie]))
             axe.axvline(thresholds[specie],color = 'r',linestyle = '--')
             axe.set_title('Distribution avant trie - {}'.format(specie))
             
@@ -465,9 +465,9 @@ if __name__ == '__main__':
 
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '0304.csv' in f]
+    files = [f for f in os.listdir() if '2903.csv' in f]
     start = None
-    start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
+    #start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
     
     print('The following files will be studied:')
     print(files)

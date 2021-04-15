@@ -70,14 +70,14 @@ if __name__ == '__main__':
                 if np.isnan(values[i][0]):
                     old_IGT[i] = 0
                 else:
-                    old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.1)**2
+                    old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.05)**2
                
             # caluclate IGT from raw -> %    
             IGT = d_terr.percent_IGT(IGT, species)
             
             #compare old and new values
             fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)
-            plt.suptitle('IGT 10% vs. percent new_IGT')
+            plt.suptitle('IGT 5% vs. percent new_IGT')
             axe[0].plot(df.index,old_IGT,color = 'green')
             axe[1].plot(df.index,IGT,color = 'green')
             axe[1].tick_params(axis='x', rotation=90)

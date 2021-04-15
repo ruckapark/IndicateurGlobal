@@ -24,7 +24,7 @@ import dataread as d_
 
 if __name__ == '__main__':
                 
-    Tox,species,etude = 766,'G',24
+    Tox,species,etude = 767,'E',25
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     
     title_ = 'ToxIndex: {}({}), {}   {}-{}'.format(sub,molecule,conc,date_range[0].strftime('%d/%m'),date_range[1].strftime('%d/%m'))
     
-    fig,axe = d_.single_plot(quantile_dist, title = title_)
+    fig,axe = d_.single_plot(quantile_dist[quantile_dist.index > dopage - pd.Timedelta(hours = 36)], title = title_)
     d_.dataplot_mark_dopage(axe,date_range)
     
     #2 hour plot

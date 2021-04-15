@@ -465,7 +465,7 @@ if __name__ == '__main__':
 
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '2903.csv' in f]
+    files = [f for f in os.listdir() if '1802_1703.csv' in f]
     start = None
     #start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
     

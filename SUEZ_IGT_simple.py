@@ -36,7 +36,7 @@ def bruit_de_fond(values,species):
 
 cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
 offsets = {'G':3120,'E':1869,'R':406} #parametres optimises pour cannes
-def IGT_percent(IGT):
+def IGT_percent(IGT,species):
     
     """  """
     
@@ -44,9 +44,9 @@ def IGT_percent(IGT):
     offset = offsets[species]
     
     if IGT < seuil[0]:
-        return (IGT / seuil[0]/45) + 5
+        return (IGT / (seuil[0]/45))
     elif IGT < seuil[1]:
-        return (IGT / (seuil[1] - seuil[0])/25)
+        return (IGT / ((seuil[1] - seuil[0])/25)) + 45
     else:
         return (np.log(IGT - offset) - np.log(seuil[1] - offset)) * (20 / np.log((seuil[2] - offset)/(seuil[1]-seuil[0]))) + 70 
     
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     
     #%%
     
-    species = 'E'
+    species = 'G'
     df = dfs[species]
     df_mean = dfs_mean[species]
     
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     m = np.ones(len(data_alive),dtype = float) - (np.sum(data_alive,axis = 1))/16
     
     #plot mortality
-    d_terr.single_plot(m, species)
+    #d_terr.single_plot(m, species)
     
     #find all values in csv (array [timebins,16])
     data = np.array(df)
@@ -123,22 +123,6 @@ if __name__ == '__main__':
         axe.set_title('quantile {}, {}perc nonzero'.format(q,(len(quantiledata[quantiledata > 0])/len(quantiledata))))
     
     """
-    
-    #
-    
-    # data (death correction) treatment
-    # values[t] = 16 valeurs pour chaque timebin
-    for t in data:
-        
-        x = data[t]                 #timebin datum
-        IGT = np.nanquantile(x,0.5) #IGT old
-        if np.isnan(IGT): IGT = 0   #remove nan
-        
-        bdf = bruit_de_fond(x, species)
-        percent = IGT_percent(x,species)
-        
-        IGT_percent = bdf + percent
-        
         
     #variation bruit de fond - 0-5%
     seuil_bdf = {
@@ -165,7 +149,7 @@ if __name__ == '__main__':
         if species == 'R':
             #strategy low - direct transfer from 0-250 -> 5-50%
             if IGT[i] < palier[0]:
-                percentage.append(IGT[i]/5.55 + 5)
+                percentage.append(IGT[i]/5.55)
             elif IGT[i] < palier[1]:
                 percentage.append((IGT[i] - palier[0])/8 + 45)
             else:
@@ -173,7 +157,7 @@ if __name__ == '__main__':
                 
         if species == 'G':
             if IGT[i] < palier[0]:
-                percentage.append(IGT[i]/ 44.44 + 5)
+                percentage.append(IGT[i]/ 44.44)
             elif IGT[i] < palier[1]:
                 percentage.append((IGT[i] - palier[0])/60 + 45)
             else:
@@ -181,7 +165,7 @@ if __name__ == '__main__':
                 
         if species == 'E':
             if IGT[i] < palier[0]:
-                percentage.append(IGT[i]/ 22.22 + 5)
+                percentage.append(IGT[i]/ 22.22)
             elif IGT[i] < palier[1]:
                 percentage.append((IGT[i] - palier[0])/60 + 45)
             else:

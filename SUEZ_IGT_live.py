@@ -38,9 +38,9 @@ def IGT_percent(IGT,species):
     offset = offsets[species]
     
     if IGT < seuil[0]:
-        return (IGT / seuil[0]/45)
+        return (IGT / (seuil[0]/45))
     elif IGT < seuil[1]:
-        return (IGT / (seuil[1] - seuil[0])/25) + 45
+        return (IGT / ((seuil[1] - seuil[0])/25)) + 45
     else:
         return (np.log(IGT - offset) - np.log(seuil[1] - offset)) * (20 / np.log((seuil[2] - offset)/(seuil[1]-seuil[0]))) + 70 
     

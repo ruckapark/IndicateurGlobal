@@ -59,7 +59,7 @@ if __name__ == '__main__':
     
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '1802_1703.csv' in f]
+    files = [f for f in os.listdir() if '03.csv' in f]
     
     print('The following files will be studied:')
     print(files)

@@ -24,7 +24,7 @@ import dataread as d_
 
 if __name__ == '__main__':
                 
-    Tox,species,etude = 767,'E',25
+    Tox,species,etude = 766,'G',26
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))

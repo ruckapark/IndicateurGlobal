@@ -9,7 +9,10 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+base = os.getcwd()
+os.chdir('..')
 import dataread_terrain as d_terr
+os.chdir(base)
 
 #developped in optimisation
 seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
@@ -40,7 +43,7 @@ def IGT_percent(IGT,species):
     if IGT < seuil[0]:
         return (IGT / (seuil[0]/45))
     elif IGT < seuil[1]:
-        return (IGT / ((seuil[1] - seuil[0])/25)) + 45
+        return ((IGT - seuil[0])/ ((seuil[1] - seuil[0])/25)) + 45
     else:
         return (np.log(IGT - offset) - np.log(seuil[1] - offset)) * (20 / np.log((seuil[2] - offset)/(seuil[1]-seuil[0]))) + 70 
     
@@ -57,8 +60,8 @@ if __name__ == '__main__':
         '#e089b6','#a3a3a3','#7a7a7a','#303030'
         ]
     
-    root = r'D:\VP\Viewpoint_data\Suez'
-    os.chdir(root)
+    # root = r'D:\VP\Viewpoint_data\Suez'
+    # os.chdir(root)
     files = [f for f in os.listdir() if '03.csv' in f]
     
     print('The following files will be studied:')
@@ -109,6 +112,7 @@ if __name__ == '__main__':
         if np.isnan(IGT): IGT = 0   #remove nan
         
         bdf = bruit_de_fond(x, species)
+        
         percent = IGT_percent(IGT,species)
         
         IGT_[t] = IGT

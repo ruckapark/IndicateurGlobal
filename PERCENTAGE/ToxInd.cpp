@@ -137,9 +137,10 @@ double Percentage::toxPercent(double ToxInd)
 	if ( ToxInd < p_cutoff50percent ) {
 		return bdf + (ToxInd * 45) / p_cutoff50percent ;
 	} else if ( ToxInd < p_cutoff75percent ) {
-		return bdf + (ToxInd * 25) / (p_cutoff75percent - p_cutoff50percent) + 45 ;
+		return bdf + ((ToxInd - p_cutoff50percent) * 25) / (p_cutoff75percent - p_cutoff50percent) + 45 ;
 	} else {
-		return bdf + log((ToxInd - p_offset_logfit)/(p_cutoff75percent - p_offset_logfit)) * log_offset + 70 ;
+		double v = bdf + log((ToxInd - p_offset_logfit)/(p_cutoff75percent - p_offset_logfit)) * log_offset + 70 ;
+		return v //cap value at 100
 	}
 	
 }

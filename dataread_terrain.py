@@ -33,6 +33,48 @@ thresholds = {'G':190,'E':180,'R':50}
 
 ### functions
 
+"""
+Upto date calculation of IGT
+"""
+
+seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
+cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
+offsets = {'G':3120,'E':1869,'R':406} #parametres optimises pour cannes
+
+def IGT_bdf(values,species,overwrite = None):
+    if overwrite:
+        seuil = overwrite[species]
+    else:
+        seuil = seuil_bdf[species]
+    # quantile / facteur
+    bdf = np.nanquantile(values,seuil[0])/seuil[1]
+    if np.isnan(bdf):
+        bdf = 0
+    return bdf
+
+def IGT_base(IGT_,species,cut = None):
+    if cut:
+        seuil = cut[species]
+    else:
+        seuil  = cutoff[species]
+    offset = offsets[species]
+    if IGT_ < seuil[0]:
+        return (IGT_ / (seuil[0]/45))
+    elif IGT_ < seuil[1]:
+        return ((IGT_ - seuil[0]) / ((seuil[1] - seuil[0])/25)) + 45
+    else:
+        return 70 + 20 * (np.log((IGT_ - offset)/(seuil[1] - offset))/np.log((seuil[2] - offset)/(seuil[1]-offset)))
+
+def IGT(values,species,cut = None,overwrite = None):
+    IGT_ = np.nanquantile(values,0.05)**2
+    v = IGT_bdf(values,species,overwrite) + IGT_base(IGT_,species,cut)
+    if v > 100: v = 100
+    return v
+
+"""
+Upto date calculation of IGT
+"""
+
 def join_text(directory,filename = 'output.txt'):
     
     """

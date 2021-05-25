@@ -65,7 +65,7 @@ if __name__ == '__main__':
     
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '1802_1703.csv' in f]
+    files = [f for f in os.listdir() if '1803.csv' in f]
     
     print('The following files will be studied:')
     print(files)
@@ -109,9 +109,9 @@ if __name__ == '__main__':
     IGT = np.nanquantile(data,0.05,axis = 1)**2
     IGT = np.nan_to_num(IGT)
     
-    """
     
-    Dev. algo bruit de fond
+    
+    #Dev. algo bruit de fond
     
     for i in range(21):
         q = 0.05 * i
@@ -121,6 +121,8 @@ if __name__ == '__main__':
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         axe.plot(quantiledata[quantiledata > 0])
         axe.set_title('quantile {}, {}perc nonzero'.format(q,(len(quantiledata[quantiledata > 0])/len(quantiledata))))
+    
+    
     
     """
         
@@ -178,4 +180,4 @@ if __name__ == '__main__':
     axe[0].plot(df.index,IGT)
     axe[1].plot(df.index,percentage)
     
-    
+    """

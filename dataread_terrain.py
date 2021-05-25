@@ -417,6 +417,9 @@ def search_dead(data,species):
             
     return data_alive,data_counters
 
+"""
+OLD
+"""
 
 ## replay database functions
     
@@ -507,7 +510,7 @@ if __name__ == '__main__':
 
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '1802_1703.csv' in f]
+    files = [f for f in os.listdir() if '2505.csv' in f]
     start = None
     #start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
     
@@ -515,9 +518,6 @@ if __name__ == '__main__':
     print(files)
     
     dfs,dfs_mean = read_data_terrain(files,startdate = start,distplot = True)
-    
-    
-    timestep = 10
     
     species = 'R'
     df = dfs[species]
@@ -541,19 +541,16 @@ if __name__ == '__main__':
     # values[i][0] < values[i][1] < values[i][2]
     values.sort()
     
-    IGT = np.zeros_like(m)
+    IGTper = np.zeros_like(m)
     old_IGT = np.zeros_like(m)
     for i in range(len(values)):
-        coeffs = sigmoid_coeffs(m[i],species)
-        IGT[i] = np.sum(values[i][:len(coeffs)]**coeffs)
+        IGTper[i] = IGT(values,'R')
         #check if all values nan (100% mortality)
         if np.isnan(values[i][0]):
             old_IGT[i] = 0
         else:
             old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.05)**2
        
-    # caluclate IGT from raw -> %    
-    IGT = percent_IGT(IGT, species)
     
     #compare old and new values
     fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)

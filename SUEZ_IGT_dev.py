@@ -48,7 +48,7 @@ def IGT_percent(IGT,species):
     elif IGT < seuil[1]:
         return ((IGT - seuil[0]) / ((seuil[1] - seuil[0])/25)) + 45
     else:
-        return (np.log(IGT - offset) - np.log(seuil[1] - offset)) * (20 / np.log((seuil[2] - offset)/(seuil[1]-seuil[0]))) + 70 
+        return (np.log(IGT - offset) - np.log(seuil[1] - offset)) * (20 / np.log((seuil[2] - offset)/(seuil[1]-offset))) + 70 
     
 
 
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     IGT = np.nan_to_num(IGT)
     
     
-    
+    """
     #Dev. algo bruit de fond
     
     for i in range(21):
@@ -180,4 +180,4 @@ if __name__ == '__main__':
     axe[0].plot(df.index,IGT)
     axe[1].plot(df.index,percentage)
     
-    """
+    #"""

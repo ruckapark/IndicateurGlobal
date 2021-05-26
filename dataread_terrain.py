@@ -544,7 +544,7 @@ if __name__ == '__main__':
     IGTper = np.zeros_like(m)
     old_IGT = np.zeros_like(m)
     for i in range(len(values)):
-        IGTper[i] = IGT(values,'R')
+        IGTper[i] = IGT(values[i],species)
         #check if all values nan (100% mortality)
         if np.isnan(values[i][0]):
             old_IGT[i] = 0
@@ -556,5 +556,5 @@ if __name__ == '__main__':
     fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)
     plt.suptitle('IGT 5% vs. percent new_IGT')
     axe[0].plot(df.index,old_IGT,color = 'green')
-    axe[1].plot(df.index,IGT,color = 'green')
+    axe[1].plot(df.index,IGTper,color = 'green')
     axe[1].tick_params(axis='x', rotation=90)

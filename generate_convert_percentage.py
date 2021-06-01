@@ -66,18 +66,11 @@ if __name__ == '__main__':
             
             #remove values mort
             values[data_alive == 0] = np.nan
+            df = pd.DataFrame(data = np.copy(values), index = df.index, columns = df.columns)
+            df_m,m = d_terr.group_meandf(df.copy(), m)
+            values = np.array(df_m)
             values.sort()
-            
-            
-            test = pd.DataFrame(values,index = df.index, columns = df.columns)
-            test['Mortality'] = pd.Series(m,index = df.index)
-            test['timestep'] = 2*(test.index - test.index[0]).total_seconds()//120
-            test = test.groupby('timestep').mean()
-            test.index = test.index.astype(int)
-            test.index = df.index[0] + pd.to_timedelta(test.index, unit = 'm')
-            values = np.array(test.drop('Mortality',axis = 1))
-            m = np.array(test['Mortality'])
-            
+
             IGT = np.zeros(len(values))
             old_IGT = np.zeros(len(values))
             for i in range(len(values)):
@@ -99,6 +92,10 @@ if __name__ == '__main__':
                         IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[20000,50000,100000],'E':[1000,2500,10000],'R':[600,1500,2000]},overwrite = {'G':[0.99,19],'E':[0.7,18],'R':[0.99,5]})
                     elif '0104.csv' in file:
                         IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[2000,35000,12000],'E':[600,1500,10000],'R':[300,500,2000]})
+                    elif '1905.csv' in file:
+                        IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[2000,8000,20000],'E':[2000,3500,50000],'R':[400,700,2000]})
+                    elif '3005.csv' in file:
+                        IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[2000,4000,12000],'E':[2000,4500,50000],'R':[500,800,2000]})
                     else:
                         IGT[i] = d_terr.IGT(values[i],species)
                
@@ -114,13 +111,14 @@ if __name__ == '__main__':
             #compare old and new values
             fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)
             plt.suptitle('IGT 5% vs. percent new_IGT {}'.format(species))
-            axe[0].plot(test.index,old_IGT,color = 'green')
-            axe[1].plot(test.index,IGT,color = 'green')
+            axe[0].plot(df_m.index,old_IGT,color = 'green')
+            axe[1].plot(df_m.index,IGT,color = 'green')
             axe[1].tick_params(axis='x', rotation=90)
             
             
-            res = d_terr.save_results(test.index, IGT, m, species, file)
+            res = d_terr.save_results(df_m.index, IGT, m, species, file)
             #save to txt files
+            
             d_terr.gen_txt(res,file,species)
             
     # merge results to file for replaydb

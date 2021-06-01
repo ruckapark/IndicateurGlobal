@@ -75,6 +75,46 @@ def IGT(values,species,cut = None,overwrite = None):
 Upto date calculation of IGT
 """
 
+"""
+Moyenne sur 2 mns
+"""
+def group_mean(values,dataindex,m,cols,timebin_min = 2):
+    # add function for two minute means (mortality should be calculated before this !)
+    """
+    Create new df with mortality and timestep columns
+    Return np array of values
+    """
+    temp = pd.DataFrame()
+    temp = pd.DataFrame(values,index = dataindex, columns = cols)
+    temp['Mortality'] = pd.Series(m,index = dataindex)
+    temp['timestep'] = timebin_min*((temp.index - temp.index[0]).total_seconds()//(60*timebin_min))
+    temp = temp.groupby('timestep').mean()
+    temp.index = temp.index.astype(int)
+    temp.index = dataindex[0] + pd.to_timedelta(temp.index, unit = 'm')
+    values = np.array(temp.drop('Mortality',axis = 1))
+    m = np.array(temp['Mortality'])
+    return values,m,temp.index
+
+def group_meandf(df,m,timebin_min = 2):
+    # add function for two minute means (mortality should be calculated before this !)
+    """
+    Create new df with mortality and timestep columns
+    Return np array of values
+    """
+    timestep = timebin_min * 60
+    
+    start_time = df.index[0]
+    df['timestep'] = timebin_min*(((df.index - start_time).total_seconds() // timestep))
+    df['mortality'] = m
+    df_m = df.groupby(['timestep']).mean()
+    df_m.index = df_m.index.astype(int)
+    df_m.index = df.index[0] + pd.to_timedelta(df_m.index, unit = 'm')
+    m = np.array(df_m['mortality'])
+        
+    return df_m.drop(['mortality'],axis = 1),m
+
+
+
 def join_text(directory,filename = 'output.txt'):
     
     """
@@ -212,7 +252,7 @@ def df_distance(dfs):
         
     return dfs
 
-def remove_org(dfs,thresh_life = {'G':12,'E':12,'R':24},
+def remove_org(dfs,thresh_life = {'G':12,'E':12,'R':12},
                thresh_dead = {'G':180,'E':540,'R':360},
                remove = True):
     """
@@ -276,7 +316,7 @@ def remove_org(dfs,thresh_life = {'G':12,'E':12,'R':24},
 def df_movingmean(dfs,timestep):
     
     """
-    Calculate in blocks of 10 minutes (not rolling as with lab data)
+    Calculate in blocks of n minutes (not rolling as with lab data)
     """
     timestep = timestep * 60
     dfs_mean = {}
@@ -295,7 +335,7 @@ def df_movingmean(dfs,timestep):
     return dfs_mean
 
 
-def read_data_terrain(files,plot = True,timestep = 10,startdate = None,distplot = False):
+def read_data_terrain(files,plot = True,timestep = 2,startdate = None,distplot = False):
     """
     Parameters
     ----------
@@ -374,7 +414,7 @@ def search_dead(data,species):
     """
     
     #mins (*3 timestep 20s)
-    threshold_death = {'E':180*3,'G':60*3,'R':120*3}
+    threshold_death = {'E':180*3,'G':60*3,'R':360*3}
     thresh_life = {'G':4*3,'E':4*3,'R':6*3}
     
     data_alive = np.ones_like(data) 
@@ -519,7 +559,7 @@ if __name__ == '__main__':
     
     dfs,dfs_mean = read_data_terrain(files,startdate = start,distplot = True)
     
-    species = 'R'
+    species = 'G'
     df = dfs[species]
     df_mean = dfs_mean[species]
     
@@ -538,7 +578,8 @@ if __name__ == '__main__':
     
     values = np.array(df)
     values[data_alive == 0] = np.nan
-    # values[i][0] < values[i][1] < values[i][2]
+    df = pd.DataFrame(data = np.copy(values), index = df.index, columns = df.columns)
+    ### values[i][0] < values[i][1] < values[i][2]
     values.sort()
     
     IGTper = np.zeros_like(m)
@@ -550,7 +591,6 @@ if __name__ == '__main__':
             old_IGT[i] = 0
         else:
             old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.05)**2
-       
     
     #compare old and new values
     fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)
@@ -558,3 +598,38 @@ if __name__ == '__main__':
     axe[0].plot(df.index,old_IGT,color = 'green')
     axe[1].plot(df.index,IGTper,color = 'green')
     axe[1].tick_params(axis='x', rotation=90)
+    
+    #does max do a mean on the IGT values or a mean on the distance values?
+    
+    #now double check my algorithm in cpp
+    
+    df_mean,m = group_meandf(df.copy(), m)
+    values = np.array(df_mean)
+    values.sort()
+    #values,m,dates = group_mean(values,df.index,m,df.columns)
+    
+    IGTper_mean = np.zeros_like(m)
+    old_IGT = np.zeros_like(m)
+    for i in range(len(values)):
+        IGTper_mean[i] = IGT(values[i],species)
+        #check if all values nan (100% mortality)
+        if np.isnan(values[i][0]):
+            old_IGT[i] = 0
+        else:
+            old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.05)**2
+            
+    fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)
+    plt.suptitle('IGT 5% vs. percent new_IGT')
+    axe[0].plot(df_mean.index,old_IGT,color = 'green')
+    axe[1].plot(df_mean.index,IGTper_mean,color = 'green')
+    axe[1].tick_params(axis='x', rotation=90)
+    
+    # #calculate moving mean
+    # IGT_mean = np.array(pd.Series(IGTper).rolling(8).mean())
+    
+    # #moving / weighted means
+    # fig2,axe2 = plt.subplots(2,1,figsize = (18,9),sharex = True)
+    # plt.suptitle('without moving mean vs. with moving mean')
+    # axe2[0].plot(dates,IGTper,color = 'green')
+    # axe2[1].plot(dates,IGT_mean,color = 'green')
+    # axe2[1].tick_params(axis='x', rotation=90)

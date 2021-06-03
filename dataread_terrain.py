@@ -550,7 +550,7 @@ if __name__ == '__main__':
 
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if '2505.csv' in f]
+    files = [f for f in os.listdir() if 'dopage.csv' in f]
     start = None
     #start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
     
@@ -559,7 +559,8 @@ if __name__ == '__main__':
     
     dfs,dfs_mean = read_data_terrain(files,startdate = start,distplot = True)
     
-    species = 'G'
+    #%%
+    species = 'E'
     df = dfs[species]
     df_mean = dfs_mean[species]
     

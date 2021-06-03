@@ -24,7 +24,7 @@ import dataread as d_
 
 if __name__ == '__main__':
                 
-    Tox,species,etude = 767,'R',27
+    Tox,species,etude = 767,'G',27
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))
@@ -36,6 +36,7 @@ if __name__ == '__main__':
     # could also seperate out over time
     df = dfs[species]
     df = df.drop(columns = d_.remove_dead(df,species))
+    
     
     #%% plot
     
@@ -50,7 +51,7 @@ if __name__ == '__main__':
     df_mean = d_.rolling_mean(df,t_mins)
     fig,axe = d_.single_plot16(df_mean, species, title = '{} Moving mean - {}'.format(t_mins,specie[species]))
     d_.dataplot_mark_dopage(axe,date_range)
-    fig,axe = d_.plot_16(df_mean)
+    fig,axe = d_.plot_16(df_mean[(df_mean.index > (dopage - pd.Timedelta(hours = 1)))&(df_mean.index < (dopage + pd.Timedelta(hours = 2)))],mark = date_range)
     
     """
     population mean
@@ -62,6 +63,9 @@ if __name__ == '__main__':
     quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
     
     fig,axe = d_.single_plot(mean_dist,title = 'Mean distance')
+    d_.dataplot_mark_dopage(axe,date_range)
+    
+    fig,axe = d_.single_plot(mean_dist[(mean_dist.index > (dopage - pd.Timedelta(hours = 1)))&(mean_dist.index < (dopage + pd.Timedelta(hours = 2)))],title = 'Mean distance')
     d_.dataplot_mark_dopage(axe,date_range)
     
     title_ = 'ToxIndex: {}({}), {}   {}-{}'.format(sub,molecule,conc,date_range[0].strftime('%d/%m'),date_range[1].strftime('%d/%m'))

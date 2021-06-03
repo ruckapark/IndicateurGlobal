@@ -198,15 +198,18 @@ def dope_params(df, Tox, start_date, end_date):
     etude = df[(df['TxM'] == Tox) & (df['Start'] == date_range[0])].index[0]//5 + 1
     return dopage,date_range,conc,sub,molecule,etude
 
-def plot_16(df,title  = ''):
+def plot_16(df,title  = '',mark = None):
     
     """
-    Plot a 16 square subplots
+    Plot a 16 square subplots - assuming columns from 1-16
     """
-    fig,axe = plt.subplots(4,4,sharex = True,sharey = True,figsize = (20,12))
+    fig,axe = plt.subplots(4,4,sharex = True,sharey = True,figsize = (20,8))
     plt.suptitle(title)
-    for i in df.columns:
-        axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[2])
+    for i in range(1,17):
+        if i in df.columns:
+            axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[2])
+            if mark:
+                dataplot_mark_dopage(axe[(i-1)//4,(i-1)%4],mark)
         axe[(i-1)//4,(i-1)%4].tick_params(axis='x', rotation=90)
         
     return fig,axe

@@ -13,7 +13,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import timedelta
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 from data_merge import merge_dfs
+os.chdir('..')
 
 root = r'D:\VP\Viewpoint_data\DATA_terrain'
 os.chdir(root)

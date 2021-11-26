@@ -8,7 +8,6 @@ File created for the weekly run of visualising data
 """
 
 #%% IMPORTS
-
 import os
 import pandas as pd
 import numpy as np
@@ -16,12 +15,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing
 from datetime import timedelta
+
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 from data_merge import merge_dfs
 from dope_reg import dope_read
 #import gen_pdf as pdf
 import dataread as d_
-
-    
+os.chdir('..')
+ 
 # loop through all ToxMate and species
 Toxs = [i for i in range(760,770)]
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}

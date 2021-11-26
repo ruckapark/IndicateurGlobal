@@ -13,7 +13,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import timedelta
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 from data_merge import merge_dfs
+os.chdir('..')
 
 root = r'D:\VP\Viewpoint_data\DATA_terrain'
 os.chdir(root)
@@ -29,7 +33,7 @@ colors = [
 
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-species = 'E'
+species = 'G'
 
 print('The following files will NOT be merged:')
 print(files)
@@ -115,13 +119,13 @@ df_dist_mean = df_dist_mean.set_index(df_dist_mean.index.map(index_map))
 fig_mean = plt.figure()
 axe_mean = fig_mean.add_axes([0.1,0.1,0.8,0.8])
 for i in animals:
-    axe_mean.plot(df_dist.index,df_dist[i],color = colors[i-1],label = '{}{}'.format(species,i))
+    axe_mean.plot(df_dist_mean.index,df_dist_mean[i],color = colors[i-1],label = '{}{}'.format(species,i))
 plt.legend()
 
 
 fig,axe = plt.subplots(4,4,sharex = True, figsize = (20,12))
 for i in animals:
-    axe[(i-1)//4,(i-1)%4].plot(df_dist.index,df_dist[i],color = colors[i-1])
+    axe[(i-1)//4,(i-1)%4].plot(df_dist_mean.index,df_dist_mean[i],color = colors[i-1])
     
 ###################################    
 #### Functions
@@ -227,8 +231,8 @@ def slide_max_zero(df):
 ###################################
     
 # separe df, vivant et mort
-df_train_vivant = sub_df(df_dist, 15, [2,3,5,7,8,9,10,11,12,13,14,15,16])
-df_train_mort = sub_df(df_dist, 15, [1,4,6])
+df_train_vivant = sub_df(df_dist, 13, animals)
+df_train_mort = sub_df(df_dist, 15, animals)
 
 # count zeros every (timestemp_mins) minutes
 timestep_mins = 5
@@ -240,7 +244,7 @@ fig_vivant,axe_vivant = plot_16(df_train_vivant,colors)
 fig_mort,axe_mort = plot_16(df_train_mort,colors)
 
 df_tr_vi_nonactif = df_train_vivant[[12,13,15]]
-df_tr_mo_actif = df_train_mort[[1,4]]
+df_tr_mo_actif = df_train_mort[[1,4,5]]
 
 xrange = np.linspace(0,100,401)
 
@@ -250,10 +254,12 @@ count_vi_nonactif = count_nonzero(df_tr_vi_nonactif,xrange)
 count_mo_actif = count_nonzero(df_tr_mo_actif,xrange)
 
 plt.figure()
-plt.plot(xrange,count_vi,color = 'blue')
-plt.plot(xrange,count_mo,color = 'red')
-plt.plot(xrange,count_vi_nonactif, color = 'green')
-plt.plot(xrange,count_mo_actif, color = 'pink')
+plt.title('Pourcentage > valeur x (distance)')
+plt.plot(xrange,count_vi,color = 'blue',label = 'vivant')
+plt.plot(xrange,count_mo,color = 'red',label = 'mort')
+plt.plot(xrange,count_vi_nonactif, color = 'green',label = 'letharge vivant')
+plt.plot(xrange,count_mo_actif, color = 'pink',label = 'mouvement (mort)')
+plt.legend()
 
 #maximum zero dataframes
 max_zero_vi = max_zero(df_train_vivant)
@@ -261,9 +267,8 @@ max_zero_mo = max_zero(df_train_mort)
 
 max_zero3 = []
 max_zero4 = []
-for i in df_train_vivant.columns:
+for i in animals:
     max_zero3.append(delete_counter(list(df_train_vivant[i])))
-for i in df_train_mort.columns:
     max_zero4.append(delete_counter(list(df_train_mort[i])))
     
     
@@ -308,11 +313,13 @@ df_threshold['mort percent'] = count_mo
 
 plt.figure()
 plt.plot(xrange,(df_threshold['viv percent'] - df_threshold['mort percent']))
+plt.title('Difference (% > x [vivant] vs % > x [mort]')
 
 
 # plot scaled value of difference in other columns. use this as the threshold valu
 plt.figure()
 plt.plot(xrange,df_threshold['Min mort'] - df_threshold['Max vivant'])
+plt.title('Difference (% > x [vivant] vs % > x [mort]')
 
 plt.figure()
 plt.plot(xrange,df_threshold['mean mort'] - df_threshold['mean vivant'])
@@ -339,7 +346,7 @@ df_alive = pd.DataFrame(index = df_dist.index,columns = df_dist.columns)
 df_counters = df_alive.fillna(0)
 df_alive = df_alive.fillna(1)
 
-threshold = 180 * 3
+threshold = 250
 #create np array of counters of for zero counter (using slider)
     
 #counters = dict(zip(df_alive.columns,np.zeros(16)))

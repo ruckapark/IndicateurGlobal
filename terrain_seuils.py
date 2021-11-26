@@ -12,7 +12,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 import dataread_terrain as d
+os.chdir('..')
 
 #%% Functions
 

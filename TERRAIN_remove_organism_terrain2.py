@@ -9,7 +9,11 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 import dataread_terrain as data_
+os.chdir('..')
 
 
 ##Functions

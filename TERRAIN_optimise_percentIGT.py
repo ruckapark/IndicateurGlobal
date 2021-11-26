@@ -2,9 +2,10 @@
 """
 Created on Wed Apr 14 13:20:11 2021
 
+Fit 50 75 percent intervals to IGT for each species
+
 @author: Admin
 """
-
 
 # optimize fit of log curve per species
 import numpy as np

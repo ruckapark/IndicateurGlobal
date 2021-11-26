@@ -13,7 +13,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import timedelta
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 from data_merge import merge_dfs
+os.chdir('..')
 
 root = r'D:\VP\Viewpoint_data\DATA_terrain'
 os.chdir(root)
@@ -250,12 +254,10 @@ count_vi_nonactif = count_nonzero(df_tr_vi_nonactif,xrange)
 count_mo_actif = count_nonzero(df_tr_mo_actif,xrange)
 
 plt.figure()
-plt.title('Pourcentage > valeur x (distance)')
-plt.plot(xrange,count_vi,color = 'blue',label = 'vivant')
-plt.plot(xrange,count_mo,color = 'red',label = 'mort')
-plt.plot(xrange,count_vi_nonactif, color = 'green',label = 'letharge vivant')
-plt.plot(xrange,count_mo_actif, color = 'pink',label = 'mouvement (mort)')
-plt.legend()
+plt.plot(xrange,count_vi,color = 'blue')
+plt.plot(xrange,count_mo,color = 'red')
+plt.plot(xrange,count_vi_nonactif, color = 'green')
+plt.plot(xrange,count_mo_actif, color = 'pink')
 
 #maximum zero dataframes
 max_zero_vi = max_zero(df_train_vivant)
@@ -309,13 +311,11 @@ df_threshold['mort percent'] = count_mo
 
 plt.figure()
 plt.plot(xrange,(df_threshold['viv percent'] - df_threshold['mort percent']))
-plt.title('Difference (% > x [vivant] vs % > x [mort]')
 
 
 # plot scaled value of difference in other columns. use this as the threshold valu
 plt.figure()
 plt.plot(xrange,df_threshold['Min mort'] - df_threshold['Max vivant'])
-plt.title('Difference (% > x [vivant] vs % > x [mort]')
 
 plt.figure()
 plt.plot(xrange,df_threshold['mean mort'] - df_threshold['mean vivant'])

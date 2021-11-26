@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Created on Fri Feb 12 10:10:12 2021
 
@@ -7,8 +7,7 @@ File created for the weekly run of visualising data
 @author: Admin
 """
 
-#%% IMPORTS
-
+#%% IMPORTS classic mods
 import os
 import pandas as pd
 import numpy as np
@@ -16,10 +15,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing
 from datetime import timedelta
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 from data_merge import merge_dfs
 from dope_reg import dope_read
 #import gen_pdf as pdf
 import dataread as d_
+os.chdir('..')
 
 #%% FUNCTIONS - plotting functions could also be put into another module    
 def main_auto(etude):

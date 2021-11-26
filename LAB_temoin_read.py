@@ -14,9 +14,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing
 from datetime import timedelta
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 from data_merge import merge_dfs
 from dope_reg import dope_read
 import dataread as d_
+os.chdir('..')
 
 plt.close('all')
 

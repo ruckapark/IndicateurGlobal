@@ -2,6 +2,8 @@
 """
 Created on Thu Nov 19 11:31:58 2020
 
+If need to time experiments.
+
 @author: Admin
 """
 

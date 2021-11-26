@@ -9,7 +9,11 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
+#%% IMPORT personal mods
+os.chdir('MODS')
 import dataread_terrain as d_terr
+os.chdir('..')
 
 #developped in optimisation
 seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}

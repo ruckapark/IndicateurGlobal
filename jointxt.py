@@ -2,11 +2,10 @@
 """
 Created on Sun May 30 23:04:41 2021
 
+Join text files with unix line endings
+
 @author: Admin
 """
-
-
-# join all text files
 
 import shutil
 import os

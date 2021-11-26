@@ -14,7 +14,7 @@ dope_reg.TxM763 etc.
 """
 
 import csv
-import sys
+#import sys
 import pandas as pd
 
 
@@ -49,7 +49,7 @@ def dope_write(arg1,arg2,arg3,arg4,arg5,arg6):
     fields = [arg1,arg2,arg3,arg4,arg5,arg6]
     
     with open(f,'a',newline = '') as reg:
-        writer = csv.writer(reg, delimiter = '\t')
+        writer = csv.writer(reg, delimiter = ',')
         writer.writerow(fields)
         
     print('Write file:')
@@ -61,9 +61,9 @@ def dope_write(arg1,arg2,arg3,arg4,arg5,arg6):
 def dope_read(reg = None):
     
     if reg: 
-        df = pd.read_csv(r'D:\VP\Viewpoint_data\code\{}.csv'.format(reg),delimiter = '\t',header = None)
+        df = pd.read_csv(r'D:\VP\Viewpoint_data\code\{}.csv'.format(reg),delimiter = ',',header = None)
     else:
-        df = pd.read_csv(r'D:\VP\Viewpoint_data\code\dope_reg.csv',delimiter = '\t',header = None)
+        df = pd.read_csv(r'D:\VP\Viewpoint_data\code\dope_reg.csv',delimiter = ',',header = None)
     cols = ['TxM','Substance','Molecule','Concentration','Start','End']
     df.columns = cols
     df['Start'] = pd.to_datetime(df['Start'],format = '%d/%m/%Y %H:%M:%S')

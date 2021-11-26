@@ -65,7 +65,7 @@ def IGT_base(IGT_,species,cut = None):
     else:
         return 70 + 20 * (np.log((IGT_ - offset)/(seuil[1] - offset))/np.log((seuil[2] - offset)/(seuil[1]-offset)))
 
-def IGT(values,species,cut = None,overwrite = None):
+def IGT_(values,species,cut = None,overwrite = None):
     IGT_ = np.nanquantile(values,0.05)**2
     v = IGT_bdf(values,species,overwrite) + IGT_base(IGT_,species,cut)
     if v > 100: v = 100
@@ -386,7 +386,7 @@ def single_plot16(df,species,title = ''):
     return fig,axe
     
     
-def plot_16(df):
+def plot_16(df,title = None):
     
     """
     Plot a 16 square subplots
@@ -395,7 +395,8 @@ def plot_16(df):
     for i in df.columns:
         axe[(i-1)//4,(i-1)%4].plot(df.index,df[i],color = colors[2])
         axe[(i-1)//4,(i-1)%4].tick_params(axis='x', rotation=90)
-        
+    
+    if title: plt.suptitle(title)    
     return fig,axe
 
 def single_plot(series,species,title = ''):
@@ -542,95 +543,150 @@ def gen_txt(res,file,species,output = 'Suez_res'):
     
     os.chdir(root)
 
+def double_vertical_plot(set1,set2,ind = [],vert = 2,extrasets = None):
+    """
+    Plot timeline plots one above other default to 2 sets, possible to add using extras function
 
-def main():
-    return None
+    Parameters
+    ----------
+    set1 : 1D np.arr
+        first time series.
+    set2 : 1D np.arr
+        second time series.
+    ind : list, optional
+        Len of time series for x values. The default is None.
+    vert : int, optional
+        number of vert stacks
+    extrasets : list of np.arr, optional
+        vert - 2 should math len on of extrasets
+        In each list entry is another timeseries in 1D timeseries
 
-if __name__ == '__main__':
+    Returns
+    -------
+    plot items.
 
+    """
+    if not any(ind): ind = set1.index
+    fig,axe = plt.subplots(vert,1,figsize = (18,9),sharex = True)
+    plt.suptitle('IGT 5% vs. percent new_IGT')
+    axe[0].plot(ind,set1,color = 'green')
+    axe[1].plot(ind,set2,color = 'green')
+    end = 1
+    if vert > 2:
+        extras = vert - 2
+        for i in range(extras):
+            axe[2+i].plot(ind,extrasets[i],color = 'green')
+        end = 2+i
+    
+    
+    axe[end].tick_params(axis='x', rotation=90)
+    return fig,axe
+
+def IGT_percent_and_old(val,emptyarr1,emptyarr2):
+    """
+    Calculate both new method with percentage and old IGT
+
+    Parameters
+    ----------
+    val : np.array 1D
+        values to be used for calculations.
+
+    Returns
+    -------
+    Two full np.arrays.
+
+    """
+    IGTper = emptyarr1
+    old_IGT = emptyarr2
+    for i in range(len(val)):
+        
+        IGTper[i] = IGT_(val[i],species)
+        
+        #check 100% mortality
+        if np.isnan(val[i][0]):
+            old_IGT[i] = 0
+        else:
+            old_IGT[i] = np.quantile(val[i][~np.isnan(val[i])],0.05)**2
+    
+    return IGTper,old_IGT
+
+def add_mortality(fig,axe,m,ind = []):
+    axe_2 = [ax.twinx() for ax in axe]
+    for ax in axe_2: ax.set_ylim(top = 1)
+    for ax in axe_2:
+        ax.plot(ind,m,'orange',linestyle = (0,(1,10)))
+        ax.fill_between(ind,m,alpha = 0.3,color = 'orange')
+    return fig,axe,axe_2
+        
+
+def main(container,spec = 'EGR',start = None):
+    """
+
+    Parameters
+    ----------
+    container : str/int
+        In file title to decide which file to use
+        '{}.csv'.format(container)
+    specie : str or list str
+        G E R
+    start : datetime, optional
+        start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
+        The default is None.
+
+    Returns
+    -------
+    None.
+
+    """
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = [f for f in os.listdir() if 'dopage.csv' in f]
-    start = None
-    #start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
+    files = [f for f in os.listdir() if '{}.csv'.format(container) in f]
     
-    print('The following files will be studied:')
-    print(files)
-    
+    print('The following files will be studied:\n',files)
     dfs,dfs_mean = read_data_terrain(files,startdate = start,distplot = True)
     
     #%%
-    species = 'E'
-    df = dfs[species]
-    df_mean = dfs_mean[species]
+    data = {}
+    for species in spec:
+        df = dfs[species]
+        df_mean = dfs_mean[species]
+        
+        # plot all on same figure - no mean and mean
+        single_plot(df,species,title = 'Distance covered')
+        single_plot(df_mean,species,title = 'Distance covered Mean 2min (terrain)')
+        
+        # plot individually (plot16)
+        fig,axe = plot_16(df,title = specie[species])
+        fig,axe = plot_16(df_mean,title = 'Mean {}'.format(specie[species]))    
+        
+        #calculate mortality and add nan's where animals are dead
+        data_alive,data_counters = search_dead(np.array(df),species)
+        m = np.ones(len(data_alive),dtype = float) - (np.sum(data_alive,axis = 1))/16
+        values = np.array(df)
+        values[data_alive == 0] = np.nan
+        df = pd.DataFrame(data = np.copy(values), index = df.index, columns = df.columns)
+        values.sort() # nans moved to back
+        
+        #compare old and new values
+        IGTper,old_IGT = IGT_percent_and_old(values,np.zeros_like(m),np.zeros_like(m))
+        fig,axe = double_vertical_plot(old_IGT,IGTper,ind = df.index)
+        
+        # match to online algo
+        df_mean,m = group_meandf(df.copy(), m)
+        values = np.array(df_mean)
+        values.sort()
+        
+        IGTper_mean,old_IGT = IGT_percent_and_old(values,np.zeros_like(m),np.zeros_like(m))
+        fig,axe = double_vertical_plot(old_IGT,IGTper_mean,ind = df_mean.index)
+        add_mortality(fig,axe,m,ind = df_mean.index)
+        
+        # #calculate moving mean
+        # IGT_mean = np.array(pd.Series(IGTper).rolling(8).mean())
+        
+        data.update({species:[df,df_mean,m,IGTper_mean]})
+        
+    return data
+
+if __name__ == '__main__':
     
-    
-    # plot all on same figure - no mean and mean
-    single_plot(df,species,title = 'Distance covered')
-    single_plot(df_mean,species,title = 'Distance covered movingmean')
-    
-    # plot individually (plot16)
-    fig,axe = plot_16(df)
-    fig,axe = plot_16(df_mean)    
-    
-    #plot IGT with mortality
-    data_alive,data_counters = search_dead(np.array(df),species)
-    m = np.ones(len(data_alive),dtype = float) - (np.sum(data_alive,axis = 1))/16
-    
-    values = np.array(df)
-    values[data_alive == 0] = np.nan
-    df = pd.DataFrame(data = np.copy(values), index = df.index, columns = df.columns)
-    ### values[i][0] < values[i][1] < values[i][2]
-    values.sort()
-    
-    IGTper = np.zeros_like(m)
-    old_IGT = np.zeros_like(m)
-    for i in range(len(values)):
-        IGTper[i] = IGT(values[i],species)
-        #check if all values nan (100% mortality)
-        if np.isnan(values[i][0]):
-            old_IGT[i] = 0
-        else:
-            old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.05)**2
-    
-    #compare old and new values
-    fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)
-    plt.suptitle('IGT 5% vs. percent new_IGT')
-    axe[0].plot(df.index,old_IGT,color = 'green')
-    axe[1].plot(df.index,IGTper,color = 'green')
-    axe[1].tick_params(axis='x', rotation=90)
-    
-    #does max do a mean on the IGT values or a mean on the distance values?
-    
-    #now double check my algorithm in cpp
-    
-    df_mean,m = group_meandf(df.copy(), m)
-    values = np.array(df_mean)
-    values.sort()
-    #values,m,dates = group_mean(values,df.index,m,df.columns)
-    
-    IGTper_mean = np.zeros_like(m)
-    old_IGT = np.zeros_like(m)
-    for i in range(len(values)):
-        IGTper_mean[i] = IGT(values[i],species)
-        #check if all values nan (100% mortality)
-        if np.isnan(values[i][0]):
-            old_IGT[i] = 0
-        else:
-            old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.05)**2
-            
-    fig,axe = plt.subplots(2,1,figsize = (18,9),sharex = True)
-    plt.suptitle('IGT 5% vs. percent new_IGT')
-    axe[0].plot(df_mean.index,old_IGT,color = 'green')
-    axe[1].plot(df_mean.index,IGTper_mean,color = 'green')
-    axe[1].tick_params(axis='x', rotation=90)
-    
-    # #calculate moving mean
-    # IGT_mean = np.array(pd.Series(IGTper).rolling(8).mean())
-    
-    # #moving / weighted means
-    # fig2,axe2 = plt.subplots(2,1,figsize = (18,9),sharex = True)
-    # plt.suptitle('without moving mean vs. with moving mean')
-    # axe2[0].plot(dates,IGTper,color = 'green')
-    # axe2[1].plot(dates,IGT_mean,color = 'green')
-    # axe2[1].tick_params(axis='x', rotation=90)
+    data_t = main(21,'E')

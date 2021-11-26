@@ -8,6 +8,7 @@ Test file for the TxM 765
 """
 
 import os
+import zipfile
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -49,7 +50,13 @@ def read_merge(files,datechange = True):
         df = df.reset_index(drop = True)
     
         #treat time variable - this gets the days and months the wrong way round
-        df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+        try:
+            df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+        except ValueError:
+            try:
+                df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%m/%d/%Y %H:%M:%S')
         
         maxrows = len(df)//48
         print('Before adjustment: total rows{}'.format(len(df)))
@@ -135,7 +142,8 @@ def remove_dead(df,species):
     if df.shape[0] < 3000:
         remove = []
         for col in df.columns:
-            ratio = df[col].value_counts()[0]/df.shape[0]
+            #relies of having at least one value that recurs ! USE iloc instead
+            ratio = df[col].value_counts().iloc[0]/df.shape[0]
             if ratio > 0.95 : remove.append(col)
             
         return remove
@@ -167,7 +175,38 @@ def remove_dead(df,species):
         print(max_counts)
         return [col+1 for col,val in enumerate(max_counts) if val > threshold_dead[species]]
             
-           
+def gendirs(et_no):
+    
+    """
+    Each week use this function to create relevant directories for results
+    """
+    
+    et = study_no(et_no)
+    
+    root = os.getcwd()
+    os.chdir(r'D:\VP\Viewpoint_data')
+    
+    for i in range(0,10):
+        os.chdir('TxM76{}-PC'.format(i))
+        os.mkdir('{}'.format(et))
+        os.chdir('..')
+        
+    os.chdir(root)
+
+def unzipfiles(et_no):
+    
+    et = study_no(et_no)
+    root = os.getcwd()
+    
+    #loop through and unzip
+    for i in range(0,10):
+        os.chdir(r'D:\VP\Viewpoint_data\TxM76{}-PC\{}'.format(i,et))
+        for file in [f for f in os.listdir() if '.zip' in f]:
+            with zipfile.ZipFile(file) as item: item.extractall()
+            os.remove(file)
+            print('TxM76{} - Unzipped'.format(i))
+        
+    os.chdir(root)
 
 def savefig(name, fig):
     os.chdir('Results')
@@ -249,14 +288,17 @@ def single_plot16(df,species,title = '',ticks = None):
 
 # Covert date for corrupt VPCore2 files
 def study_no(etude):
-    if etude <10:
-        etude = 'Etude00{}'.format(etude)
-    elif etude < 100:
-        etude = 'Etude0{}'.format(etude)
+    if type(etude) == int:
+        if etude <10:
+            etude = 'Etude00{}'.format(etude)
+        elif etude < 100:
+            etude = 'Etude0{}'.format(etude)
+        else:
+            etude = 'Etude{}'.format(etude)
+            
+        return etude
     else:
-        etude = 'Etude{}'.format(etude)
-        
-    return etude
+        return etude
 
 def distplot(df,species = 'G'):
     

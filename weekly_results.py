@@ -24,7 +24,7 @@ import dataread as d_
 
 if __name__ == '__main__':
                 
-    Tox,species,etude = 767,'G',27
+    Tox,species,etude = 767,'G',25
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))
@@ -51,6 +51,7 @@ if __name__ == '__main__':
     df_mean = d_.rolling_mean(df,t_mins)
     fig,axe = d_.single_plot16(df_mean, species, title = '{} Moving mean - {}'.format(t_mins,specie[species]))
     d_.dataplot_mark_dopage(axe,date_range)
+    fig,axe = d_.plot_16(df_mean[(df_mean.index > (dopage - pd.Timedelta(hours = 3)))&(df_mean.index < (dopage + pd.Timedelta(hours = 12)))],mark = date_range)
     fig,axe = d_.plot_16(df_mean[(df_mean.index > (dopage - pd.Timedelta(hours = 1)))&(df_mean.index < (dopage + pd.Timedelta(hours = 2)))],mark = date_range)
     
     """
@@ -65,16 +66,16 @@ if __name__ == '__main__':
     fig,axe = d_.single_plot(mean_dist,title = 'Mean distance')
     d_.dataplot_mark_dopage(axe,date_range)
     
-    fig,axe = d_.single_plot(mean_dist[(mean_dist.index > (dopage - pd.Timedelta(hours = 1)))&(mean_dist.index < (dopage + pd.Timedelta(hours = 2)))],title = 'Mean distance')
+    fig,axe = d_.single_plot(mean_dist[(mean_dist.index > (dopage - pd.Timedelta(hours = 3)))&(mean_dist.index < (dopage + pd.Timedelta(hours = 9)))],title = 'Mean distance')
     d_.dataplot_mark_dopage(axe,date_range)
     
     title_ = 'ToxIndex: {}({}), {}   {}-{}'.format(sub,molecule,conc,date_range[0].strftime('%d/%m'),date_range[1].strftime('%d/%m'))
     
-    fig,axe = d_.single_plot(quantile_dist[quantile_dist.index > dopage - pd.Timedelta(hours = 36)], title = title_)
+    fig,axe = d_.single_plot(quantile_dist[(quantile_dist.index > dopage - pd.Timedelta(hours = 18)) & (quantile_dist.index < dopage + pd.Timedelta(hours = 36))])
     d_.dataplot_mark_dopage(axe,date_range)
     
-    #2 hour plot
-    IGT = quantile_dist.loc[date_range[0] - pd.Timedelta(minutes = 20) : date_range[0] + pd.Timedelta(minutes = 90)]
+    #smaller plot
+    IGT = quantile_dist[(quantile_dist.index > dopage - pd.Timedelta(minutes = 60)) & (quantile_dist.index < dopage + pd.Timedelta(minutes = 120))]
     fig,axe = d_.single_plot(IGT, title = title_)
     axe.set_xlabel('Tox Ind')
     d_.dataplot_mark_dopage(axe,date_range)

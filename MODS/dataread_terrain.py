@@ -667,14 +667,15 @@ def main(container,spec = 'EGR',start = None):
         df = pd.DataFrame(data = np.copy(values), index = df.index, columns = df.columns)
         values.sort() # nans moved to back
         
-        #compare old and new values
+        #compare old and new values (IGTper = IGT percentage 0 - 100% toxicité)
         IGTper,old_IGT = IGT_percent_and_old(values,np.zeros_like(m),np.zeros_like(m))
         fig,axe = double_vertical_plot(old_IGT,IGTper,ind = df.index)
         
-        # match to online algo
+        #match to online algo - 2minute moving mean
         df_mean,m = group_meandf(df.copy(), m)
         values = np.array(df_mean)
         values.sort()
+        
         
         IGTper_mean,old_IGT = IGT_percent_and_old(values,np.zeros_like(m),np.zeros_like(m))
         fig,axe = double_vertical_plot(old_IGT,IGTper_mean,ind = df_mean.index)
@@ -689,4 +690,4 @@ def main(container,spec = 'EGR',start = None):
 
 if __name__ == '__main__':
     
-    data_t = main(21,'E')
+    data_t = main('dopage','EG')

@@ -23,7 +23,7 @@ if __name__ == '__main__':
     
     root = r'D:\VP\Viewpoint_data\Suez'
     os.chdir(root)
-    files = ['toxSUEZ_0103_1003.csv']
+    files = ['toxmate_1005_1905.csv']
     
     print('The following files will be studied:')
     print(files)

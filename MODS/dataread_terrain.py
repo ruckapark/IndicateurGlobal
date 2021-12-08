@@ -28,7 +28,7 @@ colors = [
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 species = 'G'
 
-thresholds = {'G':190,'E':180,'R':50}
+thresholds = {'G':190,'E':180,'R':50} #above threshold remove anomalie, replace with zero
 
 
 ### functions
@@ -37,11 +37,13 @@ thresholds = {'G':190,'E':180,'R':50}
 Upto date calculation of IGT
 """
 
+""" """
 seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
 cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
-offsets = {'G':3120,'E':1869,'R':406} #parametres optimises pour cannes
+offsets = {'G':3120,'E':1869,'R':406} #parametres optimisés pour cannes
 
 def IGT_bdf(values,species,overwrite = None):
+    """Bruit de Fond"""
     if overwrite:
         seuil = overwrite[species]
     else:
@@ -67,7 +69,7 @@ def IGT_base(IGT_,species,cut = None):
 
 def IGT_(values,species,cut = None,overwrite = None):
     IGT_ = np.nanquantile(values,0.05)**2
-    v = IGT_bdf(values,species,overwrite) + IGT_base(IGT_,species,cut)
+    v = IGT_bdf(values,species,overwrite) + IGT_base(IGT_,species,cut) #max()
     if v > 100: v = 100
     return v
 
@@ -690,4 +692,4 @@ def main(container,spec = 'EGR',start = None):
 
 if __name__ == '__main__':
     
-    data_t = main('dopage','EG')
+    data_t = main('0612','EG')

@@ -27,7 +27,7 @@ colors = [
     '#e089b6','#a3a3a3','#7a7a7a','#303030'
     ]
 
-def read_merge(files,datechange = True):
+def read_merge(files,datechange = True,oldfiles = False):
     """
     Merge all the data in the list files
     
@@ -39,25 +39,33 @@ def read_merge(files,datechange = True):
     
     dfs = []
     for file in files:
-        df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')    #read each df in directory df
-        df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
-    
-        #Error VPCore2
-        #conc,subs = df['Conc'].iloc[0],df['Sub'].iloc[0]
-    
-        #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
-        df = df.sort_values(by = ['sn','pn','location','aname'])
-        df = df.reset_index(drop = True)
-    
-        #treat time variable - this gets the days and months the wrong way round
-        try:
-            df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
-        except ValueError:
-            try:
-                df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%Y-%m-%d %H:%M:%S')
-            except ValueError:
-                df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%m/%d/%Y %H:%M:%S')
+        if oldfiles :
+            df = pd.read_csv(file,sep = '\t')    #read each df in directory df
+            
+            df = df.sort_values(by = ['utime','specie','condition'])
+            df = df.reset_index(drop = True)
+            
+            df['time'] = pd.to_datetime(df['time'], format = '%Y-%m-%d %H:%M:%S')
+            
         
+        else :
+            df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')
+            df = df[df['datatype'] == 'Locomotion']                         #store only locomotion information
+    
+    
+            #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
+            df = df.sort_values(by = ['sn','pn','location','aname'])
+            df = df.reset_index(drop = True)
+    
+            #treat time variable - this gets the days and months the wrong way round
+            try:
+                df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+            except ValueError:
+                try:
+                    df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%m/%d/%Y %H:%M:%S')
+            
         maxrows = len(df)//48
         print('Before adjustment: total rows{}'.format(len(df)))
         df = df.iloc[:maxrows*48]
@@ -70,23 +78,32 @@ def read_merge(files,datechange = True):
         return merge_dfs_nodatechange(dfs)
     
     
-def preproc(df):
+def preproc(df, oldfiles = False):
     """
     Preprocessing of the df to get it in correct form
     Return dictionary of dfs for each species - only with distances
     """
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
-    #column for specie
-    mapping = lambda a : {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}[a[0]]
-    df['specie'] = df['location'].map(mapping)
+    if oldfiles :
+        df = df.drop(columns = ['animal'])
+        df = df.rename(columns = {'specie':'animal'})
+        df = df.rename(columns = {'condition':'specie'})
+        
+        good_cols = ['time','animal','specie','inact','inadur','inadist','smlct','smldur','smldist','larct','lardur','lardist','emptyct','emptydur']
+        df = df[good_cols]
     
-    #moi le column 'animal' n'a que des NaNs
-    good_cols = ['time','location','stdate','specie','inact','inadur','inadist','smlct','smldur','smldist','larct','lardur','lardist','emptyct','emptydur']
-    df = df[good_cols]
-    
-    #create animal 1-16 for all species
-    df['animal'] = df['location'].str[1:].astype(int)
+    else: 
+        #column for specie
+        mapping = lambda a : {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}[a[0]]
+        df['specie'] = df['location'].map(mapping)
+        
+        #moi le column 'animal' n'a que des NaNs
+        good_cols = ['time','location','stdate','specie','inact','inadur','inadist','smlct','smldur','smldist','larct','lardur','lardist','emptyct','emptydur']
+        df = df[good_cols]
+        
+        #create animal 1-16 for all species
+        df['animal'] = df['location'].str[1:].astype(int)
     
     df['abtime'] = df['time'].astype('int64')//1e9 #convert nano
     df['abtime'] = df['abtime'] - df['abtime'][0]

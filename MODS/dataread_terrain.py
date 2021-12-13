@@ -199,7 +199,7 @@ def read_all_terrain_files(files,merge = False):
     
     #we may want to merge the dfs into one bigger one, or not...
     if merge:
-        return None
+        return [pd.concat(dfs).reset_index()]
     else:
         return dfs
 
@@ -337,7 +337,7 @@ def df_movingmean(dfs,timestep):
     return dfs_mean
 
 
-def read_data_terrain(files,plot = True,timestep = 2,startdate = None,distplot = False):
+def read_data_terrain(files,merge,plot = True,timestep = 2,startdate = None,distplot = False):
     """
     Parameters
     ----------
@@ -350,7 +350,7 @@ def read_data_terrain(files,plot = True,timestep = 2,startdate = None,distplot =
     dataframes - coherent to the form of the dataframe in read_data_VPCore2.
     """
     
-    dfs = read_all_terrain_files(files)
+    dfs = read_all_terrain_files(files,merge)
     df = dfs[0]
     
     if startdate:
@@ -621,7 +621,7 @@ def add_mortality(fig,axe,m,ind = []):
     return fig,axe,axe_2
         
 
-def main(container,spec = 'EGR',start = None):
+def main(files,spec = 'EGR',path = None,start = None,merge = False):
     """
 
     Parameters
@@ -629,8 +629,12 @@ def main(container,spec = 'EGR',start = None):
     container : str/int
         In file title to decide which file to use
         '{}.csv'.format(container)
+        
     specie : str or list str
         G E R
+        
+    path : Repertoir for data files - necessary for other PCs
+    
     start : datetime, optional
         start = pd.to_datetime("01/04/2021 15:00:00", format = "%d/%m/%Y %H:%M:%S")
         The default is None.
@@ -640,12 +644,14 @@ def main(container,spec = 'EGR',start = None):
     None.
 
     """
-    root = r'D:\VP\Viewpoint_data\Suez'
-    os.chdir(root)
-    files = [f for f in os.listdir() if '{}.csv'.format(container) in f]
+    if path:
+        os.chdir(path)
+    else:
+        root = r'D:\VP\Viewpoint_data\Suez'
+        os.chdir(root)
     
     print('The following files will be studied:\n',files)
-    dfs,dfs_mean = read_data_terrain(files,startdate = start,distplot = True)
+    dfs,dfs_mean = read_data_terrain(files,merge,startdate = start,distplot = True)
     
     #%%
     data = {}
@@ -686,10 +692,10 @@ def main(container,spec = 'EGR',start = None):
         # #calculate moving mean
         # IGT_mean = np.array(pd.Series(IGTper).rolling(8).mean())
         
-        data.update({species:[df,df_mean,m,IGTper_mean]})
+        data.update({species:{'df':df,'df_m':df_mean,'mort':m,'IGT':IGTper_mean}})
         
     return data
 
 if __name__ == '__main__':
     
-    data_t = main('0612','EG')
+    data_t = main(['day1.csv','day2.csv'],'G',path = r'C:\Users\George\Documents\SETAC\Terrain',merge = True)

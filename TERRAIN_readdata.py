@@ -17,7 +17,7 @@ os.chdir('MODS')
 import dataread_terrain as d_terr
 os.chdir('..')
 
-root = r'D:\VP\Viewpoint_data\DATA_terrain'
+root = r'D:\VP\Viewpoint_data\TERRAIN\SAUR'
 os.chdir(root)
 files = [f for f in os.listdir() if '.csv' in f]
 
@@ -91,4 +91,4 @@ def main(files,spec = 'EGR',path = None,start = None,merge = False):
         
     return data
 
-main(['dopage.csv'],'G',path = r'D:\VP\Viewpoint_data\TERRAIN\Suez',)
+main(files,spec = 'G',path = r'D:\VP\Viewpoint_data\TERRAIN\SAUR',)

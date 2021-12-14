@@ -15,21 +15,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import linregress as lin
 
-#### General parameters (could be made into class)
-
-colors = [
-    '#42f5e0','#12aefc','#1612fc','#6a00a3',
-    '#8ef743','#3c8f01','#0a4001','#fc03ca',
-    '#d9d200','#d96c00','#942c00','#fc2803',
-    '#e089b6','#a3a3a3','#7a7a7a','#303030'
-    ]
-
-specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-species = 'G'
-
-thresholds = {'G':190,'E':180,'R':50} #above threshold remove anomalie, replace with zero
-
-
 ### functions
 
 """
@@ -48,8 +33,8 @@ def find_optimum_offsets(palier = {
     Will default to in function high range fitpoints ('paliers').
     """
     
-    offsets = {}
-    for species in offsets:
+    offsets = {'E':1,'G':1,'R':1} #initialise
+    for sp in offsets:
         paliers = palier[species]
         r2 = []
         
@@ -58,7 +43,7 @@ def find_optimum_offsets(palier = {
             temp = paliers - c
             r2.append(lin(np.array([1,2,3,4]),np.log(temp))[2])
             
-        offsets.update({[species]:np.argmax(r2)})
+        offsets[sp] = np.argmax(r2)
     
     return offsets
 
@@ -76,9 +61,6 @@ def IGT_bdf(values,species,overwrite = None):
 
 def IGT_base(IGT_,species,cut = None):
     """ Find IGT percentage value from percentile IGT """    
-    #THRESHOLDS !
-    cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
-    offsets = find_optimum_offsets()
     
     if cut:
         seuil = cut[species]
@@ -645,3 +627,26 @@ def add_mortality(fig,axe,m,ind = []):
         ax.plot(ind,m,'orange',linestyle = (0,(1,10)))
         ax.fill_between(ind,m,alpha = 0.3,color = 'orange')
     return fig,axe,axe_2
+
+
+
+
+#### General parameters (could be made into class) ####
+
+colors = [
+    '#42f5e0','#12aefc','#1612fc','#6a00a3',
+    '#8ef743','#3c8f01','#0a4001','#fc03ca',
+    '#d9d200','#d96c00','#942c00','#fc2803',
+    '#e089b6','#a3a3a3','#7a7a7a','#303030'
+    ]
+
+specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
+species = 'G'
+
+thresholds = {'G':190,'E':180,'R':50} #above threshold remove anomalie, replace with zero
+
+
+
+#THRESHOLDS !
+cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
+offsets = find_optimum_offsets()

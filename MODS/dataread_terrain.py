@@ -13,8 +13,7 @@ import numpy as np
 import shutil
 import matplotlib.pyplot as plt
 import seaborn as sns
-#from datetime import timedelta
-#from data_merge import merge_dfs
+from scipy.stats import linregress as lin
 
 #### General parameters (could be made into class)
 
@@ -39,8 +38,29 @@ Upto date calculation of IGT
 
 """ """
 seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
-cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
-offsets = {'G':3120,'E':1869,'R':406} #parametres optimisés pour cannes
+
+def find_optimum_offsets(palier = {
+        'E':np.array([2500,5000,7000,30000]),
+        'G':np.array([3500,5000,8000,30000]),
+        'R':np.array([450,600,950,3000])}):
+    """ 
+    Find log offset for linear fit in higher range in percent IGT
+    Will default to in function high range fitpoints ('paliers').
+    """
+    
+    offsets = {}
+    for species in offsets:
+        paliers = palier[species]
+        r2 = []
+        
+        test = np.linspace(0,paliers[0]-1,paliers[0])
+        for c in test:
+            temp = paliers - c
+            r2.append(lin(np.array([1,2,3,4]),np.log(temp))[2])
+            
+        offsets.update({[species]:np.argmax(r2)})
+    
+    return offsets
 
 def IGT_bdf(values,species,overwrite = None):
     """Bruit de Fond"""
@@ -55,10 +75,16 @@ def IGT_bdf(values,species,overwrite = None):
     return bdf
 
 def IGT_base(IGT_,species,cut = None):
+    """ Find IGT percentage value from percentile IGT """    
+    #THRESHOLDS !
+    cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
+    offsets = find_optimum_offsets()
+    
     if cut:
         seuil = cut[species]
     else:
         seuil  = cutoff[species]
+    
     offset = offsets[species]
     if IGT_ < seuil[0]:
         return (IGT_ / (seuil[0]/45))
@@ -68,7 +94,7 @@ def IGT_base(IGT_,species,cut = None):
         return 70 + 20 * (np.log((IGT_ - offset)/(seuil[1] - offset))/np.log((seuil[2] - offset)/(seuil[1]-offset)))
 
 def IGT_(values,species,cut = None,overwrite = None):
-    IGT_ = np.nanquantile(values,0.05)**2
+    IGT_ = np.nanquantile(values,0.15)**2
     v = IGT_bdf(values,species,overwrite) + IGT_base(IGT_,species,cut) #max()
     if v > 100: v = 100
     return v

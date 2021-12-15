@@ -21,9 +21,6 @@ from scipy.stats import linregress as lin
 Upto date calculation of IGT
 """
 
-""" """
-seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
-
 def find_optimum_offsets(palier = {
         'E':np.array([2500,5000,7000,30000]),
         'G':np.array([3500,5000,8000,30000]),
@@ -35,7 +32,7 @@ def find_optimum_offsets(palier = {
     
     offsets = {'E':1,'G':1,'R':1} #initialise
     for sp in offsets:
-        paliers = palier[species]
+        paliers = palier[sp]
         r2 = []
         
         test = np.linspace(0,paliers[0]-1,paliers[0])
@@ -47,7 +44,7 @@ def find_optimum_offsets(palier = {
     
     return offsets
 
-def IGT_bdf(values,species,overwrite = None):
+def IGT_bdf(values,species,seuil_bdf,overwrite = None):
     """Bruit de Fond"""
     if overwrite:
         seuil = overwrite[species]
@@ -59,7 +56,7 @@ def IGT_bdf(values,species,overwrite = None):
         bdf = 0
     return bdf
 
-def IGT_base(IGT_,species,cut = None):
+def IGT_base(IGT_,species,cutoff,offsets,cut = None):
     """ Find IGT percentage value from percentile IGT """    
     
     if cut:
@@ -75,9 +72,15 @@ def IGT_base(IGT_,species,cut = None):
     else:
         return 70 + 20 * (np.log((IGT_ - offset)/(seuil[1] - offset))/np.log((seuil[2] - offset)/(seuil[1]-offset)))
 
-def IGT_(values,species,cut = None,overwrite = None):
-    IGT_ = np.nanquantile(values,0.15)**2
-    v = IGT_bdf(values,species,overwrite) + IGT_base(IGT_,species,cut) #max()
+def IGT_(values,species,thresh,cut = None,overwrite = None):
+    
+    seuil_bdf = thresh[0]
+    cutoff = thresh[1]
+    offsets = thresh[2]
+    quant = thresh[3]
+    
+    IGT_ = np.nanquantile(values,quant)**2
+    v = IGT_bdf(values,species,seuil_bdf,overwrite) + IGT_base(IGT_,species,cutoff,offsets,cut) #max()
     if v > 100: v = 100
     return v
 
@@ -123,7 +126,37 @@ def group_meandf(df,m,timebin_min = 2):
         
     return df_m.drop(['mortality'],axis = 1),m
 
-
+def sort_filedates(files):
+    
+    """
+    Function to return filenames in date order
+    Input format : 'toxmate_11122021_13122021.csv'
+    """
+    
+    starts,ends = [],[]
+    for file in files:
+        if len(file.split('.')[0].split('_')) == 3:
+            start = file.split('.')[0].split('_')[1]
+            end = file.split('.')[0].split('_')[2]
+            if len(start) < 8:
+                start = start[:4] + '2021'
+                end = end[:4] + '2021'
+            starts.append(start)
+            ends.append(end)
+        else:
+            print('File format, incorrect. ERROR - rename file to format: \n .._ddmmYY_ddmmYY.csv')
+            return None
+        
+    starts = sorted([pd.to_datetime(start,format = ('%d%m%Y')) for start in starts])
+    ends = sorted([pd.to_datetime(end,format = ('%d%m%Y')) for end in ends])
+    
+    #check if start filename (only use day and mont ddmm) and add in this order
+    filenames = []
+    for x in range(len(starts)):
+        for i in range(len(files)):
+            if (starts[x].strftime('%d%m%Y')[:4] in files[i]) & (ends[x].strftime('%d%m%Y')[:4] in files[i]): filenames.append(files[i])
+        
+    return filenames
 
 def join_text(directory,filename = 'output.txt'):
     
@@ -592,7 +625,7 @@ def double_vertical_plot(set1,set2,ind = [],vert = 2,extrasets = None):
     axe[end].tick_params(axis='x', rotation=90)
     return fig,axe
 
-def IGT_percent_and_old(val,emptyarr1,emptyarr2):
+def IGT_percent_and_old(val,species,emptyarr1,emptyarr2,thresh):
     """
     Calculate both new method with percentage and old IGT
 
@@ -606,17 +639,18 @@ def IGT_percent_and_old(val,emptyarr1,emptyarr2):
     Two full np.arrays.
 
     """
+    
     IGTper = emptyarr1
     old_IGT = emptyarr2
     for i in range(len(val)):
         
-        IGTper[i] = IGT_(val[i],species)
+        IGTper[i] = IGT_(val[i],species,thresh)
         
         #check 100% mortality
         if np.isnan(val[i][0]):
             old_IGT[i] = 0
         else:
-            old_IGT[i] = np.quantile(val[i][~np.isnan(val[i])],0.05)**2
+            old_IGT[i] = np.quantile(val[i][~np.isnan(val[i])],thresh[-1])**2
     
     return IGTper,old_IGT
 
@@ -641,12 +675,10 @@ colors = [
     ]
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-species = 'G'
 
 thresholds = {'G':190,'E':180,'R':50} #above threshold remove anomalie, replace with zero
 
-
-
 #THRESHOLDS !
-cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
-offsets = find_optimum_offsets()
+#seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
+#cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
+#offsets = find_optimum_offsets()

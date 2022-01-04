@@ -35,42 +35,21 @@ root = r'D:\VP\Viewpoint_data\TERRAIN\SAUR'
 os.chdir(root)
 files = [f for f in os.listdir() if '.csv' in f]
 files = d_terr.sort_filedates(files)
+files = [files[0]]
 merge = True
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
-
-#parameters and seuils for calculations to go to dataread terrain
-potable = True
-if potable :
-    #parameters for potable + quantile 10%
-    seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
-    cutoff = {'G':[1500,2250,12000],'E':[1000,2000,10000],'R':[250,325,1200]}
-    palier = {
-            'E':np.array([cutoff['E'][1],cutoff['E'][1]*2,cutoff['E'][1]*3,cutoff['E'][2]*3],dtype = int),
-            'G':np.array([cutoff['G'][1],cutoff['G'][1]*2,cutoff['G'][1]*3,cutoff['G'][2]*3],dtype = int),
-            'R':np.array([cutoff['R'][1],cutoff['R'][1]*2,cutoff['R'][1]*3,cutoff['R'][2]*3],dtype = int)}
-    offsets = d_terr.find_optimum_offsets(palier)
-    quant = 0.1
-else :
-    #parameters for industriel + quantile 5%
-    seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
-    cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
-    palier = {
-            'E':np.array([cutoff['E'][1],cutoff['E'][1]*2,cutoff['E'][1]*3,cutoff['E'][2]*3],dtype = int),
-            'G':np.array([cutoff['G'][1],cutoff['G'][1]*1.5,cutoff['G'][1]*2.25,cutoff['G'][2]*3],dtype = int),
-            'R':np.array([cutoff['R'][1],cutoff['R'][1]*1.5,cutoff['R'][1]*2.25,cutoff['R'][2]*3],dtype = int)}
-    offsets = d_terr.find_optimum_offsets(palier)
-    quant = 0.05
-thresholds_percent = [seuil_bdf,cutoff,offsets,quant]
-
-spec = 'EGR'
-
 print('The following files will be studied:\n',files)
 dfs,dfs_mean = d_terr.read_data_terrain(files,merge,startdate = None,distplot = False)
 
+#parameters and seuils for calculations depending on potable or not
+potable = True
+thresholds_percent = d_terr.return_IGT_thresh(potable)
+
 #%%
 data = {}
+spec = 'EGR'
 for species in spec:
     df = dfs[species]
     df_mean = dfs_mean[species]
@@ -79,8 +58,8 @@ for species in spec:
     #d_terr.single_plot(df_mean,species,title = 'Distance covered Mean 2min (terrain)')
     
     # plot individually (plot16)
-    #fig,axe = d_terr.plot_16(df,title = specie[species])
-    #fig,axe = d_terr.plot_16(df_mean,title = 'Mean {}'.format(specie[species]))    
+    # fig,axe = d_terr.plot_16(df,title = specie[species])
+    # fig,axe = d_terr.plot_16(df_mean,title = 'Mean {}'.format(specie[species]))
     
     #calculate mortality and add nan's where animals are dead
     data_alive,data_counters = d_terr.search_dead(np.array(df),species)

@@ -20,6 +20,29 @@ from scipy.stats import linregress as lin
 """
 Upto date calculation of IGT
 """
+def return_IGT_thresh(potable):
+    if potable :
+        #parameters for potable + quantile 10%
+        seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
+        cutoff = {'G':[1500,2250,12000],'E':[1000,2000,10000],'R':[250,325,1200]}
+        palier = {
+                'E':np.array([cutoff['E'][1],cutoff['E'][1]*2,cutoff['E'][1]*3,cutoff['E'][2]*3],dtype = int),
+                'G':np.array([cutoff['G'][1],cutoff['G'][1]*2,cutoff['G'][1]*3,cutoff['G'][2]*3],dtype = int),
+                'R':np.array([cutoff['R'][1],cutoff['R'][1]*2,cutoff['R'][1]*3,cutoff['R'][2]*3],dtype = int)}
+        offsets = find_optimum_offsets(palier)
+        quant = 0.1
+    else :
+        #parameters for industriel + quantile 5%
+        seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
+        cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
+        palier = {
+                'E':np.array([cutoff['E'][1],cutoff['E'][1]*2,cutoff['E'][1]*3,cutoff['E'][2]*3],dtype = int),
+                'G':np.array([cutoff['G'][1],cutoff['G'][1]*1.5,cutoff['G'][1]*2.25,cutoff['G'][2]*3],dtype = int),
+                'R':np.array([cutoff['R'][1],cutoff['R'][1]*1.5,cutoff['R'][1]*2.25,cutoff['R'][2]*3],dtype = int)}
+        offsets = find_optimum_offsets(palier)
+        quant = 0.05
+        
+    return [seuil_bdf,cutoff,offsets,quant]
 
 def find_optimum_offsets(palier = {
         'E':np.array([2500,5000,7000,30000]),

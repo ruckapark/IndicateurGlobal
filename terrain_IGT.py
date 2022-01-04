@@ -2,7 +2,7 @@
 """
 Created on Wed Mar 10 15:33:30 2021
 
-Simulation over entire period with field data
+REWRITE FILE FOR ANY TESTING ON DEVELOPMENTS TO IMPROVE TERRAIN IGT
 
 @author: Admin
 """
@@ -21,7 +21,7 @@ os.chdir('..')
 
 if __name__ == '__main__':
     
-    root = r'D:\VP\Viewpoint_data\Suez'
+    root = r'D:\VP\Viewpoint_data\TERRAIN\Suez'
     os.chdir(root)
     files = ['toxmate_1005_1905.csv']
     

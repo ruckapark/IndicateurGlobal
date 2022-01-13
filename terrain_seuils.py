@@ -15,8 +15,9 @@ import seaborn as sns
 
 #%% IMPORT personal mods
 os.chdir('MODS')
-import dataread_terrain as d
+import dataread_terrain as d_terr
 os.chdir('..')
+import TERRAIN_readdata as d
 
 #%% Functions
 
@@ -26,29 +27,22 @@ def living_organisms(df):
         cols.append(list(df.iloc[i][df.iloc[i].notnull()].index))
     return cols
 
-data = d.main(21,'EGR')
-
-def calc_IGT():
-    
-    return None
-
-def split_data():
-    
-    return None
-
 def prob_dist(lim):
     base_dist = [1 - 0.05*x for x in range(10)]
     return base_dist[:lim]
 
+root = r'D:\VP\Viewpoint_data\TERRAIN\Suez'
+files = ['toxmate_0708_240821.csv']
+data,thresh = d.main(files,'EGR',root = root)
 
 #%%COD3
 
 #%%
 
 species = 'R'
-df = data[species][1]
+df = data[species]['df_m']
 living_cols = living_organisms(df)
-trueIGT = pd.DataFrame(data[species][3],index = df.index)
+trueIGT = pd.DataFrame(data[species]['IGT'],index = df.index)
 
 
 #%% test for 5 organisms
@@ -59,6 +53,7 @@ for day in range(8,24):
     day_IGT = np.array(trueIGT[trueIGT.index.day == day])
     cols = np.array(df_day.isnull().sum().sort_values().index)[:10]
     
+    #number of alive organisms loop
     for j in range(1,8):
     
         score = np.zeros(33) #should be a normal distribution
@@ -67,7 +62,7 @@ for day in range(8,24):
             subdf = np.array(df_day[subcols])
             IGT_sim = np.zeros(len(subdf))
             for x in range(len(IGT_sim)):
-                IGT_sim[x] = d.IGT_(subdf[x],species)
+                IGT_sim[x] = d_terr.IGT_(subdf[x],species,thresh)
                
             """
             # plt.figure()
@@ -83,3 +78,11 @@ for day in range(8,24):
             
         results[j][day] = score
         #print('alive = {}, score = {}'.format(j,np.median(np.array(score))))
+
+#%% plot distribution of results across days and 33 random selections        
+for i in range(1,8):
+    plt.figure()
+    sns.histplot(np.array(results[i]).flatten()/(len(IGT_sim)/100))
+    plt.title('Score {} {}organismes'.format(species,i))
+    plt.xlabel('Percentage of false corrupt data')
+    print(i,' orgainisms median: ',np.median(np.array(results[i]).flatten())/7.2,'mean: ',np.mean(np.array(results[i]).flatten())/7.2)

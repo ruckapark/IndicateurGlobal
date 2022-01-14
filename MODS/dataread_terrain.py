@@ -685,23 +685,3 @@ def add_mortality(fig,axe,m,ind = []):
         ax.fill_between(ind,m,alpha = 0.3,color = 'orange')
     return fig,axe,axe_2
 
-
-
-
-#### General parameters (could be made into class) ####
-
-colors = [
-    '#42f5e0','#12aefc','#1612fc','#6a00a3',
-    '#8ef743','#3c8f01','#0a4001','#fc03ca',
-    '#d9d200','#d96c00','#942c00','#fc2803',
-    '#e089b6','#a3a3a3','#7a7a7a','#303030'
-    ]
-
-specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-
-thresholds = {'G':190,'E':180,'R':50} #above threshold remove anomalie, replace with zero
-
-#THRESHOLDS !
-#seuil_bdf = {'G':[0.7,19],'E':[0.7,18],'R':[0.8,5]}
-#cutoff = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[250,450,1200]}
-#offsets = find_optimum_offsets()

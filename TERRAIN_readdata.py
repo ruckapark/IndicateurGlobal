@@ -133,3 +133,6 @@ if __name__ == "__main__":
         d_terr.add_mortality(fig,axe,m,ind = df_mean.index)
         
         data.update({species:{'df':df,'df_m':df_mean,'mort':m,'IGT':IGTper_mean}})
+
+    main(['toxmate_051121-191121.csv'],spec = 'EGR',root = r'D:\VP\Viewpoint_data\TERRAIN\AltenRhein774')
+

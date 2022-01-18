@@ -240,7 +240,7 @@ def dope_params(df, Tox, start_date, end_date):
         dope_df['Start'].iloc[0],
         dope_df['End'].iloc[0]
         ]
-    dopage = date_range[0] + pd.Timedelta(seconds = 90)
+    dopage = date_range[1]
     
     # row value of experiment in dope reg
     conc = dope_df['Concentration'].iloc[0]

@@ -23,9 +23,9 @@ import TERRAIN_readdata as d_
 if __name__ == '__main__':
     
     # Read in data file qnd run readdata to obtain data files and form basic plots
-    path = r'D:\VP\Viewpoint_data\TERRAIN\AltenRhein776'
-    file = ['toxmate_051121-191121.csv']
-    data = d_.main(file,'EGR',root = path)
+    path = r'D:\VP\Viewpoint_data\TERRAIN\Eawag'
+    file = ['toxmate_10012022_17012022.csv']
+    data = d_.main(file,'EGR',root = path,thresholds = None)
     
     #%% Inspect data
     

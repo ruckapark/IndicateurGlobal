@@ -30,7 +30,8 @@ os.chdir('MODS')
 import dataread_terrain as d_terr
 os.chdir('..')
 
-def main(files,spe,root = None,potable = False):
+def main(files,spe,root = None,potable = False,
+         thresholds = {'G':190,'E':180,'R':50}):
     
     """ Main of code below """
     if root == None: root = r'D:\VP\Viewpoint_data\TERRAIN\Suez'

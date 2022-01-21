@@ -15,6 +15,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import linregress as lin
 
+
+### Parameters global
+colors = [
+    '#42f5e0','#12aefc','#1612fc','#6a00a3',
+    '#8ef743','#3c8f01','#0a4001','#fc03ca',
+    '#d9d200','#d96c00','#942c00','#fc2803',
+    '#e089b6','#a3a3a3','#7a7a7a','#303030'
+    ]
+
+specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
+
 ### functions
 
 """
@@ -401,7 +412,8 @@ def df_movingmean(dfs,timestep):
     return dfs_mean
 
 
-def read_data_terrain(files,merge,plot = True,timestep = 2,startdate = None,distplot = False):
+def read_data_terrain(files,merge,plot = True,timestep = 2,startdate = None,distplot = False,
+                      thresholds = {'G':190,'E':180,'R':50}):
     """
     Parameters
     ----------
@@ -432,7 +444,8 @@ def read_data_terrain(files,merge,plot = True,timestep = 2,startdate = None,dist
     dfs_spec.update({'R': df[df['specie'] == 'Radix']})
     
     dfs_spec = df_distance(dfs_spec)
-    dfs_spec = apply_threshold(dfs_spec,thresholds,distplot = distplot)
+    if thresholds:
+        dfs_spec = apply_threshold(dfs_spec,thresholds,distplot = distplot)
     
     dfs_spec_mean = df_movingmean(dfs_spec,timestep)
     
@@ -684,15 +697,3 @@ def add_mortality(fig,axe,m,ind = []):
         ax.plot(ind,m,'orange',linestyle = (0,(1,10)))
         ax.fill_between(ind,m,alpha = 0.3,color = 'orange')
     return fig,axe,axe_2
-
-
-#Parameters global
-colors = [
-    '#42f5e0','#12aefc','#1612fc','#6a00a3',
-    '#8ef743','#3c8f01','#0a4001','#fc03ca',
-    '#d9d200','#d96c00','#942c00','#fc2803',
-    '#e089b6','#a3a3a3','#7a7a7a','#303030'
-    ]
-
-specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-thresholds = {'G':190,'E':180,'R':50}

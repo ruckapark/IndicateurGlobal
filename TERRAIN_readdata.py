@@ -134,5 +134,4 @@ if __name__ == "__main__":
         
         data.update({species:{'df':df,'df_m':df_mean,'mort':m,'IGT':IGTper_mean}})
 
-    main(['toxmate_051121-191121.csv'],spec = 'EGR',root = r'D:\VP\Viewpoint_data\TERRAIN\AltenRhein774')
-
+    main(['toxmate_051121-191121.csv'],'EGR',root = r'D:\VP\Viewpoint_data\TERRAIN\AltenRhein774')

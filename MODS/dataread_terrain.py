@@ -446,6 +446,7 @@ def read_data_terrain(files,merge,plot = True,timestep = 2,startdate = None,dist
     dfs_spec = df_distance(dfs_spec)
     if thresholds:
         dfs_spec = apply_threshold(dfs_spec,thresholds,distplot = distplot)
+        print('applying thresholds')
     
     dfs_spec_mean = df_movingmean(dfs_spec,timestep)
     

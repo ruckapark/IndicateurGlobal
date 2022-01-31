@@ -46,7 +46,7 @@ def main(files,spe,root = None,potable = False,
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     print('The following files will be studied:\n',files)
-    dfs,dfs_mean = d_terr.read_data_terrain(files,merge)
+    dfs,dfs_mean = d_terr.read_data_terrain(files,merge,thresholds = thresholds)
     
     #seuils for toxicity calculation
     thresholds_percent = d_terr.return_IGT_thresh(potable)
@@ -62,8 +62,7 @@ def main(files,spe,root = None,potable = False,
         values = np.array(df)
         values[data_alive == 0] = np.nan
         df = pd.DataFrame(data = np.copy(values), index = df.index, columns = df.columns)
-        values.sort() # nans moved to back
-        
+        values.sort() #nans moved to back
         
         #match to online algo - 2minute moving mean
         df_mean,m = d_terr.group_meandf(df.copy(), m)

@@ -139,7 +139,7 @@ def dataplot_mark_dopage(axe,date_range):
     
     #plot vertical line at estimated moment of dopage
     #could add dopage as function parameter
-    axe.axvline(date_range[0] + pd.Timedelta(seconds = 30), color = 'red')
+    axe.axvline(date_range[1], color = 'red')
     
     #could add possibility to put xtick in location of doping?
     
@@ -236,14 +236,23 @@ def dope_params(df, Tox, start_date, end_date):
     dope_df = df[(df['Start'] > start_date) & (df['Start'] < end_date)]
     dope_df = dope_df[dope_df['TxM'] == Tox]
     
-    date_range = [
-        dope_df['Start'].iloc[0],
-        dope_df['End'].iloc[0]
-        ]
+    if df.shape[0] == 1:
+        date_range = [
+            dope_df['Start'].iloc[0],
+            dope_df['End'].iloc[0]
+            ]
+        conc = dope_df['Concentration'].iloc[0]
+        etude = df[(df['TxM'] == Tox) & (df['Start'] == date_range[0])].index[0]//5 + 1
+        
+    else:
+        date_range = [
+            dope_df['Start'],
+            dope_df['End']
+            ]
+        conc = dope_df['Concentration']
+        etude = df[(df['TxM'] == Tox) & (df['Start'] == date_range[0].iloc[0])].index[0]//5 + 1
+        
     dopage = date_range[1]
-    
-    # row value of experiment in dope reg
-    conc = dope_df['Concentration'].iloc[0]
     sub = dope_df['Substance'].iloc[0]
     molecule = dope_df['Molecule'].iloc[0]
     
@@ -251,7 +260,6 @@ def dope_params(df, Tox, start_date, end_date):
     etude is the number of the week of the experiment.
     Etude1 would be my first week of experiments
     """
-    etude = df[(df['TxM'] == Tox) & (df['Start'] == date_range[0])].index[0]//5 + 1
     return dopage,date_range,conc,sub,molecule,etude
 
 def plot_16(df,title  = '',mark = None):

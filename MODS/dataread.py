@@ -148,6 +148,18 @@ def rolling_mean(df,timestep):
     #convert mins to number of 20 second intervals
     timestep = (timestep * 60)//20
     return df.rolling(timestep).mean().dropna()
+
+def block_mean(df,timestep = 2,unit = 'm'):
+    
+    """
+    Coded for timestep block mean and not integer
+    """
+    
+    df = df.copy()
+    df['t'] = (df.index - df.index[0])//pd.Timedelta(timestep,unit)
+    df_m = df.groupby('t').mean()
+    df_m.index = df.index[0] + pd.to_timedelta(df_m.index * timestep,'m')
+    return df_m
     
     
 def remove_dead(df,species):
@@ -291,7 +303,7 @@ def single_plot(series,title = '',ticks = None):
         
     return fig,axe
 
-def single_plot16(df,species,title = '',ticks = None):
+def single_plot16(df,species,title = '',ticks = None,colors = colors):
     fig = plt.figure(figsize = (13,8))
     axe = fig.add_axes([0.1,0.1,0.8,0.8])
     for i in df.columns:

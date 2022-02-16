@@ -39,8 +39,12 @@ def main_auto(etude):
         plt.close('all')
         
         #locate directory - pass if empty
-        os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))
-        if not os.listdir(): continue
+        try:
+            os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))
+            if not os.listdir(): continue
+        except:
+            continue
+        
         files = [file for file in os.listdir() if os.path.isfile(file)]
         
         #read in data

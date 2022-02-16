@@ -236,7 +236,7 @@ def dope_params(df, Tox, start_date, end_date):
     dope_df = df[(df['Start'] > start_date) & (df['Start'] < end_date)]
     dope_df = dope_df[dope_df['TxM'] == Tox]
     
-    if df.shape[0] == 1:
+    if dope_df.shape[0] == 1:
         date_range = [
             dope_df['Start'].iloc[0],
             dope_df['End'].iloc[0]

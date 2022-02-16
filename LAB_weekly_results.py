@@ -28,7 +28,7 @@ os.chdir('..')
 
 if __name__ == '__main__':
                 
-    Tox,species,etude = 764,'G',51
+    Tox,species,etude = 765,'G',27
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))
@@ -85,12 +85,13 @@ if __name__ == '__main__':
     axe.set_xlabel('Tox Ind')
     d_.dataplot_mark_dopage(axe,date_range)
     
-    results_m = pd.DataFrame({'MEANS_{}_{}_{}'.format(sub,Tox,etude):np.array(MEANS)})
-    results_IGT = pd.DataFrame({'IGT_{}_{}_{}'.format(sub,Tox,etude):np.array(IGT)})
-    reg_means = pd.read_csv(r'C:\Users\George\Documents\SETAC\DATA_means.csv')
-    reg_IGT = pd.read_csv(r'C:\Users\George\Documents\SETAC\DATA_IGT.csv')
-    if results_m.columns[0] not in reg_means.columns:
-        reg_means = pd.concat([reg_means,results_m],axis = 1)
-        reg_IGT = pd.concat([reg_IGT,results_IGT],axis = 1)
-    reg_means.to_csv(r'C:\Users\George\Documents\SETAC\DATA_means.csv',index = False)
-    reg_IGT.to_csv(r'C:\Users\George\Documents\SETAC\DATA_IGT.csv', index = False)
+    
+    #results_m = pd.DataFrame({'MEANS_{}_{}_{}'.format(sub,Tox,etude):np.array(MEANS)})
+    #results_IGT = pd.DataFrame({'IGT_{}_{}_{}'.format(sub,Tox,etude):np.array(IGT)})
+    #reg_means = pd.read_csv(r'C:\Users\George\Documents\SETAC\DATA_means.csv')
+    #reg_IGT = pd.read_csv(r'C:\Users\George\Documents\SETAC\DATA_IGT.csv')
+    #if results_m.columns[0] not in reg_means.columns:
+    #    reg_means = pd.concat([reg_means,results_m],axis = 1)
+    #    reg_IGT = pd.concat([reg_IGT,results_IGT],axis = 1)
+    #reg_means.to_csv(r'C:\Users\George\Documents\SETAC\DATA_means.csv',index = False)
+    #reg_IGT.to_csv(r'C:\Users\George\Documents\SETAC\DATA_IGT.csv', index = False)  

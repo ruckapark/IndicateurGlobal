@@ -47,10 +47,11 @@ def write_data(df,filename):
 
 if __name__ == "__main__":
     
-    dope_df = dope_read('meth_reg') #methomyl reg
+    reg = 'copper_reg' #copper_reg meth_reg
+    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
     
-    #Article1 data
-    os.chdir(r'D:\VP\ARTICLE1_methomyl\Data')
+    dope_df = dope_read(reg)
+    os.chdir(r'D:\VP\ARTICLE1_copper\Data')
     
     #test on data file 1
     files = os.listdir()

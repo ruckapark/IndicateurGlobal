@@ -29,14 +29,15 @@ specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 #%% code
 if __name__ == "__main__":
     
-    dope_df = dope_read('meth_reg') #methomyl reg
+    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
+    substance = 'copper' #meth or copper
     
     #Article1 data
-    os.chdir(r'D:\VP\ARTICLE1_methomyl\Data')
+    os.chdir(directory)
     
     #compressed files have " _ " in file name
     files = [f for f in os.listdir() if '_' in f]
-    dope_df = dope_read('meth_reg')
+    dope_df = dope_read('{}_reg'.format(substance))
     
     
     #treat each data file, add to dictionary

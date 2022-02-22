@@ -51,7 +51,7 @@ if __name__ == "__main__":
     directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
     
     dope_df = dope_read(reg)
-    os.chdir(r'D:\VP\ARTICLE1_copper\Data')
+    os.chdir(directory)
     
     #test on data file 1
     files = os.listdir()

@@ -28,7 +28,7 @@ os.chdir('..')
 
 if __name__ == '__main__':
                 
-    Tox,species,etude = 765,'R',27
+    Tox,species,etude = 765,'G',27
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))

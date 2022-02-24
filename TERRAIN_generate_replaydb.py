@@ -4,8 +4,6 @@ Created on Thu Mar 11 15:25:27 2021
 
 @author: Admin
 """
-    
-
 
 import os
 import pandas as pd
@@ -89,7 +87,7 @@ if __name__ == '__main__':
             
             res = d_terr.save_results(df.index, IGT, m, species, file)
             #save to txt files
-            #d_terr.gen_txt(res,file,species)
+            d_terr.gen_txt(res,file,species)
             
     # merge results to file for replaydb
     # d_terr.join_text()...

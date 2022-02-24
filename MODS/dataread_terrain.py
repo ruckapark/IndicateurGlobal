@@ -602,24 +602,27 @@ def save_results(ind,IGT,m,species,filename):
     res['Mortality'] = m
     return res
 
-def gen_txt(res,file,species,output = 'Suez_res'):
+def gen_txt(res,file,species,output = 'Suez',tox = 'TOF771'):
+    
+    databases = {
+        'TOF771':'f5683285-b5fa-4be0-be99-6e20a112fad5'}
     
     root = os.getcwd()
-    os.chdir(r'D:\VP\Viewpoint_data\{}'.format(output))
+    os.chdir(r'D:\VP\Viewpoint_data\DatabaseFiles\{}'.format(output))
     
     specs = {'G':'Gammarus','E':'Erpobdella','R':'Radix'}
     spec = specs[species]
-    
-    os.chdir(r'D:\VP\Viewpoint_data\Suez_res')
         
     filename = file.split('.')[0] + species + '.txt'
     
+    #unix timestamp
     res['time'] = res.index.astype(np.int64)
     
     with open(filename, 'w', newline = '\n') as f:
         
+        #add header
         for i in range(res.shape[0]):
-            f.write('f5683285-b5fa-4be0-be99-6e20a112fad5,sensor={} mortality={},toxicityindex={} {}\n'.format(spec,res.iloc[i]['Mortality'],res.iloc[i]['IGT'],int(res.iloc[i]['time'])))
+            f.write('{},sensor={} mortality={},toxicityindex={} {}\n'.format(tox,spec,res.iloc[i]['Mortality'],res.iloc[i]['IGT'],int(res.iloc[i]['time'])))
     
     os.chdir(root)
 

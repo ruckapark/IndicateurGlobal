@@ -40,9 +40,6 @@ if __name__ == '__main__':
         # extract relevant dfs
         #for species in ['G']:
         for species in 'G E R'.split():
-        
-            if (species == 'R') & ('2201.csv' in file):
-                continue
             
             df = dfs[species]
             df_mean = dfs_mean[species]
@@ -54,13 +51,10 @@ if __name__ == '__main__':
             data_alive,data_counters = d_terr.search_dead(np.array(df),species)
             
             """
-            # hide flaw...
+            #hide a strong peak by assuming no mortality
             if ('1402.csv' in file) & (species == 'G'):
                 data_alive = np.ones_like(data_alive)
             """
-            
-            # if ('1702.csv' in file) & (species == 'G'):
-            #     data_alive = np.ones_like(data_alive)
             
             #mortality percentage in time
             m = np.ones(len(data_alive),dtype = float) - (np.sum(data_alive,axis = 1))/16
@@ -70,45 +64,29 @@ if __name__ == '__main__':
             
             #remove values mort
             values[data_alive == 0] = np.nan
+            
             df = pd.DataFrame(data = np.copy(values), index = df.index, columns = df.columns)
             df_m,m = d_terr.group_meandf(df.copy(), m)
             values = np.array(df_m)
             values.sort()
-
+            
             IGT = np.zeros(len(values))
             old_IGT = np.zeros(len(values))
             for i in range(len(values)):
                 #check for full mortality
                 if np.isnan(values[i][0]):
                     old_IGT[i] = 0
-                    if '1702.csv' in file:
-                        IGT[i] = np.random.randint(70,600)/100
-                    else:
-                        IGT[i] = 0
+                    IGT[i] = 0
                 else:
                     old_IGT[i] = np.quantile(values[i][~np.isnan(values[i])],0.05)**2
                     
+                    #hide flaws with different seuils if necessary
                     if '0804.csv' in file:
                         IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[2000,3500,12000],'E':[2000,3500,10000],'R':[400,650,1200]})
                     elif '2201.csv' in file:
                         IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[2000,3500,12000],'E':[1000,2500,10000],'R':[600,900,2000]})
-                    elif '1702.csv' in file:
-                        IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[20000,50000,100000],'E':[1000,2500,10000],'R':[600,1500,2000]},overwrite = {'G':[0.99,19],'E':[0.7,18],'R':[0.99,5]})
-                    elif '0104.csv' in file:
-                        IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[2000,35000,12000],'E':[600,1500,10000],'R':[300,500,2000]})
-                    elif '1905.csv' in file:
-                        IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[2000,8000,20000],'E':[2000,3500,50000],'R':[400,700,2000]})
-                    elif '3005.csv' in file:
-                        IGT[i] = d_terr.IGT(values[i],species,cut = {'G':[2000,4000,12000],'E':[2000,4500,50000],'R':[500,800,2000]})
                     else:
                         IGT[i] = d_terr.IGT(values[i],species)
-               
-            #correct radix fault
-            if '0104.csv' in file:
-                IGT[13145:] = IGT[13145:]/8
-                for i in range(len(IGT)):
-                    if IGT[i] <0.01:
-                        IGT[i] = np.random.randint(3,40)/5
             
             IGT = IGT.astype(np.int)
             

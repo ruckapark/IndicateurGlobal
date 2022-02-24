@@ -4,15 +4,32 @@ Created on Sun May 30 23:04:41 2021
 
 Join text files with unix line endings
 
+Add header to file.
+
 @author: Admin
 """
 
 import shutil
 import os
 
-os.chdir(r'D:\VP\Viewpoint_data\Suez_res')
-
-with open('output_file.txt','wb') as wfd:
-    for f in os.listdir():
-        with open(f,'rb') as fd:
-            shutil.copyfileobj(fd, wfd)
+def jointext(direc,output_name):
+    
+    os.chdir(direc)
+    
+    #create header
+    lines = [
+        '# DDL',
+        '# DML',
+        '# CONTEXT-DATABASE: replaydb',
+        '',
+        '']
+    
+    #force first
+    with open('!header.txt', 'w', newline = '\n') as f:
+        for item in lines:
+            f.write('{}\n'.format(item))
+            
+    with open('{}.txt'.format(output_name),'wb') as wfd:
+        for f in os.listdir():
+            with open(f,'rb') as fd:
+                shutil.copyfileobj(fd, wfd)

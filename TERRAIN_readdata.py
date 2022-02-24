@@ -30,7 +30,8 @@ os.chdir('MODS')
 import dataread_terrain as d_terr
 os.chdir('..')
 
-def main(files,spe,root = None,potable = False):
+def main(files,spe,root = None,potable = False,
+         thresholds = {'G':190,'E':180,'R':50}):
     
     """ Main of code below """
     if root == None: root = r'D:\VP\Viewpoint_data\TERRAIN\Suez'
@@ -45,7 +46,7 @@ def main(files,spe,root = None,potable = False):
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     print('The following files will be studied:\n',files)
-    dfs,dfs_mean = d_terr.read_data_terrain(files,merge)
+    dfs,dfs_mean = d_terr.read_data_terrain(files,merge,thresholds = thresholds)
     
     #seuils for toxicity calculation
     thresholds_percent = d_terr.return_IGT_thresh(potable)
@@ -61,8 +62,7 @@ def main(files,spe,root = None,potable = False):
         values = np.array(df)
         values[data_alive == 0] = np.nan
         df = pd.DataFrame(data = np.copy(values), index = df.index, columns = df.columns)
-        values.sort() # nans moved to back
-        
+        values.sort() #nans moved to back
         
         #match to online algo - 2minute moving mean
         df_mean,m = d_terr.group_meandf(df.copy(), m)
@@ -80,11 +80,11 @@ def main(files,spe,root = None,potable = False):
 #%% IMPORT personal mods
 if __name__ == "__main__":
     
-    root = r'D:\VP\Viewpoint_data\TERRAIN\SAUR'
+    root = r'D:\VP\Viewpoint_data\TERRAIN\Suez'
     os.chdir(root)
     files = [f for f in os.listdir() if '.csv' in f]
-    files = d_terr.sort_filedates(files)
-    files = [files[0]]
+    #files = d_terr.sort_filedates(files)
+    files = [files[1]]
     merge = True
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     dfs,dfs_mean = d_terr.read_data_terrain(files,merge,startdate = None,distplot = False)
     
     #parameters and seuils for calculations depending on potable or not
-    potable = True
+    potable = False
     thresholds_percent = d_terr.return_IGT_thresh(potable)
     
     #%%
@@ -130,8 +130,8 @@ if __name__ == "__main__":
         
         IGTper_mean,old_IGT = d_terr.IGT_percent_and_old(values,species,np.zeros_like(m),np.zeros_like(m),thresholds_percent)
         fig,axe = d_terr.double_vertical_plot(old_IGT,IGTper_mean,ind = df_mean.index)
-        d_terr.add_mortality(fig,axe,m,ind = df_mean.index)
+        #d_terr.add_mortality(fig,axe,m,ind = df_mean.index)
         
         data.update({species:{'df':df,'df_m':df_mean,'mort':m,'IGT':IGTper_mean}})
 
-    main(['toxmate_051121-191121.csv'],'EGR',root = r'D:\VP\Viewpoint_data\TERRAIN\AltenRhein774')
+    #main(['toxmate_051121-191121.csv'],'EGR',root = r'D:\VP\Viewpoint_data\TERRAIN\AltenRhein774')

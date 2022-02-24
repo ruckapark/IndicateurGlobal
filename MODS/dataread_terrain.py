@@ -622,7 +622,7 @@ def gen_txt(res,file,species,output = 'Suez',tox = 'TOF771'):
         
         #add header
         for i in range(res.shape[0]):
-            f.write('{},sensor={} mortality={},toxicityindex={} {}\n'.format(tox,spec,res.iloc[i]['Mortality'],res.iloc[i]['IGT'],int(res.iloc[i]['time'])))
+            f.write('{},sensor={} mortality={},toxicityindex={} {}\n'.format(databases[tox],spec,res.iloc[i]['Mortality'],res.iloc[i]['IGT'],int(res.iloc[i]['time'])))
     
     os.chdir(root)
 

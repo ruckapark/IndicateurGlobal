@@ -12,7 +12,7 @@ Add header to file.
 import shutil
 import os
 
-def jointext(direc,output_name):
+def jointext(direc,output_name = 'output.txt'):
     
     os.chdir(direc)
     
@@ -29,7 +29,7 @@ def jointext(direc,output_name):
         for item in lines:
             f.write('{}\n'.format(item))
             
-    with open('{}.txt'.format(output_name),'wb') as wfd:
+    with open(output_name,'wb') as wfd:
         for f in os.listdir():
             with open(f,'rb') as fd:
                 shutil.copyfileobj(fd, wfd)

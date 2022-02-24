@@ -134,3 +134,4 @@ if __name__ == "__main__":
     for m in measures:
         plt.figure()
         sns.boxplot(x = 'conc',y = m,data = result)
+        plt.yscale('log')

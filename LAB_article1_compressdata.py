@@ -48,7 +48,7 @@ def write_data(df,filename):
 if __name__ == "__main__":
     
     reg = 'copper_reg' #copper_reg meth_reg
-    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
+    directory = r'D:\VP\ARTICLE1_copper\Data_temoin' #methomyl or copper
     
     dope_df = dope_read(reg)
     os.chdir(directory)

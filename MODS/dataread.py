@@ -122,8 +122,9 @@ def preproc(df, oldfiles = False):
         df_dist = pd.DataFrame(index = timestamps,columns = animals)
         
         for i in animals:
-            temp_df = temp[temp['animal'] == i]
-            df_dist[i] = temp_df['dist'].values
+            serie_i = temp[temp['animal'] == i]
+            serie_i = pd.Series(np.array(serie_i['dist']),index = serie_i['time'])
+            df_dist[i].loc[serie_i.index] = serie_i
         
         dfs.update({spec:df_dist})
         

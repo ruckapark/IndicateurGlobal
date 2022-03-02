@@ -22,13 +22,15 @@ os.chdir('MODS')
 from data_merge import merge_dfs
 from dope_reg import dope_read
 import dataread as d_
+from data_merge import merge_dfs,merge_dfs_nodatechange
 os.chdir('..')
 
-#%% FUNCTIONS - plotting functions could also be put into another module         
+#%% FUNCTIONS - plotting functions could also be put into another module    
+     
 
 if __name__ == '__main__':
                 
-    Tox,species,etude = 765,'R',27
+    Tox,species,etude = 766,'R',29
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))

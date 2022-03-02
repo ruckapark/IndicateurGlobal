@@ -14,6 +14,7 @@ import shutil
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import linregress as lin
+import pytz
 
 
 ### Parameters global
@@ -598,8 +599,8 @@ def save_results(ind,IGT,m,species,filename):
     
     #make df to write values to .txt file for database
     res = pd.DataFrame(columns = ['IGT','Mortality'],index = ind)
-    res['IGT'] = IGT
     res['Mortality'] = m
+    res['IGT'] = np.where(res['Mortality'] < 0.75 , IGT, 0 )
     return res
 
 def gen_txt(res,file,species,output = 'Suez',tox = 'TOF771'):
@@ -616,6 +617,7 @@ def gen_txt(res,file,species,output = 'Suez',tox = 'TOF771'):
     filename = file.split('.')[0] + species + '.txt'
     
     #unix timestamp
+    res.index = res.index.tz_localize(pytz.timezone('Europe/Paris')).tz_convert(pytz.utc)
     res['time'] = res.index.astype(np.int64)
     
     with open(filename, 'w', newline = '\n') as f:

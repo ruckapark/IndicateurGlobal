@@ -617,7 +617,7 @@ def gen_txt(res,file,species,output = 'Suez',tox = 'TOF771'):
     filename = file.split('.')[0] + species + '.txt'
     
     #unix timestamp
-    res.index = res.index.tz_localize(pytz.timezone('Europe/Paris')).tz_convert(pytz.utc)
+    res.index = res.index.tz_localize(pytz.timezone('Europe/Paris'),ambiguous = 'infer').tz_convert(pytz.utc)
     res['time'] = res.index.astype(np.int64)
     
     with open(filename, 'w', newline = '\n') as f:

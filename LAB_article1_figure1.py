@@ -21,9 +21,7 @@ Details of dataset:
 
 #Plotting graphics
 import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set_style('white')
-sns.set_style('ticks')
+import seaborn as sns #style defined in dataread
 
 #system
 import os
@@ -37,6 +35,10 @@ from dope_reg import dope_read
 import dataread as d_
 os.chdir('..')
 
+def index_hours(index,dopage):
+    #return hours as float 0 = dopage
+    hours = (index - dopage)/3600
+    return hours
 
 if __name__ == "__main__":
     
@@ -86,7 +88,7 @@ if __name__ == "__main__":
     """
     
     #custom colors
-    c = 16*['#7a7a7a']
+    c = '#7a7a7a'
     """
     c = [
     '#42f5e0','#12aefc','#1612fc','#6a00a3',
@@ -95,9 +97,29 @@ if __name__ == "__main__":
     '#e089b6','#a3a3a3','#7a7a7a','#303030'
     ]
     """
-    fig,axe = d_.single_plot16(df_mean, species, title = '20s distance - {}'.format(specie[species]),colors = c)
-    axe2 = axe.twinx()
-    d_.dataplot_mark_dopage(axe,date_range)
-    axe.plot(df_mean.median(axis = 1),'blue')
-    axe.fill_between(df_mean.index,df_mean.quantile(0.35,axis = 1),df_mean.quantile(0.65,axis = 1),color = 'blue',alpha = 0.6)
-    axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red')
+    
+    #inspired by single plot 16
+    fig = plt.figure(figsize = (13,8))
+    with sns.axes_style("white"):
+        axe = fig.add_axes([0.1,0.1,0.8,0.8])
+        axe2 = axe.twinx()
+        for i in df_mean.columns:
+            axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
+        axe.tick_params(axis = 'x', rotation = 90)
+        axe.set_title('Plot 1')
+        
+        axe.plot(df_mean.median(axis = 1),'blue')
+        axe.plot(df_mean.quantile(0.35,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
+        axe.plot(df_mean.quantile(0.65,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
+        axe.fill_between(df_mean.index,df_mean.quantile(0.35,axis = 1),df_mean.quantile(0.65,axis = 1),color = '#1492c4',alpha = 1,zorder = 2)
+        
+        axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linewidth = 2)
+        
+        axe.axvspan(date_range[0] - pd.Timedelta(minutes = 35), date_range[1] - pd.Timedelta(minutes = 35), alpha=0.7, color='orange')
+        axe.axvline(dopage - pd.Timedelta(minutes = 35), color = 'black', linestyle = '--',linewidth = 2)
+        
+        axe.set_ylim((0,140))
+        axe2.set_ylim((0,60))
+        
+        axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
+        axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))

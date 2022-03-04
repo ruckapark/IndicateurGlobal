@@ -29,8 +29,8 @@ specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 #%% code
 if __name__ == "__main__":
     
-    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
-    substance = 'copper' #meth or copper
+    directory = r'D:\VP\ARTICLE1_methomyl\Data' #methomyl or copper
+    substance = 'meth' #meth or copper
     
     #Article1 data
     os.chdir(directory)

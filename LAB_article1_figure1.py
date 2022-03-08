@@ -103,17 +103,17 @@ if __name__ == "__main__":
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         axe2 = axe.twinx()
-        for i in df_mean.columns:
-            axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
+        # for i in df_mean.columns:
+        #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
         axe.tick_params(axis = 'x', rotation = 90)
         axe.set_title('Plot 1')
         
         axe.plot(df_mean.median(axis = 1),'blue')
-        axe.plot(df_mean.quantile(0.35,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
-        axe.plot(df_mean.quantile(0.65,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
-        axe.fill_between(df_mean.index,df_mean.quantile(0.35,axis = 1),df_mean.quantile(0.65,axis = 1),color = '#1492c4',alpha = 1,zorder = 2)
+        axe.plot(df_mean.quantile(0.05,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
+        axe.plot(df_mean.quantile(0.95,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
+        axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2)
         
-        axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linewidth = 2)
+        #axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linewidth = 2,zorder = 1)
         
         axe.axvspan(date_range[0] - pd.Timedelta(minutes = 35), date_range[1] - pd.Timedelta(minutes = 35), alpha=0.7, color='orange')
         axe.axvline(dopage - pd.Timedelta(minutes = 35), color = 'black', linestyle = '--',linewidth = 2)

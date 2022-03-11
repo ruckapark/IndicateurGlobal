@@ -25,7 +25,7 @@ import dataread as d_
 os.chdir('..')
 
 #%% FUNCTIONS - plotting functions could also be put into another module    
-def main_auto(etude):
+def main_auto(etude,reg = None):
     
     # loop through all ToxMate and species
     Toxs = [i for i in range(760,770)]
@@ -33,6 +33,7 @@ def main_auto(etude):
     
     #read dope reg
     dope_df = dope_read()
+    if reg: dope_df = dope_read(reg)
     
     for Tox in Toxs:
         

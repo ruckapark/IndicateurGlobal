@@ -11,7 +11,6 @@ APRES_1 = week of change
 @author: Admin
 """
 
-import dataread as d_
 import os
 import pandas as pd
 import numpy as np
@@ -19,11 +18,19 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# IMPORT personal mods
+os.chdir('MODS')
+from data_merge import merge_dfs
+from dope_reg import dope_read
+#import gen_pdf as pdf
+import dataread as d_
+os.chdir('..')
+
 """Read file and merge"""
 
 #chdir
 root = r'D:\VP\Viewpoint_data\Lethargie'
-direct = 'APRES_2'
+direct = 'AVANT_1'
 os.chdir(root)
 os.chdir(direct)
 

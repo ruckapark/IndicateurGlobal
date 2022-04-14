@@ -107,7 +107,7 @@ if __name__ == "__main__":
             #dopages.update({file:[dopage,date_range,conc]})
             
         #%% analysis
-        fig = plt.figure(figsize = (13,8))
+        fig = plt.figure(figsize = (6,6))
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         axe.axvline(color = 'red')          #dopage at zero
         palet = ['#0b5394','#126375','#6aa84f','#38761d','#274e13']
@@ -125,4 +125,7 @@ if __name__ == "__main__":
             
             axe.plot(quantile_dist,color = palet[i],label = 'Study {}'.format(i+1))
             
+        plt.title('{} spike 100ug/L'.format(sub))
+        plt.ylabel('Periodic quantile distance (mm^2/20s)')
+        plt.xlabel('Spike obersvation time (hours)')
         plt.legend()

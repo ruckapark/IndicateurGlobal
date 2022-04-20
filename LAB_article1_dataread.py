@@ -37,6 +37,9 @@ if __name__ == "__main__":
     
     #compressed files have " _ " in file name
     files = [f for f in os.listdir() if '_' in f]
+    # files = ['760_Methomyl4.xls','760_Methomyl5.xls','761_Methomyl4.xls',
+    #          '761_Methomyl5.xls','761_Methomyl6.xls','762_Methomyl4.xls',
+    #          '768_Methomyl2.xls','769_Methomyl2.xls']
     dope_df = dope_read('{}_reg'.format(substance))
     
     
@@ -62,6 +65,7 @@ if __name__ == "__main__":
         
         #find dopage time
         dopage,date_range,conc,sub,molecule,etude_ = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
+        if conc != '67ug': continue
         
         data.update({file:[df,df_mean]})
         dopages.update({file:[dopage,date_range,conc]})

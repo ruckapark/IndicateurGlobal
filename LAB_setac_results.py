@@ -24,6 +24,15 @@ from dope_reg import dope_read
 import dataread as d_
 os.chdir('..')
 
+
+"""
+USED for SETAC
+761,,50 - substance? - hyrdrazine
+
+
+
+"""
+
 #%% FUNCTIONS - plotting functions could also be put into another module         
 
 if __name__ == '__main__':

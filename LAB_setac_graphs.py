@@ -11,7 +11,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-plt.rcParams.update({'font.size': 300})
+plt.rcParams.update({'font.size': 10})
 
 #read data file
 means = pd.read_csv(r'C:\Users\George\Documents\SETAC\DATA_means.csv')
@@ -45,7 +45,7 @@ for i,sub in enumerate(substances):
     """
 
 ax.set_xlabel('Time post-contamination (minutes)')
-ax.set_ylabel('Stress related activity in displacement \newline per unit time (mm{}/s)'.format('$^2$'))
+ax.set_ylabel('Stress related activity in displacement \n per unit time (mm{}/s)'.format('$^2$'))
 ax.set_title('Bio-activity response of Gammarus Fossarum to various contaminants')
 ax.axvline(0,color = 'black',linestyle = '--')        
 ax.legend()

@@ -83,48 +83,10 @@ if __name__ == "__main__":
         fig,axe = d_.single_plot(quantile_dist,title = 'IGT : {}'.format(conc))
         d_.dataplot_mark_dopage(axe,date_range)
         
-        #define first changepoint
-        changepoint = dopage
+        points = np.zeros(20)
         
-        #define first max point over 0.99
-        uplimit = quantile_dist.quantile(0.99)
-        if uplimit < 500:
-            time_up = 0
-            time_down = 0
-            endtime_down = 0
-            upgradient = 0
-            downgradient = 0
-            timelag = 0
-            timepeak = 0
-            timehighpeak = 0
-        else:
-            downlimit = 50
-            quantup = quantile_dist[quantile_dist > uplimit]
-            quantdown = quantile_dist[quantile_dist < downlimit]
-            time_up = quantup.index[0]
+        #define first point as the dopage
+        points[0] = dopage
         
-            #define descent point
-            time_down = quantup.index[-1]
-            #define last descent point
-            quantdown = quantdown[quantdown.index > time_down]
-            try:
-                endtime_down = quantdown.index[0]
-            except:
-                endtime_down = quantile_dist.index[-1]
-            
-            #define gradient up
-            upgradient = uplimit/(time_up - changepoint).total_seconds()
-            
-            #define gradient down
-            downgradient = uplimit/(endtime_down - time_down).total_seconds()
-            
-            #define timelag to reaction - use changepoint from bioessais
-            timelag = (changepoint - dopage).total_seconds()
-            timepeak = (endtime_down - changepoint).total_seconds()
-            timehighpeak = (time_down - time_up).total_seconds()
-            
-            axe.axvline(time_up, color = 'red')
-            axe.axvline(time_down, color = 'red')
-            axe.axvline(endtime_down, color = 'red')
+        #define 19 more points from highest order changepoints
         
-        #define distribution evolution

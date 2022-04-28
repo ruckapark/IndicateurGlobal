@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 18 19:28:16 2022
+Created on Wed Apr 27 15:29:32 2022
 
-Read and plot graphs for IGT on the methomyl experiments.
+First attemp at fingerprints
 
 @author: George
 """
@@ -29,17 +29,15 @@ specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 #%% code
 if __name__ == "__main__":
     
-    directory = r'D:\VP\ARTICLE1_methomyl\Data' #methomyl or copper
-    substance = 'meth' #meth or copper
+    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
+    substance = 'copper' #meth or copper
     
     #Article1 data
     os.chdir(directory)
     
     #compressed files have " _ " in file name
     files = [f for f in os.listdir() if '_' in f]
-    # files = ['760_Methomyl4.xls','760_Methomyl5.xls','761_Methomyl4.xls',
-    #          '761_Methomyl5.xls','761_Methomyl6.xls','762_Methomyl4.xls',
-    #          '768_Methomyl2.xls','769_Methomyl2.xls']
+    #files = [files[0]]
     dope_df = dope_read('{}_reg'.format(substance))
     
     
@@ -65,7 +63,6 @@ if __name__ == "__main__":
         
         #find dopage time
         dopage,date_range,conc,sub,molecule,etude_ = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
-        #if conc != '67ug': continue
         
         data.update({file:[df,df_mean]})
         dopages.update({file:[dopage,date_range,conc]})
@@ -85,3 +82,49 @@ if __name__ == "__main__":
         
         fig,axe = d_.single_plot(quantile_dist,title = 'IGT : {}'.format(conc))
         d_.dataplot_mark_dopage(axe,date_range)
+        
+        #define first changepoint
+        changepoint = dopage
+        
+        #define first max point over 0.99
+        uplimit = quantile_dist.quantile(0.99)
+        if uplimit < 500:
+            time_up = 0
+            time_down = 0
+            endtime_down = 0
+            upgradient = 0
+            downgradient = 0
+            timelag = 0
+            timepeak = 0
+            timehighpeak = 0
+        else:
+            downlimit = 50
+            quantup = quantile_dist[quantile_dist > uplimit]
+            quantdown = quantile_dist[quantile_dist < downlimit]
+            time_up = quantup.index[0]
+        
+            #define descent point
+            time_down = quantup.index[-1]
+            #define last descent point
+            quantdown = quantdown[quantdown.index > time_down]
+            try:
+                endtime_down = quantdown.index[0]
+            except:
+                endtime_down = quantile_dist.index[-1]
+            
+            #define gradient up
+            upgradient = uplimit/(time_up - changepoint).total_seconds()
+            
+            #define gradient down
+            downgradient = uplimit/(endtime_down - time_down).total_seconds()
+            
+            #define timelag to reaction - use changepoint from bioessais
+            timelag = (changepoint - dopage).total_seconds()
+            timepeak = (endtime_down - changepoint).total_seconds()
+            timehighpeak = (time_down - time_up).total_seconds()
+            
+            axe.axvline(time_up, color = 'red')
+            axe.axvline(time_down, color = 'red')
+            axe.axvline(endtime_down, color = 'red')
+        
+        #define distribution evolution

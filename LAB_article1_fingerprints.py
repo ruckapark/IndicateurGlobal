@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing
 from datetime import timedelta
+import ruptures as rpt
 
 #%% IMPORT personal mods
 os.chdir('MODS')
@@ -37,7 +38,7 @@ if __name__ == "__main__":
     
     #compressed files have " _ " in file name
     files = [f for f in os.listdir() if '_' in f]
-    #files = [files[0]]
+    files = [files[2]]
     dope_df = dope_read('{}_reg'.format(substance))
     
     
@@ -83,10 +84,70 @@ if __name__ == "__main__":
         fig,axe = d_.single_plot(quantile_dist,title = 'IGT : {}'.format(conc))
         d_.dataplot_mark_dopage(axe,date_range)
         
-        points = np.zeros(20)
+        points = np.zeros((21,2))
         
         #define first point as the dopage
-        points[0] = dopage
+        points[0] = [np.argmin(abs(quantile_dist.index - dopage)),quantile_dist.iloc[np.argmin(abs(quantile_dist.index - dopage))]]
         
         #define 19 more points from highest order changepoints
+        sample_length = len(quantile_dist)
+        no_samples = len(quantile_dist)
         
+        #apply moving mean
+        quant = quantile_dist.rolling(10,center = True).mean()
+        
+        fig,ax = plt.subplots(nrows = 2, sharex = True)
+        ax[0].plot(np.array(quant))
+        ax[1].plot(np.gradient(quant))
+        
+        #use gradient = 0
+        grad = np.gradient(quant)
+        
+        #local minima and maxima
+        zero_crossings = np.where(np.diff(np.sign(grad)))[0]
+        for x in zero_crossings:
+            ax[0].axvline(x)
+            ax[1].axvline(x)
+            
+        #take the integral of the gradient either side of the changepoint and take the difference
+        ordered_standingpoints = np.zeros((len(zero_crossings),2))
+        for i,x in enumerate(zero_crossings):
+            if (x < 10) or (len(quant) - x < 10): continue
+            #avoid consecutive changes
+            ordered_standingpoints[i] = [x,abs(2*quant[x] - quant[x-10] - quant[x+10])]
+            if i>0:
+                if (zero_crossings[i] - zero_crossings[i-1]) < 4:
+                    ordered_standingpoints[i] = [x,0]
+            
+        ordered_standingpoints = pd.DataFrame(ordered_standingpoints[ordered_standingpoints[:, 1].argsort()][::-1],columns = ['Position','Cost'])
+        
+        #only take changes with sufficient spacing either side
+        changes = ordered_standingpoints[ordered_standingpoints['Cost'] > 2000]
+        if changes.shape[0] > 20:
+            changes = np.array(changes.iloc[:20])
+        else:
+            changes = np.array(changes)
+            changes = np.vstack((changes,np.zeros((20 - len(changes),2))))
+            
+        for x in changes:
+            ax[0].axvline(x[0], color = 'red')
+            ax[1].axvline(x[0], color = 'red')
+        
+        for i in range(20):
+            points[i+1] = [changes[i][0],quantile_dist.iloc[int(changes[i][0])]]
+            
+        temp = points[points[:, 0].argsort()]
+        plt.figure()
+        plt.plot(temp[:,0],temp[:,1])
+        
+        """
+        algo = rpt.Pelt(model = 'l2', jump = 1, min_size = 10).fit(np.array(quantile_dist))
+        penalty_val = 20000
+        bkps = algo.predict(pen = penalty_val)
+        print(len(bkps))
+        
+        #try to plot cost of breakpoint        
+        fig,axe = plt.subplots(2,sharex = True)
+        axe[2]
+        axe[1].plot(np.r_[np.zeros(5), algo.score, np.zeros(5)])
+        """

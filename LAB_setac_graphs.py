@@ -23,6 +23,7 @@ substances = {sub.split('_')[1] for sub in means.columns}
 
 #colours
 colours = ['tab:blue','tab:orange','tab:green','tab:red','tab:pink','tab:olive','tab:cyan']
+concentrations = ['1000ug','125ug','75ug','100ug','20ug','1500ug','100ug']
 fig = plt.figure()
 ax = fig.add_axes([0.15,0.15,0.75,0.75])
 
@@ -37,7 +38,7 @@ for i,sub in enumerate(substances):
         IGT_t['MEAN'] = IGT_t['MEAN']*3
     
     #plot graph
-    ax.plot(IGT_t['MEAN'],colours[i],label = sub)
+    ax.plot(IGT_t['MEAN'],colours[i],label = '{} - {}'.format(concentrations[i],sub))
     
     """
     for col in IGT_t.drop(columns = 'MEAN').columns:

@@ -111,16 +111,16 @@ if __name__ == "__main__":
     medians = df_mean.median(axis = 1)
     
     #inspired by single plot 16
-    fig = plt.figure(figsize = (20,5))
+    fig = plt.figure(figsize = (16,9))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         axe2 = axe.twinx()
         # for i in df_mean.columns:
         #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
         axe.tick_params(axis = 'x', rotation = 90)
-        axe.set_title('Exposition Cuivre')
+        axe.set_title('Activity Distribution and Avoidance Signal for $100ugL^{-1}$ Copper spike', fontsize = 24)
         
-        axe.plot(df_mean.median(axis = 1),'blue',label = 'median')
+        axe.plot(df_mean.median(axis = 1),'blue',label = 'Median')
         #axe.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linestyle= (0, (5, 10)),zorder = 2)
         #axe.plot(df_mean.quantile(0.95,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
         axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2,label = 'Interquartile range')
@@ -132,13 +132,20 @@ if __name__ == "__main__":
         
         axe.set_ylim((0,120))
         axe2.set_ylim((0,500))
-        axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',zorder = 2,label = '(Quantile 0.05)^2',linewidth = 2.5)
+        axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',zorder = 2,label = 'Squared Low quantile (0.05)',linewidth = 2.5)
         
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
         axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))
-        axe.legend(loc = 2)
-        axe2.legend()
+        axe.legend(loc = 2,fontsize = 16)
+        axe2.legend(fontsize = 16)
         
-        axe.set_xlabel('Observation time (hours)')
-        axe.set_ylabel('Periodic Distance (mm/20s)')
-        axe2.set_ylabel('Period Squared Lower Quantile (mm^2/20s)')
+        axe.set_xlabel('Observation time $(hours)$',fontsize = 20)
+        axe.set_ylabel('Periodic Distance $(mm\cdot20s^{-1}$)',fontsize = 20)
+        axe2.set_ylabel('Period Squared Lower Quantile $(mm^{2}\cdot20s^{-1})$',fontsize = 18)
+        
+        axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
+        axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
+        axe2.set_yticklabels(np.array(axe2.get_yticks(),dtype = np.int64),fontsize = 14)
+        
+        plt.tight_layout()
+        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1B'))

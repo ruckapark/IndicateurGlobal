@@ -114,7 +114,7 @@ if __name__ == "__main__":
     y_offset = df_mean[df_mean.index > (df_mean.index[-1] -24)].median(axis = 1).mean()
     
     #inspired by single plot 16
-    fig = plt.figure(figsize = (16,8))
+    fig = plt.figure(figsize = (16,9))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         # for i in df_mean.columns:
@@ -136,21 +136,23 @@ if __name__ == "__main__":
         axe.axhline(y_offset, color = 'black', linestyle = 'dotted',linewidth = 2)
         axe.plot(medians.index,regress(medians.index),color = 'black',label = 'Descent fit',linestyle = 'dotted', linewidth = 2)
         
-        axe.set_ylim((0,120))
+        axe.set_ylim((0,150))
         
-        axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
+        axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 6))
         axe.legend(fontsize = 16)
         
-        axe.set_xlabel('Observation time (Hours)', fontsize = 20)
-        axe.set_ylabel('Periodic Distnace (mm/20s)', fontsize = 20)
+        axe.set_xlabel('Observation time $(hours)$', fontsize = 20)
+        axe.set_ylabel('Periodic Distnace $(mm\cdot20s^{-1})$', fontsize = 20)
         
         axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
         axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
         
+        plt.tight_layout()
+        
         #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1A'))
         
     #%% plot residuals
-    fig = plt.figure(figsize = (6,3))
+    fig = plt.figure(figsize = (8,3))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         axe.tick_params(axis = 'x', rotation = 90)
@@ -159,4 +161,5 @@ if __name__ == "__main__":
         residuals = medians[(medians.index < 60)] - regress(np.array(medians[(medians.index < 60)].index))
         axe.scatter(residuals.index,residuals.values)
         axe.axhline(0,color = 'r')
+        plt.tight_layout()
         #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1A_residuals'))

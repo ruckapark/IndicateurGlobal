@@ -38,7 +38,7 @@ if __name__ == "__main__":
     
     #compressed files have " _ " in file name
     files = [f for f in os.listdir() if '_' in f]
-    files = [files[1]]
+    files = [files[4]]
     dope_df = dope_read('{}_reg'.format(substance))
     
     

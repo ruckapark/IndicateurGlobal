@@ -114,17 +114,16 @@ if __name__ == "__main__":
     y_offset = df_mean[df_mean.index > (df_mean.index[-1] -24)].median(axis = 1).mean()
     
     #inspired by single plot 16
-    fig = plt.figure(figsize = (20,5))
+    fig = plt.figure(figsize = (16,8))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
-        axe2 = axe.twinx()
         # for i in df_mean.columns:
         #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
         axe.tick_params(axis = 'x', rotation = 90)
-        axe.set_title('Descente lethargie')
+        axe.set_title('Activity distribution in control spike observation', fontsize = 24)
         
-        axe.plot(df_mean.median(axis = 1),'blue',label = 'median')
-        axe.plot(df_mean.quantile(0.05,axis = 1),'red',zorder = 2,label = 'Quantile 0.05')
+        axe.plot(df_mean.median(axis = 1),'blue',label = 'Median')
+        axe.plot(df_mean.quantile(0.05,axis = 1),'red',zorder = 2,label = 'Low quantile (0.05)')
         #axe.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linestyle= (0, (5, 10)),zorder = 2)
         #axe.plot(df_mean.quantile(0.95,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
         axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2,label = 'Interquartile range')
@@ -138,11 +137,26 @@ if __name__ == "__main__":
         axe.plot(medians.index,regress(medians.index),color = 'black',label = 'Descent fit',linestyle = 'dotted', linewidth = 2)
         
         axe.set_ylim((0,120))
-        axe2.set_ylim((0,60))
         
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
-        axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))
-        axe.legend()
+        axe.legend(fontsize = 16)
         
-        axe.set_xlabel('Observation time (Hours)')
-        axe.set_ylabel('Periodic Distnace (mm/20s)')
+        axe.set_xlabel('Observation time (Hours)', fontsize = 20)
+        axe.set_ylabel('Periodic Distnace (mm/20s)', fontsize = 20)
+        
+        axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
+        axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
+        
+        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1A'))
+        
+    #%% plot residuals
+    fig = plt.figure(figsize = (6,3))
+    with sns.axes_style("white"):
+        axe = fig.add_axes([0.1,0.1,0.8,0.8])
+        axe.tick_params(axis = 'x', rotation = 90)
+        axe.set_title('Linear descent residuals', fontsize = 16)
+        #plot residuals up to 70 hours
+        residuals = medians[(medians.index < 60)] - regress(np.array(medians[(medians.index < 60)].index))
+        axe.scatter(residuals.index,residuals.values)
+        axe.axhline(0,color = 'r')
+        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1A_residuals'))

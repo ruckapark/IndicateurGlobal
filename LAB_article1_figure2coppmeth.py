@@ -134,4 +134,4 @@ if __name__ == "__main__":
         plt.xlabel('Spike obersvation time $(hours)$', fontsize = 16)
         plt.legend(fontsize = 16)
         
-        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))
+        fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))

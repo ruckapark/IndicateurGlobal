@@ -78,8 +78,8 @@ unwanted_files = ['761_Methomyl6.xls','762_Methomyl2.xls','762_Methomyl3.xls']
 #%% code
 if __name__ == "__main__":
     
-    directory = r'D:\VP\ARTICLE1_methomyl\Data' #methomyl or copper
-    substance = 'meth' #meth or copper
+    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
+    substance = 'copper' #meth or copper
     
     #Article1 data
     os.chdir(directory)
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize = (6,6))
     axe = fig.add_axes([0.15,0.1,0.8,0.8])
     sns.boxplot(x = 'conc',y = 'int',data = result,ax = axe)
-    axe.set_yscale('log')
+    #axe.set_yscale('log')
     axe.set_title('Dose Response for {}'.format(s),fontsize = 20)
     axe.set_xlabel('Concentration $(\mu gL^{-1})$',fontsize = 18)
     axe.set_ylabel('Total Avoidance $(mm)$',fontsize = 18)

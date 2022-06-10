@@ -80,8 +80,8 @@ if __name__ == "__main__":
         mean_dist = df_mean.mean(axis = 1)
         quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
         
-        fig,axe = d_.single_plot(mean_dist,title = 'Mean : {}'.format(conc))
+        fig,axe = d_.single_plot(mean_dist,title = 'Mean : {} - {}'.format(conc,study))
         d_.dataplot_mark_dopage(axe,date_range)
         
-        fig,axe = d_.single_plot(quantile_dist,title = 'IGT : {}'.format(conc))
+        fig,axe = d_.single_plot(quantile_dist,title = 'IGT : {} - {}'.format(conc,study))
         d_.dataplot_mark_dopage(axe,date_range)

@@ -72,6 +72,9 @@ def find_IGTratio(quantile,dope,thresh = 5000):
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
+#%% UNWANTED FILES FOR DOSE RESPONSE
+unwanted_files = ['761_Methomyl6.xls','762_Methomyl2.xls','762_Methomyl3.xls']
+
 #%% code
 if __name__ == "__main__":
     
@@ -82,7 +85,7 @@ if __name__ == "__main__":
     os.chdir(directory)
     
     #compressed files have " _ " in file name
-    files = [f for f in os.listdir() if '_' in f]
+    files = [f for f in os.listdir() if (('_' in f) and (f not in unwanted_files))]
     dope_df = dope_read('{}_reg'.format(substance))
     
     
@@ -136,4 +139,20 @@ if __name__ == "__main__":
         sns.boxplot(x = 'conc',y = m,data = result)
         #plt.yscale('log')
         plt.title('Dose Response by {}'.format(m))
-        plt.xlabel('Concentration (ug/L)')
+        plt.xlabel('Concentration $(\mu gL^{-1})$')
+        
+    #article figure
+    if substance == 'meth':
+        s = 'Methomyl'
+    else:
+        s = 'Copper'
+    
+    fig = plt.figure(figsize = (6,6))
+    axe = fig.add_axes([0.15,0.1,0.8,0.8])
+    sns.boxplot(x = 'conc',y = 'int',data = result,ax = axe)
+    axe.set_yscale('log')
+    axe.set_title('Dose Response for {}'.format(s),fontsize = 20)
+    axe.set_xlabel('Concentration $(\mu gL^{-1})$',fontsize = 18)
+    axe.set_ylabel('Total Avoidance $(mm)$',fontsize = 18)
+    
+    #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2B',s))

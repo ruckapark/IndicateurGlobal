@@ -40,7 +40,7 @@ meth_entries = ['760_Methomyl3.xls',
 
 def index_hours(index,dopage):
     #return hours as float 0 = dopage
-    hours = (index - dopage)/3600
+    hours = (index - dopage).total_seconds()/3600
     return hours
 
 #%% IMPORTS classic mods
@@ -48,6 +48,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import seaborn as sns
 from sklearn import preprocessing
 from datetime import timedelta
@@ -107,8 +108,8 @@ if __name__ == "__main__":
             #dopages.update({file:[dopage,date_range,conc]})
             
         #%% analysis
-        fig = plt.figure(figsize = (6,6))
-        axe = fig.add_axes([0.1,0.1,0.8,0.8])
+        fig = plt.figure(figsize = (8,6))
+        axe = fig.add_axes([0.15,0.1,0.8,0.8])
         axe.axvline(color = 'red')          #dopage at zero
         palet = ['#0b5394','#126375','#6aa84f','#38761d','#274e13']
         
@@ -125,7 +126,12 @@ if __name__ == "__main__":
             
             axe.plot(quantile_dist,color = palet[i],label = 'Study {}'.format(i+1))
             
-        plt.title('{} spike 100ug/L'.format(sub))
-        plt.ylabel('Periodic quantile distance (mm^2/20s)')
-        plt.xlabel('Spike obersvation time (hours)')
-        plt.legend()
+        axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
+        axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
+        plt.tight_layout()
+        plt.title(sub + ' spike $100\mu gL^{-1}$', fontsize = 18)
+        plt.ylabel('Periodic quantile distance $(mm^{2}\cdot20^{-1}$)', fontsize = 16)
+        plt.xlabel('Spike obersvation time $(hours)$', fontsize = 16)
+        plt.legend(fontsize = 16)
+        
+        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))

@@ -69,17 +69,28 @@ def find_IGTratio(quantile,dope,thresh = 5000):
     above = len(quant[quant > thresh])
     return above/len(quant)
 
+def find_reaction(df,dopage = 0):
+    if dopage:
+        delta = pd.Timedelta(hours = 1)
+    else:
+        delta = 1
+    reaction_period = df[df.index > dopage + delta]
+    try:
+        return reaction_period[reaction_period > 100].index[0]
+    except:
+        return None
+
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
 #%% UNWANTED FILES FOR DOSE RESPONSE
-unwanted_files = ['761_Methomyl6.xls','762_Methomyl2.xls','762_Methomyl3.xls']
+unwanted_files = ['760_Methomyl3.xls','760_Methomyl5.xls','761_Methomyl4.xls','762_Methomyl1.xls','762_Methomyl2.xls','762_Methomyl3.xls']
 
 #%% code
 if __name__ == "__main__":
     
-    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
-    substance = 'copper' #meth or copper
+    directory = r'D:\VP\ARTICLE1_methomyl\Data' #methomyl or copper
+    substance = 'meth' #meth or copper
     
     #Article1 data
     os.chdir(directory)
@@ -127,17 +138,30 @@ if __name__ == "__main__":
         dopage = dopages[f][0]
         conc = dopages[f][-1]
         
-        result.loc[f]['max'] = np.max(quantile[quantile.index > dopage])
-        result.loc[f]['ratio'] = find_IGTratio(quantile,dopage)
-        result.loc[f]['int'] = np.trapz(quantile[quantile.index > dopage])
-        result.loc[f]['conc'] = conc
+        reaction = find_reaction(quantile,dopage)
+        
+        if conc == 0:
+            quantile_analysis = quantile[(quantile.index > dopage) & (quantile.index < dopage + pd.Timedelta(hours = 3))]
+            result.loc[f]['max'] = np.max(quantile_analysis)
+            result.loc[f]['ratio'] = find_IGTratio(quantile,dopage)
+            result.loc[f]['int'] = np.trapz(quantile_analysis)
+            result.loc[f]['conc'] = conc
+        elif reaction:
+            quantile_analysis = quantile[(quantile.index > reaction) & (quantile.index < reaction + pd.Timedelta(hours = 3))]
+            result.loc[f]['max'] = np.max(quantile_analysis)
+            result.loc[f]['ratio'] = find_IGTratio(quantile,dopage)
+            result.loc[f]['int'] = np.trapz(quantile_analysis)
+            result.loc[f]['conc'] = conc
+        else:
+            #remove file from df
+            result = result.drop(f)
     
     measures = list(result.columns)
     measures.remove('conc')
     for m in measures:
         plt.figure()
         sns.boxplot(x = 'conc',y = m,data = result)
-        #plt.yscale('log')
+        plt.yscale('log')
         plt.title('Dose Response by {}'.format(m))
         plt.xlabel('Concentration $(\mu gL^{-1})$')
         
@@ -150,6 +174,16 @@ if __name__ == "__main__":
     fig = plt.figure(figsize = (6,6))
     axe = fig.add_axes([0.15,0.1,0.8,0.8])
     sns.boxplot(x = 'conc',y = 'int',data = result,ax = axe)
+    
+    #label number of values
+    ns = result['conc'].value_counts().sort_index()
+    pos = {
+        'copper':[0.07e7,0.25e7,0.8e7,2.07e7],
+        'meth':[0,0,0,0,0]
+        }
+    for i in range(len(ns)):
+        axe.text((i-0.1),pos[substance][i],'n = {}'.format(ns.iloc[i]))
+    
     #axe.set_yscale('log')
     axe.set_title('Dose Response for {}'.format(s),fontsize = 20)
     axe.set_xlabel('Concentration $(\mu gL^{-1})$',fontsize = 18)

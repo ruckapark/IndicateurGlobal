@@ -63,6 +63,17 @@ os.chdir('..')
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
+def find_reaction(df,dopage = 0):
+    if dopage:
+        delta = pd.Timedelta(hours = 1)
+    else:
+        delta = 1
+    reaction_period = df[df.index > dopage + delta]
+    try:
+        return reaction_period[reaction_period > 100].index[0]
+    except:
+        return None
+
 #%% code
 if __name__ == "__main__":
     
@@ -102,7 +113,7 @@ if __name__ == "__main__":
             df_mean = d_.rolling_mean(df,t_mins)
             
             #find dopage time
-            dopage,date_range,conc,sub,molecule,etude_ = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
+            dopage,date_range,conc,subs,molecule,etude_ = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
             
             data.update({file:[df.set_index(index_hours(df.index, dopage)),df_mean.set_index(index_hours(df_mean.index, dopage))]})
             #dopages.update({file:[dopage,date_range,conc]})
@@ -126,6 +137,11 @@ if __name__ == "__main__":
             
             axe.plot(quantile_dist,color = palet[i],label = 'Study {}'.format(i+1))
             
+            if sub == 'meth':
+                start_reaction = find_reaction(quantile_dist)
+                if start_reaction:
+                    axe.axvline(start_reaction,color = 'orange')
+            
         axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
         axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
         plt.tight_layout()
@@ -134,4 +150,4 @@ if __name__ == "__main__":
         plt.xlabel('Spike obersvation time $(hours)$', fontsize = 16)
         plt.legend(fontsize = 16)
         
-        fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))
+        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))

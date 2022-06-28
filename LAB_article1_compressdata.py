@@ -68,7 +68,11 @@ if __name__ == "__main__":
         dopage,date_range,conc,sub,molecule,etude_ = d_.dope_params(dope_df,Tox,dfs[[*dfs][0]].index[0],dfs[[*dfs][0]].index[-1])
         
         #find dopage in df
-        original_df = original_df[original_df['time'] > (dopage - pd.Timedelta(hours = 2))]
-        original_df = original_df[original_df['time'] < (dopage + pd.Timedelta(hours = 6))]
+        if 'meth' in reg:
+            original_df = original_df[original_df['time'] > (dopage - pd.Timedelta(hours = 3))]
+            original_df = original_df[original_df['time'] < (dopage + pd.Timedelta(hours = 12))]
+        else:
+            original_df = original_df[original_df['time'] > (dopage - pd.Timedelta(hours = 2))]
+            original_df = original_df[original_df['time'] < (dopage + pd.Timedelta(hours = 6))]
         
         write_data(original_df.drop(columns = ['time']),'{}_{}.xls'.format(Tox,file.split('.')[0][3:]))

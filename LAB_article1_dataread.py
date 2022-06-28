@@ -26,6 +26,13 @@ os.chdir('..')
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
+def find_reaction(df,dopage):
+    reaction_period = df[df.index > dopage + pd.Timedelta(hours = 1)]
+    try:
+        return reaction_period[reaction_period > 100].index[0]
+    except:
+        return None
+
 #%% code
 if __name__ == "__main__":
     
@@ -85,3 +92,10 @@ if __name__ == "__main__":
         
         fig,axe = d_.single_plot(quantile_dist,title = 'IGT : {} - {}'.format(conc,study))
         d_.dataplot_mark_dopage(axe,date_range)
+        
+        #find reaction point using 100
+        start_reaction = find_reaction(quantile_dist,dopage)
+        if start_reaction: axe.axvline(start_reaction,color = 'orange')
+        
+        #find reaction point using % of max non-zero value
+        

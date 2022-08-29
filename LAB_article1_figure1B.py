@@ -110,8 +110,8 @@ if __name__ == "__main__":
     #regression fit
     medians = df_mean.median(axis = 1)
     
-    #inspired by single plot 16
-    fig = plt.figure(figsize = (16,9))
+    #%% inspired by single plot 16
+    fig = plt.figure(figsize = (12,8))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         axe2 = axe.twinx()
@@ -136,8 +136,8 @@ if __name__ == "__main__":
         
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
         axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))
-        axe.legend(loc = 2,fontsize = 16)
-        axe2.legend(fontsize = 16)
+        axe.legend(loc = 2,fontsize = 18)
+        axe2.legend(fontsize = 18)
         
         axe.set_xlabel('Observation time $(hours)$',fontsize = 20)
         axe.set_ylabel('Periodic Distance $(mm\cdot20s^{-1}$)',fontsize = 20)
@@ -148,4 +148,4 @@ if __name__ == "__main__":
         axe2.set_yticklabels(np.array(axe2.get_yticks(),dtype = np.int64),fontsize = 14)
         
         plt.tight_layout()
-        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1B'))
+        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B'))

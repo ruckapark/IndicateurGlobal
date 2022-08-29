@@ -106,7 +106,7 @@ if __name__ == "__main__":
     #start date (use 17h on the monday before dopage)
     df_mean.index = (df_mean.index - exp_start).total_seconds()/3600
     
-    #regression fit
+    #%%regression fit
     medians = df_mean.median(axis = 1)
     regress = medians[medians.index < 72]
     regress_coeff = sp.stats.linregress(np.array(regress.index),np.array(regress))[:2]
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     y_offset = df_mean[df_mean.index > (df_mean.index[-1] -24)].median(axis = 1).mean()
     
     #inspired by single plot 16
-    fig = plt.figure(figsize = (16,9))
+    fig = plt.figure(figsize = (11,7))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         # for i in df_mean.columns:
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         axe.set_ylim((0,150))
         
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 6))
-        axe.legend(fontsize = 16, loc = 'upper right')
+        axe.legend(fontsize = 17, loc = 'upper right')
         
         axe.set_xlabel('Observation time $(hours)$', fontsize = 20)
         axe.set_ylabel('Periodic Distnace $(mm\cdot20s^{-1})$', fontsize = 20)
@@ -148,7 +148,7 @@ if __name__ == "__main__":
         
         plt.tight_layout()
         
-        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1A'))
+        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A'))
         
     #%% plot residuals
     fig = plt.figure(figsize = (8,3))

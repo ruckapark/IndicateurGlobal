@@ -119,7 +119,6 @@ if __name__ == "__main__":
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         # for i in df_mean.columns:
         #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
-        axe.tick_params(axis = 'x', rotation = 90)
         axe.set_title('Activity distribution in control spike observation', fontsize = 24)
         
         axe.plot(df_mean.median(axis = 1),'blue',label = 'Median')
@@ -131,7 +130,7 @@ if __name__ == "__main__":
         #axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linewidth = 2,zorder = 1)
         
         #axe.axvspan(date_range[0] - pd.Timedelta(minutes = 35), date_range[1] - pd.Timedelta(minutes = 35), alpha=0.7, color='orange')
-        axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2,label = 'Control Spike')
+        #axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2,label = 'Control Spike')
         
         axe.axhline(y_offset, color = 'black', linestyle = 'dotted',linewidth = 2)
         axe.plot(medians.index,regress(medians.index),color = 'black',label = 'Descent fit',linestyle = 'dotted', linewidth = 2)
@@ -139,7 +138,7 @@ if __name__ == "__main__":
         axe.set_ylim((0,150))
         
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 6))
-        axe.legend(fontsize = 16)
+        axe.legend(fontsize = 16, loc = 'upper right')
         
         axe.set_xlabel('Observation time $(hours)$', fontsize = 20)
         axe.set_ylabel('Periodic Distnace $(mm\cdot20s^{-1})$', fontsize = 20)
@@ -155,7 +154,7 @@ if __name__ == "__main__":
     fig = plt.figure(figsize = (8,3))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
-        axe.tick_params(axis = 'x', rotation = 90)
+        #axe.tick_params(axis = 'x', rotation = 90)
         axe.set_title('Linear descent residuals', fontsize = 16)
         #plot residuals up to 70 hours
         residuals = medians[(medians.index < 60)] - regress(np.array(medians[(medians.index < 60)].index))

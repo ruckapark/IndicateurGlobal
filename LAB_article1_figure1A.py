@@ -74,7 +74,7 @@ if __name__ == "__main__":
     #%%
     
     # apply moving mean
-    t = 15 #ten minutes for clarity
+    t = 30 #ten minutes for clarity
     df_roll = d_.rolling_mean(df, t)
     df_mean = d_.block_mean(df_roll,t)
     
@@ -151,6 +151,12 @@ if __name__ == "__main__":
         fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A'))
         
     #%% plot residuals
+    from scipy.interpolate import interp1d
+    x2 = np.arange(20,65,5)
+    y2 = np.array([-3,8,12,6,-15,-30,-10,1,0])
+    f2 = interp1d(x2, y2, kind='cubic')
+    x2 = np.linspace(20,60,100)    
+    
     fig = plt.figure(figsize = (8,3))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
@@ -159,6 +165,7 @@ if __name__ == "__main__":
         #plot residuals up to 70 hours
         residuals = medians[(medians.index < 60)] - regress(np.array(medians[(medians.index < 60)].index))
         axe.scatter(residuals.index,residuals.values)
+        axe.plot(x2,f2(x2),'--')
         axe.axhline(0,color = 'r')
         plt.tight_layout()
         #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1A_residuals'))

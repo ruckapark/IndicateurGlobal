@@ -65,12 +65,14 @@ if __name__ == "__main__":
         
         #TxM number and dopage time for file
         Tox = int(file[:3])
-        dopage,date_range,conc,sub,molecule,etude_ = d_.dope_params(dope_df,Tox,dfs[[*dfs][0]].index[0],dfs[[*dfs][0]].index[-1])
+        dopage,date_range,conc,sub,molecule,etude_ = d_.dope_params(dope_df,Tox,dfs[[*dfs][1]].index[0],dfs[[*dfs][1]].index[-1])
+        if type(dopage) != pd.Timestamp :
+            dopage = dopage.iloc[0]
         
         #find dopage in df
         if 'meth' in reg:
-            original_df = original_df[original_df['time'] > (dopage - pd.Timedelta(hours = 3))]
-            original_df = original_df[original_df['time'] < (dopage + pd.Timedelta(hours = 12))]
+            original_df = original_df[original_df['time'] > (dopage - pd.Timedelta(hours = 2))]
+            original_df = original_df[original_df['time'] < (dopage + pd.Timedelta(hours = 10))]
         else:
             original_df = original_df[original_df['time'] > (dopage - pd.Timedelta(hours = 2))]
             original_df = original_df[original_df['time'] < (dopage + pd.Timedelta(hours = 6))]

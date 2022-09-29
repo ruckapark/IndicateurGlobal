@@ -84,18 +84,19 @@ if __name__ == "__main__":
         [df,df_mean] = data[study]
         [dopage,date_range,conc] = dopages[study]
         
-        mean_dist = df_mean.mean(axis = 1)
-        quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
-        
-        fig,axe = d_.single_plot(mean_dist,title = 'Mean : {} - {}'.format(conc,study))
-        d_.dataplot_mark_dopage(axe,date_range)
-        
-        fig,axe = d_.single_plot(quantile_dist,title = 'IGT : {} - {}'.format(conc,study))
-        d_.dataplot_mark_dopage(axe,date_range)
-        
-        #find reaction point using 100
-        start_reaction = find_reaction(quantile_dist,dopage)
-        if start_reaction: axe.axvline(start_reaction,color = 'orange')
-        
-        #find reaction point using % of max non-zero value
-        
+        if conc == '125ug':
+            mean_dist = df_mean.mean(axis = 1)
+            quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
+            
+            fig,axe = d_.single_plot(mean_dist,title = 'Mean : {} - {}'.format(conc,study))
+            d_.dataplot_mark_dopage(axe,date_range)
+            
+            fig,axe = d_.single_plot(quantile_dist,title = 'IGT : {} - {}'.format(conc,study))
+            d_.dataplot_mark_dopage(axe,date_range)
+            
+            #find reaction point using 100
+            start_reaction = find_reaction(quantile_dist,dopage)
+            if start_reaction: axe.axvline(start_reaction,color = 'orange')
+            
+            #find reaction point using % of max non-zero value
+            

@@ -31,10 +31,10 @@ copper_entries = ['763_Copper5.xls',
                   '767_Copper7.xls',
                   '767_Copper9.xls']
 
-meth_entries = ['760_Methomyl3.xls',
-                '761_Methomyl2.xls',
+meth_entries = ['760_Methomyl4.xls',
+                '761_Methomyl1.xls',
                 '761_Methomyl3.xls',
-                '762_Methomyl1.xls',
+                '761_Methomyl5.xls',
                 '769_Methomyl1.xls'
                 ]
 
@@ -73,6 +73,18 @@ def find_reaction(df,dopage = 0):
         return reaction_period[reaction_period > 100].index[0]
     except:
         return None
+    
+def block_mean(df,timestep = 2,unit = 'm'):
+    
+    """
+    Coded for timestep block mean and not integer
+    """
+    
+    df = df.copy()
+    df['t'] = (60*(df.index - df.index[0]))//timestep
+    df_m = df.groupby('t').mean()
+    df_m.index = df.index[0] + timestep/60
+    return df_m
 
 #%% code
 if __name__ == "__main__":
@@ -109,8 +121,10 @@ if __name__ == "__main__":
             df = df.drop(columns = deadcol)
             
             #meaned df
-            t_mins = 5
-            df_mean = d_.rolling_mean(df,t_mins)
+            t_mins = 2
+            #df_mean = d_.rolling_mean(df,t_mins)
+            df_mean = d_.block_mean(df,t_mins)
+            df_mean = d_.rolling_mean(df_mean,5)
             
             #find dopage time
             dopage,date_range,conc,subs,molecule,etude_ = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
@@ -119,10 +133,12 @@ if __name__ == "__main__":
             #dopages.update({file:[dopage,date_range,conc]})
             
         #%% analysis
+        sns.set_style("white")
         fig = plt.figure(figsize = (8,6))
         axe = fig.add_axes([0.15,0.1,0.8,0.8])
         axe.axvline(color = 'red')          #dopage at zero
-        palet = ['#0b5394','#126375','#6aa84f','#38761d','#274e13']
+        # palet = ['#0b5394','#126375','#6aa84f','#38761d','#274e13']
+        palet = sns.color_palette()[:5]
         
         for i,study in enumerate(data):
             
@@ -135,12 +151,13 @@ if __name__ == "__main__":
             #fig,axe = d_.single_plot(mean_dist,title = 'Mean : {}'.format(conc))
             #d_.dataplot_mark_dopage(axe,date_range)
             
-            axe.plot(quantile_dist,color = palet[i],label = 'Study {}'.format(i+1))
-            
             if sub == 'meth':
+                axe.plot(quantile_dist,color = palet[i],label = 'Study {}'.format(i+1))
                 start_reaction = find_reaction(quantile_dist)
-                if start_reaction:
-                    axe.axvline(start_reaction,color = 'orange')
+                # if start_reaction:
+                #     axe.axvline(start_reaction,color = 'orange')
+            else:
+                axe.plot(quantile_dist[quantile_dist.index >= -1],color = palet[i],label = 'Study {}'.format(i+1))
             
         axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
         axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
@@ -149,5 +166,6 @@ if __name__ == "__main__":
         plt.ylabel('Periodic quantile distance $(mm^{2}\cdot20^{-1}$)', fontsize = 16)
         plt.xlabel('Spike obersvation time $(hours)$', fontsize = 16)
         plt.legend(fontsize = 16)
+        sns.despine()
         
         #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))

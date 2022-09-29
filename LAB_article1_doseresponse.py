@@ -83,14 +83,14 @@ def find_reaction(df,dopage = 0):
 
 specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
 
-#%% UNWANTED FILES FOR DOSE RESPONSE
-unwanted_files = ['760_Methomyl3.xls','760_Methomyl5.xls','761_Methomyl4.xls','762_Methomyl1.xls','762_Methomyl2.xls','762_Methomyl3.xls']
+#%% UNWANTED FILES FOR DOSE RESPONSE - lowest reaction and highest reaction 125 gives n=10 - lowest 67
+unwanted_files = ['760_Methomyl2.xls','760_Methomyl5.xls','761_Methomyl4.xls','762_Methomyl2.xls']
 
 #%% code
 if __name__ == "__main__":
     
-    directory = r'D:\VP\ARTICLE1_methomyl\Data' #methomyl or copper
-    substance = 'meth' #meth or copper
+    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
+    substance = 'copper' #meth or copper
     
     #Article1 data
     os.chdir(directory)
@@ -144,10 +144,14 @@ if __name__ == "__main__":
             quantile_analysis = quantile[(quantile.index > dopage) & (quantile.index < dopage + pd.Timedelta(hours = 3))]
             result.loc[f]['max'] = np.max(quantile_analysis)
             result.loc[f]['ratio'] = find_IGTratio(quantile,dopage)
-            result.loc[f]['int'] = np.trapz(quantile_analysis)
+            if substance == 'copper':
+                result.loc[f]['int'] = np.trapz(quantile_analysis) + 10000 #offset zero in log plot
+            else:
+                result.loc[f]['int'] = np.trapz(quantile_analysis)
             result.loc[f]['conc'] = conc
         elif reaction:
-            quantile_analysis = quantile[(quantile.index > reaction) & (quantile.index < reaction + pd.Timedelta(hours = 3))]
+            #quantile_analysis = quantile[(quantile.index > reaction)]
+            quantile_analysis = quantile[(quantile.index > reaction) & (quantile.index < reaction + pd.Timedelta(hours = 6))]
             result.loc[f]['max'] = np.max(quantile_analysis)
             result.loc[f]['ratio'] = find_IGTratio(quantile,dopage)
             result.loc[f]['int'] = np.trapz(quantile_analysis)
@@ -170,6 +174,8 @@ if __name__ == "__main__":
         s = 'Methomyl'
     else:
         s = 'Copper'
+        
+    sns.set_style("whitegrid")
     
     fig = plt.figure(figsize = (6,6))
     axe = fig.add_axes([0.15,0.1,0.8,0.8])
@@ -178,15 +184,34 @@ if __name__ == "__main__":
     #label number of values
     ns = result['conc'].value_counts().sort_index()
     pos = {
-        'copper':[0.07e7,0.25e7,0.8e7,2.07e7],
-        'meth':[0,0,0,0,0]
+        'copper':[10**4.1,10**6.2,0.65e7,10**7.3],
+        'meth':[10**4.08,10**4.65,10**5.3,10**5.9,10**5.9]
         }
-    for i in range(len(ns)):
-        axe.text((i-0.1),pos[substance][i],'n = {}'.format(ns.iloc[i]))
     
-    #axe.set_yscale('log')
-    axe.set_title('Dose Response for {}'.format(s),fontsize = 20)
+    axe.set_yscale('log')
+    axe.set_title('Dose Response - {}'.format(s),fontsize = 20)
     axe.set_xlabel('Concentration $(\mu gL^{-1})$',fontsize = 18)
     axe.set_ylabel('Total Avoidance $(mm)$',fontsize = 18)
     
-    #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2B',s))
+    for i in range(len(ns)):
+        if s == 'Copper':
+            axe.text((i-0.1),pos[substance][i],'n = {}'.format(ns.iloc[i]))
+            
+            #replace 10**4 tick with 10**0 and draw breaks on axis
+            texts = ['$\\mathdefault{10^{2}}$','$\\mathdefault{10^{3}}$','$\\mathdefault{10^{0}}$','$\\mathdefault{10^{5}}$',
+                     '$\\mathdefault{10^{6}}$','$\\mathdefault{10^{7}}$','$\\mathdefault{10^{8}}$','$\\mathdefault{10^{9}}$']
+            axe.set_yticklabels(texts)
+            
+            d = .01  # how big to make the diagonal lines in axes coordinates
+            # arguments to pass to plot, just so we don't keep repeating them
+            kwargs = dict(transform=axe.transAxes, color="k", clip_on=False)
+            axe.plot((-3.5*d, +3.5*d), (-d+0.14, +d+0.14), **kwargs)
+            axe.plot((-3.5*d, +3.5*d), (-d+0.16, +d+0.16), **kwargs)
+            
+        else:
+            axe.text((i-0.15),pos[substance][i],'n = {}'.format(ns.iloc[i]))
+            axe.plot([4],[10**5.432], marker='D')
+    
+    sns.despine(left=True, bottom=True)
+    
+    fig.savefig(r'C:\Users\George\Documents\Figures\{}_{}'.format('Fig2B',s))

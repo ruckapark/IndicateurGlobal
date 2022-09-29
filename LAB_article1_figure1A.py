@@ -73,10 +73,11 @@ if __name__ == "__main__":
     
     #%%
     
-    # apply moving mean
-    t = 30 #ten minutes for clarity
-    df_roll = d_.rolling_mean(df, t)
-    df_mean = d_.block_mean(df_roll,t)
+    # apply moving mean - for best plot - 10 min block mean + 4 min rolling
+    # t = 30 #ten minutes for clarity
+    # df_roll = d_.rolling_mean(df, t)
+    # df_mean = d_.block_mean(df_roll,t)
+    df_mean = d_.rolling_mean(d_.block_mean(df,10), 4)
     
     #add to dataread a block mean
     

@@ -149,7 +149,7 @@ if __name__ == "__main__":
         
         plt.tight_layout()
         
-        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A'))
+        #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A'))
         
     #%% plot residuals
     from scipy.interpolate import interp1d

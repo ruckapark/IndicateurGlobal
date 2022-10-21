@@ -177,7 +177,7 @@ if __name__ == "__main__":
         
     sns.set_style("whitegrid")
     
-    fig = plt.figure(figsize = (6,6))
+    fig = plt.figure(figsize = (7,7))
     axe = fig.add_axes([0.15,0.1,0.8,0.8])
     sns.boxplot(x = 'conc',y = 'int',data = result,ax = axe)
     
@@ -200,18 +200,20 @@ if __name__ == "__main__":
             #replace 10**4 tick with 10**0 and draw breaks on axis
             texts = ['$\\mathdefault{10^{2}}$','$\\mathdefault{10^{3}}$','$\\mathdefault{10^{0}}$','$\\mathdefault{10^{5}}$',
                      '$\\mathdefault{10^{6}}$','$\\mathdefault{10^{7}}$','$\\mathdefault{10^{8}}$','$\\mathdefault{10^{9}}$']
-            axe.set_yticklabels(texts)
+            axe.set_yticklabels(texts,fontsize = 14)
             
             d = .01  # how big to make the diagonal lines in axes coordinates
             # arguments to pass to plot, just so we don't keep repeating them
             kwargs = dict(transform=axe.transAxes, color="k", clip_on=False)
             axe.plot((-3.5*d, +3.5*d), (-d+0.14, +d+0.14), **kwargs)
             axe.plot((-3.5*d, +3.5*d), (-d+0.16, +d+0.16), **kwargs)
+            axe.tick_params(axis = 'both', which = 'major', labelsize = 14)
             
         else:
             axe.text((i-0.15),pos[substance][i],'n = {}'.format(ns.iloc[i]))
             axe.plot([4],[10**5.432], marker='D')
+            axe.tick_params(axis = 'both', which = 'major', labelsize = 14)
     
     sns.despine(left=True, bottom=True)
     
-    #fig.savefig(r'C:\Users\George\Documents\Figures\{}_{}'.format('Fig2B',s))
+    #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2B',s))

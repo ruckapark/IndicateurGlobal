@@ -150,10 +150,3 @@ if __name__ == "__main__":
         
         plt.tight_layout()
         #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B'))
-        
-    #%%Boxplot 1 hour before 1 hour after
-    pre_expo = df_mean[(df_mean.index > (dopage - 4)) & (df_mean.index < dopage)].mean(axis = 0)
-    post_expo = df_mean[(df_mean.index < (dopage + 4)) & (df_mean.index > dopage)].mean(axis = 0)
-    
-    plt.figure()
-    sns.boxplot(data = np.transpose(np.array([pre_expo,post_expo])))

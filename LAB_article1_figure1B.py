@@ -133,7 +133,7 @@ if __name__ == "__main__":
         
         axe.set_ylim((0,120))
         axe2.set_ylim((0,500))
-        axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',zorder = 2,label = 'Squared Low quantile (0.05)',linewidth = 2.5)
+        axe2.plot(df_mean.quantile(0.1,axis = 1)**2,'red',zorder = 2,label = 'Squared quantile Q(0.05)',linewidth = 2.5)
         
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
         axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))
@@ -150,3 +150,10 @@ if __name__ == "__main__":
         
         plt.tight_layout()
         #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B'))
+        
+    #%%Boxplot 1 hour before 1 hour after
+    pre_expo = df_mean[(df_mean.index > (dopage - 4)) & (df_mean.index < dopage)].mean(axis = 0)
+    post_expo = df_mean[(df_mean.index < (dopage + 4)) & (df_mean.index > dopage)].mean(axis = 0)
+    
+    plt.figure()
+    sns.boxplot(data = np.transpose(np.array([pre_expo,post_expo])))

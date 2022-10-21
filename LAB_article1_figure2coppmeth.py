@@ -140,14 +140,7 @@ if __name__ == "__main__":
         axe1 = fig1.add_axes([0.15,0.1,0.8,0.8])
         axe1.axvline(color = 'red')          #dopage at zero
         
-        fig2 = plt.figure(figsize = (8,3))
-        axe2 = fig2.add_axes([0.15,0.1,0.8,0.8])
-        axe2.axvline(color = 'red')          #dopage at zero
-        
         palet = sns.color_palette()[:5]
-        
-        #preallocate for means
-        mean_cum = np.zeros((5,len(data[[*data][0]][1])))
         
         #IGTS
         for i,study in enumerate(data):
@@ -174,31 +167,10 @@ if __name__ == "__main__":
             axe1.set_xticklabels(np.array(axe1.get_xticks(),dtype = np.int64),fontsize = 14)
             axe1.set_yticklabels(np.array(axe1.get_yticks(),dtype = np.int64),fontsize = 14)
             plt.tight_layout()
-            axe1.set_title(sub + ' spike {}'.format(conc) + '$\mu gL^{-1}$', fontsize = 18)
+            axe1.set_title(sub + ' spike {}'.format(conc[:3]) + '$\mu gL^{-1}$', fontsize = 18)
             axe1.set_ylabel('Avoidance $(mm^{2}\cdot20^{-1}$)', fontsize = 16)
             axe1.set_xlabel('Spike obersvation time $(hours)$', fontsize = 16)
             axe1.legend(fontsize = 16)
             sns.despine()
-                
-            #means
-            if sub == 'methomyl':
-                axe2.plot(mean_dist,color = palet[i],label = 'Study {}'.format(i+1))
-            else:
-                axe2.plot(mean_dist[mean_dist.index >= -1],color = palet[i],label = 'Study {}'.format(i+1))
-                
-            axe2.set_xticklabels(np.array(axe2.get_xticks(),dtype = np.int64),fontsize = 14)
-            axe2.set_yticklabels(np.array(axe2.get_yticks(),dtype = np.int64),fontsize = 14)
-            plt.tight_layout()
-            #axe2.set_title(sub + ' spike {}'.format(conc) + '$\mu gL^{-1}$', fontsize = 18)
-            axe2.set_ylabel('Mean displacement $(mm\cdot20^{-1}$)', fontsize = 13)
-            axe2.set_xlabel('Spike obersvation time $(hours)$', fontsize = 16)
-            #axe2.legend(fontsize = 16)
-            sns.despine()
-            
-            #means
-            mean_cum[i] = mean_dist
-        
-        plt.figure()
-        plt.plot(np.mean(mean_cum,axis = 0))
-        plt.axvline(x = 50)
-        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))
+
+        #fig1.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))

@@ -214,4 +214,4 @@ if __name__ == "__main__":
     
     sns.despine(left=True, bottom=True)
     
-    fig.savefig(r'C:\Users\George\Documents\Figures\{}_{}'.format('Fig2B',s))
+    #fig.savefig(r'C:\Users\George\Documents\Figures\{}_{}'.format('Fig2B',s))

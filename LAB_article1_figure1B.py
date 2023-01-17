@@ -112,14 +112,14 @@ if __name__ == "__main__":
     medians = df_mean.median(axis = 1)
     
     #%% inspired by single plot 16
-    fig = plt.figure(figsize = (12,8))
+    fig = plt.figure(figsize = (11,7))
     with sns.axes_style("white"):
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         axe2 = axe.twinx()
         # for i in df_mean.columns:
         #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
-        axe.tick_params(axis = 'x', rotation = 90)
-        axe.set_title('Activity Distribution and Avoidance Signal for $100ugL^{-1}$ Copper spike', fontsize = 24)
+        axe.tick_params(axis = 'x', rotation = 0)
+        axe.set_title('Activity Distribution and Avoidance Signal for $100ugL^{-1}$ Copper spike', fontsize = 22)
         
         axe.plot(df_mean.median(axis = 1),'blue',label = 'Median')
         #axe.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linestyle= (0, (5, 10)),zorder = 2)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
         axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))
         axe.legend(loc = 2,fontsize = 18)
-        axe2.legend(fontsize = 18)
+        axe2.legend(fontsize = 17)
         
         axe.set_xlabel('Observation time $(hours)$',fontsize = 20)
         axe.set_ylabel('Periodic Distance $(mm\cdot20s^{-1}$)',fontsize = 20)

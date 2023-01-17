@@ -139,13 +139,17 @@ if __name__ == "__main__":
         axe.set_ylim((0,150))
         
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 6))
-        axe.legend(fontsize = 17, loc = 'upper right')
         
         axe.set_xlabel('Observation time $(hours)$', fontsize = 20)
         axe.set_ylabel('Periodic Distnace $(mm\cdot20s^{-1})$', fontsize = 20)
         
         axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
         axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
+        
+        #plot dickey fuller period
+        axe.vlines([62,121],ymin = [0,0],ymax = [40,40],color = 'black',label = 'Dickey-Fuller Stationarity',linewidth = 3)
+        
+        axe.legend(fontsize = 17, loc = 'upper right')
         
         plt.tight_layout()
         

@@ -153,7 +153,7 @@ if __name__ == "__main__":
         
         plt.tight_layout()
         
-        #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A'))
+        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A'))
         
     #%% plot residuals
     from scipy.interpolate import interp1d
@@ -173,4 +173,4 @@ if __name__ == "__main__":
         axe.plot(x2,f2(x2),'--')
         axe.axhline(0,color = 'r')
         plt.tight_layout()
-        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}'.format('Fig1A_residuals'))
+        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A_residuals'))

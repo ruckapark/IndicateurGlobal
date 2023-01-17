@@ -168,9 +168,9 @@ if __name__ == "__main__":
             axe1.set_yticklabels(np.array(axe1.get_yticks(),dtype = np.int64),fontsize = 14)
             plt.tight_layout()
             axe1.set_title(sub + ' spike {}'.format(conc[:3]) + '$\mu gL^{-1}$', fontsize = 18)
-            axe1.set_ylabel('Avoidance $(mm^{2}\cdot20^{-1}$)', fontsize = 16)
+            axe1.set_ylabel('Avoidance $(mm^{2}\cdot20s^{-1}$)', fontsize = 16)
             axe1.set_xlabel('Spike obersvation time $(hours)$', fontsize = 16)
             axe1.legend(fontsize = 16)
             sns.despine()
 
-        #fig1.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2A',sub))
+        fig1.savefig(r'C:\Users\George\Documents\{}_{}'.format('Fig2A',sub))

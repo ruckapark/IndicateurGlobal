@@ -149,4 +149,4 @@ if __name__ == "__main__":
         axe2.set_yticklabels(np.array(axe2.get_yticks(),dtype = np.int64),fontsize = 14)
         
         plt.tight_layout()
-        #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B'))
+        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B'))

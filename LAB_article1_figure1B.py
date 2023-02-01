@@ -13,12 +13,6 @@ Present for Gammarus a long dataset showing :
 @author: Admin
 """
 
-"""
-Details of dataset:
-    - 01-07/06 TXM763 - (Manganese) perhaps best to be copper
-    - 
-"""
-
 #Plotting graphics
 import matplotlib.pyplot as plt
 import seaborn as sns #style defined in dataread

@@ -122,16 +122,13 @@ if __name__ == "__main__":
         #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
         axe.set_title('Activity distribution in control spike observation', fontsize = 24)
         
-        axe.plot(df_mean.median(axis = 1),'blue',label = 'Median')
-        axe.plot(df_mean.quantile(0.05,axis = 1),'red',zorder = 2,label = 'Low quantile (0.05)')
-        #axe.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linestyle= (0, (5, 10)),zorder = 2)
-        #axe.plot(df_mean.quantile(0.95,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
+        #remove for article plot
+        #axe.plot(df_mean.quantile(0.05,axis = 1),'red',zorder = 2,label = 'Low quantile (0.05)')
+        
         axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2,label = 'Interquartile range')
+        axe.plot(df_mean.median(axis = 1),color = '#2d04c2',label = 'Median')
         
         #axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linewidth = 2,zorder = 1)
-        
-        #axe.axvspan(date_range[0] - pd.Timedelta(minutes = 35), date_range[1] - pd.Timedelta(minutes = 35), alpha=0.7, color='orange')
-        #axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2,label = 'Control Spike')
         
         axe.axhline(y_offset, color = 'black', linestyle = 'dotted',linewidth = 2)
         axe.plot(medians.index,regress(medians.index),color = 'black',label = 'Descent fit',linestyle = 'dotted', linewidth = 2)
@@ -141,7 +138,7 @@ if __name__ == "__main__":
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 6))
         
         axe.set_xlabel('Observation time $(hours)$', fontsize = 20)
-        axe.set_ylabel('Periodic Distnace $(mm\cdot20s^{-1})$', fontsize = 20)
+        axe.set_ylabel('Distnace $(mm\cdot20s^{-1})$', fontsize = 20)
         
         axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
         axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
@@ -153,7 +150,8 @@ if __name__ == "__main__":
         
         plt.tight_layout()
         
-        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A'))
+        #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A')) #PC
+        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1A')) #laptop
         
     #%% plot residuals
     from scipy.interpolate import interp1d
@@ -173,4 +171,6 @@ if __name__ == "__main__":
         axe.plot(x2,f2(x2),'--')
         axe.axhline(0,color = 'r')
         plt.tight_layout()
-        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A_residuals'))
+        
+        #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A_residuals')) #PC
+        #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1A_residuals')) #laptop

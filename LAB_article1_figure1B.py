@@ -37,8 +37,13 @@ def index_hours(index,dopage):
 
 if __name__ == "__main__":
     
-    #Tox,species,etude = 763,'G',33
-    Tox,species,etude = 767,'G',36
+    run = 'control'
+    #run = 'spike'
+    
+    if run == 'control':
+        Tox,species,etude = 766,'G',37 #temoin
+    else:
+        Tox,species,etude = 767,'G',36 #spike
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     os.chdir(r'D:\VP\Viewpoint_data\TxM{}-PC\{}'.format(Tox,d_.study_no(etude)))
@@ -106,26 +111,33 @@ if __name__ == "__main__":
     medians = df_mean.median(axis = 1)
     
     #%% inspired by single plot 16
-    fig = plt.figure(figsize = (11,7))
+    if run == 'control':
+        fig = plt.figure(figsize = (11,3.5))
+    else:
+        fig = plt.figure(figsize = (11,5))
     with sns.axes_style("white"):
-        axe = fig.add_axes([0.1,0.1,0.8,0.8])
+        if run == 'control':
+            axe = fig.add_axes([0.13,0.2,0.77,0.7])
+        else:
+            axe = fig.add_axes([0.13,0.13,0.77,0.77])
         axe2 = axe.twinx()
         # for i in df_mean.columns:
         #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
         axe.tick_params(axis = 'x', rotation = 0)
-        axe.set_title('Activity Distribution and Avoidance Signal for $100ugL^{-1}$ Copper spike', fontsize = 22)
+        if run == 'control':
+            axe.set_title('Activity Distribution and Avoidance Signal for control', fontsize = 22) #control
+        else:
+            axe.set_title('Activity Distribution and Avoidance Signal for $100ugL^{-1}$ Copper spike', fontsize = 22) #spike
         
-        axe.plot(df_mean.median(axis = 1),'blue',label = 'Median')
-        #axe.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linestyle= (0, (5, 10)),zorder = 2)
-        #axe.plot(df_mean.quantile(0.95,axis = 1),'blue',linestyle= (0, (5, 10)),zorder = 2)
         axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2,label = 'Interquartile range')
+        axe.plot(df_mean.median(axis = 1),'#2d04c2',label = 'Median')
         
         #axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linewidth = 2,zorder = 1)
         
         #axe.axvspan(date_range[0] - pd.Timedelta(minutes = 35), date_range[1] - pd.Timedelta(minutes = 35), alpha=0.7, color='orange')
         axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2, label = 'Copper spike')
         
-        axe.set_ylim((0,120))
+        axe.set_ylim((0,60))
         axe2.set_ylim((0,500))
         axe2.plot(df_mean.quantile(0.1,axis = 1)**2,'red',zorder = 2,label = 'Squared quantile Q(0.05)',linewidth = 2.5)
         
@@ -135,12 +147,20 @@ if __name__ == "__main__":
         axe2.legend(fontsize = 17)
         
         axe.set_xlabel('Observation time $(hours)$',fontsize = 20)
-        axe.set_ylabel('Periodic Distance $(mm\cdot20s^{-1}$)',fontsize = 20)
-        axe2.set_ylabel('Period Squared Lower Quantile $(mm^{2}\cdot20s^{-1})$',fontsize = 18)
+        axe.set_ylabel('Distance $(mm\cdot20s^{-1}$)',fontsize = 20)
+        axe2.set_ylabel('Squared Lower Quantile $(mm^{2}\cdot20s^{-1})$',fontsize = 18)
         
         axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
         axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
         axe2.set_yticklabels(np.array(axe2.get_yticks(),dtype = np.int64),fontsize = 14)
         
         plt.tight_layout()
-        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B'))
+        
+        if run == 'control':
+            #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1Bcon')) #PC
+            fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1Bcon')) #Laptop
+            print('control save')
+        else:
+            #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B')) #PC
+            fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1B')) #Laptop
+            print('spike save')

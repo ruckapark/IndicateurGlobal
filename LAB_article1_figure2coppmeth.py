@@ -26,7 +26,6 @@ meth_entries = ['760_Methomyl3.xls',
 """
 
 copper_entries = ['763_Copper5.xls',
-                  '764_Copper4.xls',
                   '765_Copper5.xls',
                   '767_Copper7.xls',
                   '767_Copper9.xls']
@@ -34,7 +33,6 @@ copper_entries = ['763_Copper5.xls',
 meth_entries = ['760_Methomyl4.xls',
                 '761_Methomyl1.xls',
                 '761_Methomyl3.xls',
-                '761_Methomyl5.xls',
                 '769_Methomyl1.xls'
                 ]
 
@@ -173,4 +171,5 @@ if __name__ == "__main__":
             axe1.legend(fontsize = 16)
             sns.despine()
 
-        fig1.savefig(r'C:\Users\George\Documents\{}_{}'.format('Fig2A',sub))
+        #fig1.savefig(r'C:\Users\George\Documents\{}_{}'.format('Fig2A',sub)) #PC
+        #fig1.savefig(r'r'C:\Users\Admin\Documents\Viewpoint\Figures\{}_{}'.format('Fig2A',sub)) #laptop

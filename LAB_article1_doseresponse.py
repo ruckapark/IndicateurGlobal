@@ -191,7 +191,7 @@ if __name__ == "__main__":
     axe.set_yscale('log')
     axe.set_title('Dose Response - {}'.format(s),fontsize = 20)
     axe.set_xlabel('Concentration $(\mu gL^{-1})$',fontsize = 18)
-    axe.set_ylabel('Total Avoidance $(mm)$',fontsize = 18)
+    axe.set_ylabel('Total Avoidance $(mm^{2})$',fontsize = 18)
     
     for i in range(len(ns)):
         if s == 'Copper':
@@ -216,4 +216,5 @@ if __name__ == "__main__":
     
     sns.despine(left=True, bottom=True)
     
-    #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2B',s))
+    fig.savefig(r'C:\Users\George\Documents\{}_{}'.format('Fig2B',s)) #PC
+    #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Article1\{}_{}'.format('Fig2B',s)) #laptop

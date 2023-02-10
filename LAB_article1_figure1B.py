@@ -37,8 +37,8 @@ def index_hours(index,dopage):
 
 if __name__ == "__main__":
     
-    run = 'control'
-    #run = 'spike'
+    #run = 'control'
+    run = 'spike'
     
     if run == 'control':
         Tox,species,etude = 766,'G',37 #temoin
@@ -105,7 +105,10 @@ if __name__ == "__main__":
     """
     #start date (use 17h on the monday before dopage)
     df_mean.index = (df_mean.index - exp_start).total_seconds()/3600
-    df_mean = df_mean[df_mean.index > 80]
+    df_mean.index = (df_mean.index - dopage)
+    df_mean = df_mean[(df_mean.index > -15) & (df_mean.index < 22)]
+    
+    dopage = 0
     
     #regression fit
     medians = df_mean.median(axis = 1)
@@ -115,52 +118,76 @@ if __name__ == "__main__":
         fig = plt.figure(figsize = (11,3.5))
     else:
         fig = plt.figure(figsize = (11,5))
+    
     with sns.axes_style("white"):
+        
+        #for control figure
         if run == 'control':
             axe = fig.add_axes([0.13,0.2,0.77,0.7])
+            axe2 = axe.twinx()
+            axe.tick_params(axis = 'x', rotation = 0)
+            axe.set_title('') #control
+            axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2)
+            axe.plot(df_mean.median(axis = 1),'#2d04c2',label = 'Control')
+            
+            axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2)
+            
+            axe.set_ylim((0,60))
+            axe2.set_ylim((0,300))
+            axe2.plot(df_mean.quantile(0.1,axis = 1)**2,'red',zorder = 2,label = 'Squared quantile Q(0.05)',linewidth = 2.5)
+            
+            axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 3))
+            axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 3))
+            
+            
+            axe.set_xlabel('')
+            axe.set_ylabel('')
+            axe2.set_ylabel('')
+            
+            axe.legend(fontsize = 17)
+            
+            axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
+            axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
+            axe2.set_yticklabels(np.array(axe2.get_yticks(),dtype = np.int64),fontsize = 14)
+            
+            plt.tight_layout()
+            
+            #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1Bcon')) #PC
+            #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1Bcon')) #Laptop
+            
+            
+        #for dopage with cu
         else:
             axe = fig.add_axes([0.13,0.13,0.77,0.77])
-        axe2 = axe.twinx()
-        # for i in df_mean.columns:
-        #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
-        axe.tick_params(axis = 'x', rotation = 0)
-        if run == 'control':
-            axe.set_title('Activity Distribution and Avoidance Signal for control', fontsize = 22) #control
-        else:
+            axe2 = axe.twinx()
+            axe.tick_params(axis = 'x', rotation = 0)
             axe.set_title('Activity Distribution and Avoidance Signal for $100ugL^{-1}$ Copper spike', fontsize = 22) #spike
+            axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2,label = 'Interquartile range')
+            axe.plot(df_mean.median(axis = 1),'#2d04c2',label = 'Median')
+            
+            axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2, label = 'Copper spike')
+            
+            axe.set_ylim((0,120))
+            axe2.set_ylim((0,500))
+            axe2.plot(df_mean.quantile(0.1,axis = 1)**2,'red',zorder = 2,label = 'Squared quantile Q(0.05)',linewidth = 2.5)
+            
+            axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
+            axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))
+            
+            axe.legend(loc = 2,fontsize = 18)
+            axe2.legend(fontsize = 17)
         
-        axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2,label = 'Interquartile range')
-        axe.plot(df_mean.median(axis = 1),'#2d04c2',label = 'Median')
         
-        #axe2.plot(df_mean.quantile(0.05,axis = 1)**2,'red',linewidth = 2,zorder = 1)
         
-        #axe.axvspan(date_range[0] - pd.Timedelta(minutes = 35), date_range[1] - pd.Timedelta(minutes = 35), alpha=0.7, color='orange')
-        axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2, label = 'Copper spike')
-        
-        axe.set_ylim((0,60))
-        axe2.set_ylim((0,500))
-        axe2.plot(df_mean.quantile(0.1,axis = 1)**2,'red',zorder = 2,label = 'Squared quantile Q(0.05)',linewidth = 2.5)
-        
-        axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
-        axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))
-        axe.legend(loc = 2,fontsize = 18)
-        axe2.legend(fontsize = 17)
-        
-        axe.set_xlabel('Observation time $(hours)$',fontsize = 20)
-        axe.set_ylabel('Distance $(mm\cdot20s^{-1}$)',fontsize = 20)
-        axe2.set_ylabel('Squared Lower Quantile $(mm^{2}\cdot20s^{-1})$',fontsize = 18)
-        
-        axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
-        axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
-        axe2.set_yticklabels(np.array(axe2.get_yticks(),dtype = np.int64),fontsize = 14)
-        
-        plt.tight_layout()
-        
-        if run == 'control':
-            #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1Bcon')) #PC
-            fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1Bcon')) #Laptop
-            print('control save')
-        else:
-            #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B')) #PC
-            fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1B')) #Laptop
-            print('spike save')
+            axe.set_xlabel('Observation time $(hours)$',fontsize = 20)
+            axe.set_ylabel('Distance $(mm\cdot20s^{-1}$)',fontsize = 20)
+            axe2.set_ylabel('Squared Lower Quantile $(mm^{2}\cdot20s^{-1})$',fontsize = 18)
+            
+            axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
+            axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
+            axe2.set_yticklabels(np.array(axe2.get_yticks(),dtype = np.int64),fontsize = 14)
+            
+            plt.tight_layout()
+            
+            fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1B')) #PC
+            #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1B')) #Laptop

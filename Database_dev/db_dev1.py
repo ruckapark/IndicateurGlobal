@@ -8,18 +8,40 @@ create database for ToxPrints log - start by reading in
 """
 
 import sys
+import numpy as np
+import pandas as pd
+
 sys.path.insert(0, r'D:\VP\Viewpoint_data\code')
 import MODS.dope_reg as dope_reg
 
 if __name__ == '__main__':
     
-    #read in dope reg to start with
+    #read in original dope reg
     reg = dope_reg.dope_read()
     
     #find corresponding file roots
+    allfiles = pd.read_csv('allfiles.txt',delimiter = ',',names = ['root','Tox'])
+    allfiles['datetime'] = pd.to_datetime(allfiles['root'],format = '%Y%m%d-%H%M%S')
     
+    #attribute dates to experiments with short / long, make list on unattributed dates
     
-    #save to new dope reg in db folder
-    """
-    this should eventually contain everything not only weekly dopage
-    """
+    reg['shortfile'] = np.nan
+    reg['root'] = np.nan
+    for i in range(reg.shape[0]):
+        entry = reg.iloc[i]
+        Tox = entry['TxM']
+        dope = entry['End']
+        dope_limit = dope - pd.Timedelta(days = 5)
+        
+        files = allfiles[allfiles['Tox'] == Tox]
+        files = files[(files['datetime'] < (dope + pd.Timedelta(hours = 24))) & (files['datetime'] > dope_limit)]
+        
+        if files.shape[0] == 1:
+            reg['shortfile'] = 1
+            reg['root'].iloc[i] = [files.iloc[0]['root']]
+        else:
+            reg['shortfile'] = 0
+            reg['root'].iloc[i] = files['root'].values
+            
+            
+    #check why some have many folders and others have none individually

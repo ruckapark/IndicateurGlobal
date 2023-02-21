@@ -31,7 +31,10 @@ if __name__ == '__main__':
         entry = reg.iloc[i]
         Tox = entry['TxM']
         dope = entry['End']
-        dope_limit = dope - pd.Timedelta(days = 5)
+        if dope.weekday() >=4:
+            dope_limit = dope - pd.Timedelta(days = dope.weekday())
+        else:
+            dope_limit = dope - pd.Timedelta(days = 6)
         
         files = allfiles[allfiles['Tox'] == Tox]
         files = files[(files['datetime'] < (dope + pd.Timedelta(hours = 24))) & (files['datetime'] > dope_limit)]
@@ -45,3 +48,5 @@ if __name__ == '__main__':
             
             
     #check why some have many folders and others have none individually
+    temp = reg[reg['root'].str.len() != 1]
+    temp = temp[temp['root'].str.len() != 2]

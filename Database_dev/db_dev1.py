@@ -40,10 +40,10 @@ if __name__ == '__main__':
         files = files[(files['datetime'] < (dope + pd.Timedelta(hours = 24))) & (files['datetime'] > dope_limit)]
         
         if files.shape[0] == 1:
-            reg['shortfile'] = 1
+            reg['shortfile'].iloc[i] = 1
             reg['root'].iloc[i] = [files.iloc[0]['root']]
         else:
-            reg['shortfile'] = 0
+            reg['shortfile'].iloc[i] = 0
             reg['root'].iloc[i] = files['root'].values
             
             

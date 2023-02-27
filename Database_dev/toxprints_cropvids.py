@@ -14,6 +14,12 @@ import numpy as np
 import os
 import datetime
 
+crop_dir = r'C:\Users\George\Documents\PythonScripts\Imagetext'
+root = os.getcwd()
+os.chdir(crop_dir)
+import crop_videos as crop
+os.chdir(root)
+
 def str_tolist(series):
     """ 
     Column read of strings in following format
@@ -22,6 +28,33 @@ def str_tolist(series):
     """
     series = series.str.replace("'","")
     return series.str[1:-1].str.split(' ')
+
+def crop_videos(dopage,crop_hours = 48,directory = None,delete = False):
+    """
+    Use crop_vid to crop all videos to 48 hours beyond 'dopage'
+    """
+    
+    base_ = os.getcwd()
+    if not directory: directory = os.getcwd()
+    os.chdir(directory)
+    vids = [f for f in os.listdir() if '.avi' in f]
+    ffmpeg = r'C:\Users\George\Documents\PythonScripts\Imagetext\ffmpeg.exe'
+    
+    for vid in vids:
+        start,end = crop.extract_endpoints(vid,ffm_path = ffmpeg)
+        start,end = crop.get_datetime(start),crop.get_datetime(end)
+        if (start > dopage) or (end < dopage + datetime.timedelta(hours = crop_hours)):
+            continue
+        vid_end = dopage + datetime.timedelta(hours = crop_hours)
+        vid_out = crop.crop_vid(vid,start,vid_end,ffm_path = ffmpeg)
+        if delete:
+            if crop.check_samevid(vid,vid_out):
+                os.remove(vid)
+                #os.rename(vid_out,vid) #replace original file with crop
+            else:
+                print('Video crop unsuccessful.\n Check files.')
+        
+        os.chdir(base_)
 
 if __name__ == '__main__':
     

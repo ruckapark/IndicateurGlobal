@@ -38,15 +38,19 @@ def crop_videos(dopage,crop_hours = 48,directory = None,delete = False):
     if not directory: directory = os.getcwd()
     os.chdir(directory)
     vids = [f for f in os.listdir() if '.avi' in f]
+    print(vids)
     ffmpeg = r'C:\Users\George\Documents\PythonScripts\Imagetext\ffmpeg.exe'
     
     for vid in vids:
-        start,end = crop.extract_endpoints(vid,ffm_path = ffmpeg)
+        vid = r'{}\{}'.format(directory,vid)
+        start,end = crop.extract_endpoints(vid,ffm_path = ffmpeg,output_dir = directory)
         start,end = crop.get_datetime(start),crop.get_datetime(end)
+        
         if (start > dopage) or (end < dopage + datetime.timedelta(hours = crop_hours)):
+            print('SKIPPING vid too short!')
             continue
         vid_end = dopage + datetime.timedelta(hours = crop_hours)
-        vid_out = crop.crop_vid(vid,start,vid_end,ffm_path = ffmpeg)
+        vid_out = crop.crop_vid(vid,start,vid_end,ffm_path = ffmpeg,output_dir = directory)
         if delete:
             if crop.check_samevid(vid,vid_out):
                 os.remove(vid)
@@ -55,8 +59,10 @@ def crop_videos(dopage,crop_hours = 48,directory = None,delete = False):
                 print('Video crop unsuccessful.\n Check files.')
         
         os.chdir(base_)
+        
 
 if __name__ == '__main__':
+    
     
     #read in extended reg
     reg = pd.read_csv('extended_reg.csv')
@@ -83,13 +89,3 @@ if __name__ == '__main__':
         #locate videos in I drives
         os.chdir(root)
         vids = [f for f in os.listdir() if '.avi' in f]
-        
-        #??
-        """
-        for v in vids:
-            
-            extract_vids(v)
-            crop_vid(v)
-            
-            #manually delete other videos for now
-        """

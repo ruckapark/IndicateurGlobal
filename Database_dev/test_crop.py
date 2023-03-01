@@ -15,4 +15,4 @@ import toxprints_cropvids as crop
 dopage = datetime.datetime.strptime('20220729 12:18:23', '%Y%m%d %H:%M:%S')
 testvids = r'C:\Users\George\Documents\TestVids\2022'
 
-crop.crop_videos(dopage,crop_hours = 48,directory = testvids)
+crop.crop_videos(dopage,crop_hours = 2,directory = testvids,delete = True)

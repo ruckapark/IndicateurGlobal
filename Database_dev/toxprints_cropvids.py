@@ -52,9 +52,9 @@ def crop_videos(dopage,crop_hours = 48,directory = None,delete = False):
         vid_end = dopage + datetime.timedelta(hours = crop_hours)
         vid_out = crop.crop_vid(vid,start,vid_end,ffm_path = ffmpeg,output_dir = directory)
         if delete:
-            if crop.check_samevid(vid,vid_out):
+            if crop.check_samevid(vid,vid_out,ffm_path = ffmpeg,output_dir = directory):
                 os.remove(vid)
-                #os.rename(vid_out,vid) #replace original file with crop
+                os.rename(vid_out,vid) #replace original file with crop
             else:
                 print('Video crop unsuccessful.\n Check files.')
         
@@ -62,7 +62,6 @@ def crop_videos(dopage,crop_hours = 48,directory = None,delete = False):
         
 
 if __name__ == '__main__':
-    
     
     #read in extended reg
     reg = pd.read_csv('extended_reg.csv')

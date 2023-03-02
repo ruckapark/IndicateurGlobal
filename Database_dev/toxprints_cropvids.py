@@ -63,6 +63,34 @@ def crop_videos(dopage,crop_hours = 48,directory = None,delete = False):
 
 if __name__ == '__main__':
     
+    #test version
+    reg = pd.read_csv('extended_reg.csv')
+    reg['root'] = str_tolist(reg['root'])
+    reg['End'] = pd.to_datetime(reg['End'],format = '%Y-%m-%d %H:%M:%S')
+    
+    reg = reg[reg['TxM']<762]
+    reg = reg[reg['End']>datetime.datetime(year = 2022,month = 7,day = 25)]
+    
+    for i in range(reg.shape[0]):
+        
+        entry = reg.iloc[i]
+        dopage = entry['End']
+        
+        #this will not work for replayed files...
+        try:
+            datetimes = [datetime.datetime.strptime(t,'%Y%m%d-%H%M%S') for t in entry['root']]
+        except:
+            continue
+        
+        #locate video and apply function start end end extract
+        datetimes = [d for d in datetimes if d < dopage]
+        rootdate = datetimes[-1]
+        root = r'C:\Users\George\Documents\TestVids\TxM{}-PC\{}'.format(int(entry['TxM']),rootdate.strftime('%Y%m%d-%H%M%S'))
+        
+        #crop videos to 48 hours beyond dopage
+        crop_videos(dopage,crop_hours = 24,directory = root,delete = True)
+    
+    """
     #read in extended reg
     reg = pd.read_csv('extended_reg.csv')
     reg['root'] = str_tolist(reg['root'])
@@ -88,3 +116,4 @@ if __name__ == '__main__':
         #locate videos in I drives
         os.chdir(root)
         vids = [f for f in os.listdir() if '.avi' in f]
+    """

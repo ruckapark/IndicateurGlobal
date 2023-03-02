@@ -50,3 +50,5 @@ if __name__ == '__main__':
     #check why some have many folders and others have none individually
     temp = reg[reg['root'].str.len() != 1]
     temp = temp[temp['root'].str.len() != 2]
+    
+    reg.to_csv('extended_reg.csv',index = False)

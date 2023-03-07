@@ -138,7 +138,7 @@ if __name__ == "__main__":
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 6))
         
         axe.set_xlabel('Time since placement in ToxMate $(hours)$', fontsize = 20)
-        axe.set_ylabel('Distnace $(mm\cdot20s^{-1})$', fontsize = 20)
+        axe.set_ylabel('Distance $(mm\cdot20s^{-1})$', fontsize = 20)
         
         axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
         axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)

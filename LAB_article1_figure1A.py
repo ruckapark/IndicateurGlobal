@@ -120,7 +120,7 @@ if __name__ == "__main__":
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         # for i in df_mean.columns:
         #     axe.plot(df_mean.index,df_mean[i],label = '{}{}'.format(species,i),color = '#7a7a7a',zorder = 1)
-        axe.set_title('Activity distribution in control spike observation', fontsize = 24)
+        #axe.set_title('Activity distribution in control spike observation', fontsize = 24)
         
         #remove for article plot
         #axe.plot(df_mean.quantile(0.05,axis = 1),'red',zorder = 2,label = 'Low quantile (0.05)')
@@ -137,7 +137,7 @@ if __name__ == "__main__":
         
         axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 6))
         
-        axe.set_xlabel('Observation time $(hours)$', fontsize = 20)
+        axe.set_xlabel('Time since placement in ToxMate $(hours)$', fontsize = 20)
         axe.set_ylabel('Distnace $(mm\cdot20s^{-1})$', fontsize = 20)
         
         axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         
         plt.tight_layout()
         
-        #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A')) #PC
+        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A')) #PC
         #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1A')) #laptop
         
     #%% plot residuals

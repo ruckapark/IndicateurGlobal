@@ -150,7 +150,7 @@ if __name__ == "__main__":
         
         plt.tight_layout()
         
-        fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A')) #PC
+        #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1A')) #PC
         #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1A')) #laptop
         
     #%% plot residuals

@@ -37,8 +37,8 @@ def index_hours(index,dopage):
 
 if __name__ == "__main__":
     
-    #run = 'control'
-    run = 'spike'
+    run = 'control'
+    #run = 'spike'
     
     if run == 'control':
         Tox,species,etude = 766,'G',37 #temoin
@@ -128,7 +128,7 @@ if __name__ == "__main__":
             axe.tick_params(axis = 'x', rotation = 0)
             axe.set_title('') #control
             axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2)
-            axe.plot(df_mean.median(axis = 1),'#2d04c2',label = 'Control')
+            axe.plot(df_mean.median(axis = 1),'#2d04c2')
             
             axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2)
             
@@ -144,7 +144,10 @@ if __name__ == "__main__":
             axe.set_ylabel('')
             axe2.set_ylabel('')
             
-            axe.legend(fontsize = 17)
+            #axe.legend(fontsize = 17)
+            axe.annotate('Control', xy=(18,50),
+                         size = 17,
+                         bbox = dict(boxstyle = 'round', fc = '#d4d2d2'))
             
             axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
             axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)
@@ -152,7 +155,7 @@ if __name__ == "__main__":
             
             plt.tight_layout()
             
-            #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1Bcon')) #PC
+            fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1Bcon')) #PC
             #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1Bcon')) #Laptop
             
             
@@ -161,27 +164,31 @@ if __name__ == "__main__":
             axe = fig.add_axes([0.13,0.13,0.77,0.77])
             axe2 = axe.twinx()
             axe.tick_params(axis = 'x', rotation = 0)
-            axe.set_title('Activity Distribution and Avoidance Signal for $100ugL^{-1}$ Copper spike', fontsize = 22) #spike
+            #axe.set_title('Activity Distribution and Avoidance Signal for $100ugL^{-1}$ Copper spike', fontsize = 22) #spike
             axe.fill_between(df_mean.index,df_mean.quantile(0.25,axis = 1),df_mean.quantile(0.75,axis = 1),color = '#1492c4',alpha = 0.75,zorder = 2,label = 'Interquartile range')
             axe.plot(df_mean.median(axis = 1),'#2d04c2',label = 'Median')
             
-            axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2, label = 'Copper spike')
+            axe.axvline(dopage - 0.25, color = 'black', linestyle = '--',linewidth = 2, label = 'Spike')
             
             axe.set_ylim((0,120))
             axe2.set_ylim((0,500))
-            axe2.plot(df_mean.quantile(0.1,axis = 1)**2,'red',zorder = 2,label = 'Squared quantile Q(0.05)',linewidth = 2.5)
+            axe2.plot(df_mean.quantile(0.1,axis = 1)**2,'red',zorder = 2,linewidth = 2.5)
             
             axe.set_yticks(np.linspace(0, axe.get_ybound()[1], 5))
             axe2.set_yticks(np.linspace(0, axe2.get_ybound()[1], 5))
             
             axe.legend(loc = 2,fontsize = 18)
-            axe2.legend(fontsize = 17)
+            #axe2.legend(fontsize = 17)
+            
+            axe.annotate('$100ugL^{-1}$ copper', xy=(12.5,105),
+                         size = 17,
+                         bbox = dict(boxstyle = 'round', fc = '#d4d2d2'))
         
         
         
             axe.set_xlabel('Observation time $(hours)$',fontsize = 20)
-            axe.set_ylabel('Distance $(mm\cdot20s^{-1}$)',fontsize = 20)
-            axe2.set_ylabel('Squared Lower Quantile $(mm^{2}\cdot20s^{-1})$',fontsize = 18)
+            axe.set_ylabel('Distance $(mm\cdot20s^{-1}$)',fontsize = 20,color = 'blue')
+            axe2.set_ylabel('Squared Lower Quantile $(mm^{2}\cdot20s^{-1})$',fontsize = 18,color = 'red')
             
             axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
             axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)

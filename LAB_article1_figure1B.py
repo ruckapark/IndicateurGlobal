@@ -37,8 +37,8 @@ def index_hours(index,dopage):
 
 if __name__ == "__main__":
     
-    run = 'control'
-    #run = 'spike'
+    #run = 'control'
+    run = 'spike'
     
     if run == 'control':
         Tox,species,etude = 766,'G',37 #temoin
@@ -155,7 +155,7 @@ if __name__ == "__main__":
             
             plt.tight_layout()
             
-            fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1Bcon')) #PC
+            #fig.savefig(r'C:\Users\George\Documents\{}'.format('Fig1Bcon')) #PC
             #fig.savefig(r'C:\Users\Admin\Documents\Viewpoint\Figures\{}'.format('Fig1Bcon')) #Laptop
             
             
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         
             axe.set_xlabel('Observation time $(hours)$',fontsize = 20)
             axe.set_ylabel('Distance $(mm\cdot20s^{-1}$)',fontsize = 20,color = 'blue')
-            axe2.set_ylabel('Squared Lower Quantile $(mm^{2}\cdot20s^{-1})$',fontsize = 18,color = 'red')
+            axe2.set_ylabel('Squared Lower Quantile $(mm^{2}\cdot20s^{-2})$',fontsize = 18,color = 'red')
             
             axe.set_xticklabels(np.array(axe.get_xticks(),dtype = np.int64),fontsize = 14)
             axe.set_yticklabels(np.array(axe.get_yticks(),dtype = np.int64),fontsize = 14)

@@ -2,6 +2,8 @@
 
 ## Video compression
 
+Currently only run on Admin PC as relies on PythonScripts\Imagetext for all video cropping features
+
 *It was necessary for data storage and irrelevance of certain data, to crop videos to 48 hours after the contaminant exposure*
 
 - **list_TxMfiles** : File written in 'I:\\' (NAS) to list all ToxMate files relevant to ToxPrints

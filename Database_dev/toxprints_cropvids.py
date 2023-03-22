@@ -87,7 +87,7 @@ if __name__ == '__main__':
         root = r'I:\TxM{}-PC\{}'.format(int(entry['TxM']),rootdate.strftime('%Y%m%d-%H%M%S'))
         
         #locate videos in I drives
-        if i < 50:
+        if i < 133:
             try:
                 crop_videos(dopage,crop_hours = 48,directory = root,delete = True)
             except:

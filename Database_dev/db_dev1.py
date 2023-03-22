@@ -23,7 +23,7 @@ if __name__ == '__main__':
     allfiles = pd.read_csv('allfiles.txt',delimiter = ',',names = ['root','Tox'])
     allfiles['datetime'] = pd.to_datetime(allfiles['root'],format = '%Y%m%d-%H%M%S')
     
-    """
+    
     #attribute dates to experiments with short / long, make list on unattributed dates
     
     reg['shortfile'] = np.nan
@@ -54,4 +54,4 @@ if __name__ == '__main__':
     
     #Double check and remove false entries manually
     reg.to_csv('extended_reg.csv',index = False)
-    """
+    

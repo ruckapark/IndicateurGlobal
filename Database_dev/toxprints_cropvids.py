@@ -50,7 +50,13 @@ def crop_videos(dopage,crop_hours = 48,directory = None,delete = False):
             print('SKIPPING vid too short!')
             continue
         vid_end = dopage + datetime.timedelta(hours = crop_hours)
-        vid_out = crop.crop_vid(vid,start,vid_end,ffm_path = ffmpeg,output_dir = directory)
+        
+        #unsure of error
+        try:
+            vid_out = crop.crop_vid(vid,start,vid_end,ffm_path = ffmpeg,output_dir = directory)
+        except:
+            continue
+        
         if delete:
             if crop.check_samevid(vid,vid_out,ffm_path = ffmpeg,output_dir = directory):
                 os.remove(vid)
@@ -87,7 +93,7 @@ if __name__ == '__main__':
         root = r'I:\TxM{}-PC\{}'.format(int(entry['TxM']),rootdate.strftime('%Y%m%d-%H%M%S'))
         
         #locate videos in I drives
-        if i < 133:
+        if i < 169:
             try:
                 crop_videos(dopage,crop_hours = 48,directory = root,delete = True)
             except:

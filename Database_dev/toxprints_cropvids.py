@@ -43,26 +43,25 @@ def crop_videos(dopage,crop_hours = 48,directory = None,delete = False):
     
     for vid in vids:
         vid = r'{}\{}'.format(directory,vid)
-        start,end = crop.extract_endpoints(vid,ffm_path = ffmpeg,output_dir = directory)
-        start,end = crop.get_datetime(start),crop.get_datetime(end)
         
-        if (start > dopage) or (end < dopage + datetime.timedelta(hours = crop_hours)):
-            print('SKIPPING vid too short!')
-            continue
-        vid_end = dopage + datetime.timedelta(hours = crop_hours)
-        
-        #unsure of error
         try:
+            start,end = crop.extract_endpoints(vid,ffm_path = ffmpeg,output_dir = directory)
+            start,end = crop.get_datetime(start),crop.get_datetime(end)
+            
+            if (start > dopage) or (end < dopage + datetime.timedelta(hours = crop_hours)):
+                print('SKIPPING vid too short!')
+                continue
+            vid_end = dopage + datetime.timedelta(hours = crop_hours)
+        
             vid_out = crop.crop_vid(vid,start,vid_end,ffm_path = ffmpeg,output_dir = directory)
+            if delete:
+                if crop.check_samevid(vid,vid_out,ffm_path = ffmpeg,output_dir = directory):
+                    os.remove(vid)
+                    os.rename(vid_out,vid) #replace original file with crop
+                else:
+                    print('Video crop unsuccessful.\n Check files.')
         except:
             continue
-        
-        if delete:
-            if crop.check_samevid(vid,vid_out,ffm_path = ffmpeg,output_dir = directory):
-                os.remove(vid)
-                os.rename(vid_out,vid) #replace original file with crop
-            else:
-                print('Video crop unsuccessful.\n Check files.')
         
         os.chdir(base_)
         
@@ -92,10 +91,9 @@ if __name__ == '__main__':
         rootdate = datetimes[-1]
         root = r'I:\TxM{}-PC\{}'.format(int(entry['TxM']),rootdate.strftime('%Y%m%d-%H%M%S'))
         
-        #locate videos in I drives
-        if i < 169:
-            try:
-                crop_videos(dopage,crop_hours = 48,directory = root,delete = True)
-            except:
-                continue
+        #Final code
+        try:
+            crop_videos(dopage,crop_hours = 48,directory = root,delete = True)
+        except:
+            continue
     

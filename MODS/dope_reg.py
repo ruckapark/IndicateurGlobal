@@ -118,6 +118,7 @@ def dope_read_extend():
     
     reg = pd.read_csv(r'D:\VP\Viewpoint_data\code\REGS\extended_reg.csv')
     reg['root'] = str_tolist(reg['root'])
+    reg['Start'] = pd.to_datetime(reg['Start'],format = '%Y-%m-%d %H:%M:%S')
     reg['End'] = pd.to_datetime(reg['End'],format = '%Y-%m-%d %H:%M:%S')
     return reg
 

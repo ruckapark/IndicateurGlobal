@@ -233,7 +233,7 @@ def savefig(name, fig):
 def dope_params(df, Tox, start_date, end_date):
     
     #do not assume that the date is on a friday
-    dope_df = df[(df['Start'] > start_date) & (df['Start'] < end_date)]
+    dope_df = df[(df['End'] > start_date) & (df['End'] < end_date)]
     dope_df = dope_df[dope_df['TxM'] == Tox]
     
     if dope_df.shape[0] == 1:

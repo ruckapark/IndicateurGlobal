@@ -84,7 +84,7 @@ def str_tolist(series):
 def dope_write_extend(root = r'D:\VP\Viewpoint_data\code\REGS'):
     
     reg = dope_read()
-    allfiles = pd.read_csv('allfiles.txt',delimiter = ',',names = ['root','Tox'])
+    allfiles = pd.read_csv(r'{}\allfiles.txt'.format(root),delimiter = ',',names = ['root','Tox'])
     allfiles['datetime'] = pd.to_datetime(allfiles['root'],format = '%Y%m%d-%H%M%S')
     
     reg['shortfile'] = np.nan

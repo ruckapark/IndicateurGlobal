@@ -56,16 +56,17 @@ if __name__ == '__main__':
             try:
                 df = dfs[species]
                 dopage,date_range,conc,sub,molecule,etude = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
+                
+                t_mins = 5
+                df_mean = d_.rolling_mean(df,t_mins)
+                
+                mean_dist = df_mean.mean(axis = 1)
+                quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
+                
+                IGT = quantile_dist[(quantile_dist.index > dopage - pd.Timedelta(seconds = 10)) & (quantile_dist.index < dopage + pd.Timedelta(hours = 12))]
+                IGT.index = ((IGT.index - IGT.index[0]).total_seconds()).astype(int)
+                IGT.to_csv(r'{}\IGT_{}.csv'.format(root[-1],species),header = False)
+                print('{} has {} entries'.format(specie[species],len(IGT)))
+                
             except:
                 continue
-            
-            t_mins = 5
-            df_mean = d_.rolling_mean(df,t_mins)
-            
-            mean_dist = df_mean.mean(axis = 1)
-            quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
-            
-            IGT = quantile_dist[(quantile_dist.index > dopage - pd.Timedelta(seconds = 10)) & (quantile_dist.index < dopage + pd.Timedelta(hours = 12))]
-            IGT.index = ((IGT.index - IGT.index[0]).total_seconds()).astype(int)
-            IGT.to_csv(r'{}\IGT_{}.csv'.format(root[-1],species),header = False)
-            print('{} has {} entries'.format(specie[species],len(IGT)))

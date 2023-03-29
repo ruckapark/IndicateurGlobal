@@ -16,6 +16,7 @@ dope_reg.TxM763 etc.
 import csv
 #import sys
 import pandas as pd
+import numpy as np
 
 
 def dope_write(arg1,arg2,arg3,arg4,arg5,arg6):
@@ -70,6 +71,56 @@ def dope_read(reg = None):
     df['End'] = pd.to_datetime(df['End'],format = '%d/%m/%Y %H:%M:%S')
     df = df.sort_values(by = ['Start','TxM'])
     return df
+
+def str_tolist(series):
+    """ 
+    Column read of strings in following format
+    "['string1' 'string2']"
+    output : [str1,str2]
+    """
+    series = series.str.replace("'","")
+    return series.str[1:-1].str.split(' ')
+
+def dope_write_extend(root = r'D:\VP\Viewpoint_data\code\REGS'):
+    
+    reg = dope_read()
+    allfiles = pd.read_csv('allfiles.txt',delimiter = ',',names = ['root','Tox'])
+    allfiles['datetime'] = pd.to_datetime(allfiles['root'],format = '%Y%m%d-%H%M%S')
+    
+    reg['shortfile'] = np.nan
+    reg['root'] = np.nan
+    for i in range(reg.shape[0]):
+        entry = reg.iloc[i]
+        Tox = entry['TxM']
+        dope = entry['End']
+        if dope.weekday() >=4:
+            dope_limit = dope - pd.Timedelta(days = dope.weekday())
+        else:
+            dope_limit = dope - pd.Timedelta(days = 6)
+            
+        files = allfiles[allfiles['Tox'] == Tox]
+        files = files[(files['datetime'] < (dope + pd.Timedelta(hours = 24))) & (files['datetime'] > dope_limit)]
+        
+        if files.shape[0] == 1:
+            reg['shortfile'].iloc[i] = 1
+            reg['root'].iloc[i] = [files.iloc[0]['root']]
+        else:
+            reg['shortfile'].iloc[i] = 0
+            reg['root'].iloc[i] = files['root'].values
+            
+    reg.to_csv(r'{}\extended_reg.csv'.format(root),index = False)
+
+
+
+def dope_read_extend():
+    
+    """ Currently extended reg has alternate format """
+    
+    reg = pd.read_csv(r'D:\VP\Viewpoint_data\code\REGS\extended_reg.csv')
+    reg['root'] = str_tolist(reg['root'])
+    reg['End'] = pd.to_datetime(reg['End'],format = '%Y-%m-%d %H:%M:%S')
+    return reg
+
 
 """
 

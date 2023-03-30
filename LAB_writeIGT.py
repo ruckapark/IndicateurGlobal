@@ -47,9 +47,12 @@ if __name__ == '__main__':
             os.chdir(r) #not necessary
             file = [file for file in os.listdir() if 'xls.zip' in file]
             files.extend(file)
-     
-        df = d_.read_merge(files)
-        dfs = d_.preproc(df)
+            
+        try:
+            df = d_.read_merge(files)
+            dfs = d_.preproc(df)
+        except:
+            continue
     
         for species in [*specie]:
             

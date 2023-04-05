@@ -36,20 +36,18 @@ if __name__ == '__main__':
     dope_df = dope_read_extend()
     #dopage,date_range,conc,sub,molecule,etude = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1]) #Cleaner would be to put here
     
-    errors = []
     for i in range(dope_df.shape[0]):
         Tox = dope_df.iloc[i]['TxM']
         root = [r'I:\TXM{}-PC\{}'.format(Tox,r) for r in dope_df.iloc[i]['root']]
         
-        if 'IGT_G.csv' in os.listdir(root[-1]): 
-            continue
-        else:
-            print(i)
+        # if 'IGT_G.csv' in os.listdir(root[-1]): 
+        #     continue
+        # else:
+        #     print(i)
     
         files = []
         for r in root:
-            os.chdir(r) #not necessary
-            file = [file for file in os.listdir() if 'xls.zip' in file]
+            file = [r'{}\{}'.format(r,file) for file in os.listdir(r) if 'xls.zip' in file]
             files.extend(file)
             
         try:
@@ -67,16 +65,19 @@ if __name__ == '__main__':
                 t_mins = 5
                 df_mean = d_.rolling_mean(df,t_mins)
                 
-                #add non meaned
-                
                 mean_dist = df_mean.mean(axis = 1)
                 quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
                 
-                IGT = quantile_dist[(quantile_dist.index > dopage - pd.Timedelta(seconds = 10)) & (quantile_dist.index < dopage + pd.Timedelta(hours = 12))]
-                IGT.index = ((IGT.index - IGT.index[0]).total_seconds()).astype(int)
-                IGT.to_csv(r'{}\IGT_{}.csv'.format(root[-1],species),header = False)
-                print('{} has {} entries'.format(specie[species],len(IGT)))
+                zero = abs((dopage - mean_dist.index).total_seconds()).argmin()
+                mean_dist.index = ((mean_dist.index - mean_dist.index[zero]).total_seconds()).astype(int)
+                quantile_dist.index = mean_dist.index
                 
-            except Exception as e:
-                errors.append([i,e])
+                means = mean_dist[(mean_dist.index >= 0) & (mean_dist.index < 12*3600)]
+                IGT = quantile_dist[(quantile_dist.index >= 0) & (quantile_dist.index < 12*3600)]
+                
+                means.to_csv(r'{}\means_{}.csv'.format(root[-1],species),header = False)
+                IGT.to_csv(r'{}\IGT_{}.csv'.format(root[-1],species),header = False)
+                #print('{} has {} entries'.format(specie[species],len(IGT)))
+                
+            except:
                 continue

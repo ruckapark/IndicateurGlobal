@@ -39,8 +39,7 @@ if __name__ == '__main__':
 
     files = []
     for r in root:
-        os.chdir(r) #not necessary
-        file = [r'{}\{}'.format(r,file) for file in os.listdir() if 'xls.zip' in file]
+        file = [r'{}\{}'.format(r,file) for file in os.listdir(r) if 'xls.zip' in file]
         files.extend(file)
         
     

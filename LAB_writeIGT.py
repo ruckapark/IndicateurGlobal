@@ -41,7 +41,10 @@ if __name__ == '__main__':
         Tox = dope_df.iloc[i]['TxM']
         root = [r'I:\TXM{}-PC\{}'.format(Tox,r) for r in dope_df.iloc[i]['root']]
         
-        if 'IGT_G.csv' in os.listdir(root[-1]): continue
+        if 'IGT_G.csv' in os.listdir(root[-1]): 
+            continue
+        else:
+            print(i)
     
         files = []
         for r in root:
@@ -61,8 +64,13 @@ if __name__ == '__main__':
                 df = dfs[species]
                 dopage,date_range,conc,sub,molecule,etude = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
                 
-                mean_dist = df.mean(axis = 1)
-                quantile_dist = df.quantile(q = 0.05, axis = 1)**2
+                t_mins = 5
+                df_mean = d_.rolling_mean(df,t_mins)
+                
+                #add non meaned
+                
+                mean_dist = df_mean.mean(axis = 1)
+                quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
                 
                 IGT = quantile_dist[(quantile_dist.index > dopage - pd.Timedelta(seconds = 10)) & (quantile_dist.index < dopage + pd.Timedelta(hours = 12))]
                 IGT.index = ((IGT.index - IGT.index[0]).total_seconds()).astype(int)

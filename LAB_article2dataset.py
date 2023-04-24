@@ -126,6 +126,12 @@ if __name__ == '__main__':
              'alphaEndosulfan':[251,252,260,261],
              'betaEndosulfan':[253,254,262,263]}
     
+    studies_SETAC = {
+        'Cu':[70,107,109,111,112,118,123,127,132,133,142,143,158,168,176],
+        'Zi':[121,122,125,130,131,155,159],
+        'Me':[165,166,209,210]
+        }
+    
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     dope_df = dope_read_extend()
@@ -136,6 +142,10 @@ if __name__ == '__main__':
     sub_dope_df = dope_df[dope_df['Substance'].isin(substances)]
     
     dataset = r'D:\VP\ARTICLE2\Data'
+    datasetSETAC = r'D:\VP\ARTICLE2\SETAC'
+    
+    studies = studies_SETAC
+    
     for substance in studies:
         for x,i in enumerate(studies[substance]):
             Tox = dope_df.iloc[i]['TxM']
@@ -150,7 +160,9 @@ if __name__ == '__main__':
             df = d_.read_merge(files)
             dfs = d_.preproc(df)
         
-            for species in ['G']:
+            for species in [*specie]:
+                
+                dataset = r'{}\{}'.format(datasetSETAC,specie[species])
                 
                 df = dfs[species]
                 dopage,date_range,conc,sub,molecule,etude = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])

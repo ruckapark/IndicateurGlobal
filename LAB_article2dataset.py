@@ -7,6 +7,82 @@ Generate dataset for ToxPrintsdatasets
 @author: George
 """
 
+"""
+Dataset selection SETAC
+
+his should be the priority list of files to exclude
+
+Copper files for erpo and radix
+Zinc files for erpo and radix
+Methomyl files for erpo and radix ??
+
+Study numbers - Cu (70,107,109,111,112,118,123,127,132,133,142,143,158,168,176)
+Study numbers - Zn (116,121,122,125,130,131,144,145,155,156,159)
+Study numbers - Me (136,137,147,148,151,152,153,154,165,166,209,210)
+
+Studies:
+
+Cu
+-70  E: ok,ok G: ok,ok R: ok,ok
+-107 E: ok,ok G: ok,ok R: ok,ok
+-109 E: ok,ok G: ok,ok R: ok,ok
+-111 E: no,no G: --,-- R: ok,ok
+-112 E: no,-- G: ok,ok R: ok,ok
+-118 E: ok,ok G: ok,ok R: --,--
+-123 E: no,no G: ok,ok R: --,--
+-127 E: ok,ok G: ok,ok R: no,no
+-132 E: --,ok G: --,ok R: ok,ok
+-133 E: ok,ok G: ok,ok R: --,--
+-142 E: --,ok G: ok,ok R: ok,ok
+-143 E: ok,ok G: ok,ok R: --,ok
+-158 E: ok,ok G: ok,ok R: ok,--
+-168 E: no,ok G: ok,ok R: ok,--
+-176 E: no,ok G: ok,ok R: no,ok
+
+Selected cases:
+70,107,109,142,143
+best Erpobdella - 70,107,118,127,133,143,158,
+best Gammarus - 70,107,109,112,123,127,133,142,143,158,168,176
+best Radix - 70,107,109,111,112,132,142,168
+alternative radix type - 118,123,133,158
+
+Zn
+-na 116 E: -- G: R: 
+-121 E: --,-- G: ok,ok R: --,--
+-122 E: --,-- G: --,ok R: --,--
+-125 E: --,ok G: --,ok R: --,--
+-130 E: --,no G: --,ok R: ok,ok
+-131 E: ok,ok G: ok,ok R: --,--
+-144 E: no,no G: ok,ok R: no,no
+-na 145 E: G: R:
+-155 E: ok,ok G: ok,ok R: --,--
+-na 156 E: G: R:
+-159 E: no,no G: ok,ok R: --,--
+
+Selected cases:
+121,131,144,159
+best Erpobdella - not 144 all others ok
+best Gammarus - good means with some missing IGT
+best Radix - all fine
+Radix and erpo seem to have no reaction at this dose
+
+Me
+-na 136 E: G: R:
+-na 137 E: G: R:
+-na 147 E: G: R:
+-na 148 E: G: R:
+-na 151 E: G: R:
+-na 152 E: G: R:
+-na 153 E: G: R:
+-na 154 E: G: R:
+all used - 209 radix has false detection
+-165 E: G: R:
+-166 E: G: R:
+-209 E: G: R:
+-210 E: G: R:
+
+"""
+
 #%% IMPORTS
 
 import os

@@ -26,13 +26,15 @@ os.chdir('..')
 
 if __name__ == '__main__':
     
+    res_dir = r'D:\VP\ARTICLE2\Solvay'
+    
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     dope_df = dope_read_extend()
     
     subs = ['Acide Acrylique','L1000','H40','MHPC724','P520','A736','2A1','Soja']
     
-    sub1 = dope_df[dope_df['Substance'] == 'Acide Acrylique']
+    sub1 = dope_df[dope_df['Substance'] == 'AcideAcrylique']
     sub2 = dope_df[dope_df['Substance'] == 'L1000']
     sub3 = dope_df[dope_df['Substance'] == 'H40']
     sub4 = dope_df[dope_df['Substance'] == 'MHPC724']
@@ -63,61 +65,68 @@ if __name__ == '__main__':
         subs[7]:[384,392,425,511,520]
         }
     
-    for substance in subs:
+    plt.style.use('default')
     
-        for i in index_dict[substance]:
+    #for substance in subs:
+    
+    #for i in index_dict[substance]:
+    for i in [391,383,387,386,376]:     
+        substance = 'SITE'
+    
+        Tox = dope_df.iloc[i]['TxM']
+        root = [r'I:\TXM{}-PC\{}'.format(Tox,r) for r in dope_df.iloc[i]['root']]
+    
+        files = []
+        for r in root:
+            file = [r'{}\{}'.format(r,file) for file in os.listdir(r) if 'xls.zip' in file]
+            files.extend(file)
+            
+        try:
+            df = d_.read_merge(files)
+        except:
+            continue
         
-            Tox = dope_df.iloc[i]['TxM']
-            root = [r'I:\TXM{}-PC\{}'.format(Tox,r) for r in dope_df.iloc[i]['root']]
+        dfs = d_.preproc(df)
         
-            files = []
-            for r in root:
-                file = [r'{}\{}'.format(r,file) for file in os.listdir(r) if 'xls.zip' in file]
-                files.extend(file)
-                
-            try:
-                df = d_.read_merge(files)
-            except:
-                continue
+        dopage = dope_df.iloc[i]['End']
+        conc = dope_df.iloc[i]['Concentration']
+        molecule = dope_df.iloc[i]['Molecule']
+        
+        fig,ax = plt.subplots(3,1,figsize = (10,15))
+        
+        colors = ['blue','green','orange']
+        for j,species in enumerate([*specie]):
             
-            dfs = d_.preproc(df)
+            df = dfs[species]
+            dopage,date_range,conc,sub,molecule,etude = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
             
-            dopage = dope_df.iloc[i]['End']
-            conc = dope_df.iloc[i]['Concentration']
-            molecule = dope_df.iloc[i]['Molecule']
+            t_mins = 5
+            df_mean = d_.rolling_mean(df,t_mins)
             
-            fig,ax = plt.subplots(3,1,figsize = (10,15))
+            #add non meaned
             
-            for j,species in enumerate([*specie]):
-                
-                df = dfs[species]
-                dopage,date_range,conc,sub,molecule,etude = d_.dope_params(dope_df,Tox,df.index[0],df.index[-1])
-                
-                t_mins = 5
-                df_mean = d_.rolling_mean(df,t_mins)
-                
-                #add non meaned
-                
-                mean_distRAW = df.mean(axis = 1)
-                mean_dist = df_mean.mean(axis = 1)
-                
-                #zero time reference for dopage
-                zeroRAW = abs((dopage - mean_distRAW.index).total_seconds()).argmin()
-                zero = abs((dopage - mean_dist.index).total_seconds()).argmin()
-                
-                mean_distRAW.index = ((mean_distRAW.index - mean_distRAW.index[zeroRAW]).total_seconds()).astype(int)
-                mean_dist.index = ((mean_dist.index - mean_dist.index[zero]).total_seconds()).astype(int)
-                
-                quantile_distRAW = df.quantile(q = 0.05, axis = 1)**2
-                quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
-                quantile_distRAW.index = mean_distRAW.index
-                quantile_dist.index = mean_dist.index
-                
-                #claculate IGT
-                IGT_RAW = quantile_distRAW[(quantile_distRAW.index >= 0) & (quantile_distRAW.index < 12*3600)]
-                IGT = quantile_dist[(quantile_dist.index >= 0) & (quantile_dist.index < 12*3600)]
-                
-                #visualise
-                fig.suptitle('{} Study:{}'.format(substance,i))
-                ax[j].plot(IGT)
-                ax[j].set_title(specie[species])
+            mean_distRAW = df.mean(axis = 1)
+            mean_dist = df_mean.mean(axis = 1)
+            
+            #zero time reference for dopage
+            zeroRAW = abs((dopage - mean_distRAW.index).total_seconds()).argmin()
+            zero = abs((dopage - mean_dist.index).total_seconds()).argmin()
+            
+            mean_distRAW.index = ((mean_distRAW.index - mean_distRAW.index[zeroRAW]).total_seconds()).astype(int)
+            mean_dist.index = ((mean_dist.index - mean_dist.index[zero]).total_seconds()).astype(int)
+            
+            quantile_distRAW = df.quantile(q = 0.05, axis = 1)**2
+            quantile_dist = df_mean.quantile(q = 0.05, axis = 1)**2
+            quantile_distRAW.index = mean_distRAW.index
+            quantile_dist.index = mean_dist.index
+            
+            #claculate IGT
+            IGT_RAW = quantile_distRAW[(quantile_distRAW.index >= 0) & (quantile_distRAW.index < 8*3600)]
+            IGT = quantile_dist[(quantile_dist.index >= 0) & (quantile_dist.index < 8*3600)]
+            
+            #visualise
+            fig.suptitle('{} Study:{}'.format(substance,i)) #remove from figures!
+            ax[j].plot(IGT,color = colors[j])
+            ax[j].set_title(specie[species])
+            
+        fig.savefig(r'{}\{}_{}.jpg'.format(res_dir,substance,dopage.strftime('%d%m%Y_%H%M%S')),dci = 300)

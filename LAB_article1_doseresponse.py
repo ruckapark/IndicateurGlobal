@@ -89,8 +89,8 @@ unwanted_files = ['760_Methomyl2.xls','760_Methomyl5.xls','761_Methomyl4.xls','7
 #%% code
 if __name__ == "__main__":
     
-    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
-    substance = 'copper' #meth or copper
+    directory = r'D:\VP\ARTICLE1_methomyl\Data' #methomyl or copper
+    substance = 'meth' #meth or copper
     
     #Article1 data
     os.chdir(directory)
@@ -177,9 +177,11 @@ if __name__ == "__main__":
         
     sns.set_style("whitegrid")
     
+    boxplot_colors = {'Copper':sns.color_palette()[0],'Methomyl':sns.color_palette()[1]}
+    
     fig = plt.figure(figsize = (7,7))
     axe = fig.add_axes([0.15,0.1,0.8,0.8])
-    sns.boxplot(x = 'conc',y = 'int',data = result,ax = axe)
+    sns.boxplot(x = 'conc',y = 'int',data = result,ax = axe,color = boxplot_colors[s])
     
     #label number of values
     ns = result['conc'].value_counts().sort_index()
@@ -195,7 +197,7 @@ if __name__ == "__main__":
     
     for i in range(len(ns)):
         if s == 'Copper':
-            axe.text((i-0.1),pos[substance][i],'n = {}'.format(ns.iloc[i]))
+            axe.text((i-0.15),pos[substance][i],'n = {}'.format(ns.iloc[i]),fontsize = 14)
             
             #replace 10**4 tick with 10**0 and draw breaks on axis
             texts = ['$\\mathdefault{10^{2}}$','$\\mathdefault{10^{3}}$','$\\mathdefault{10^{0}}$','$\\mathdefault{10^{5}}$',
@@ -210,7 +212,7 @@ if __name__ == "__main__":
             axe.tick_params(axis = 'both', which = 'major', labelsize = 14)
             
         else:
-            axe.text((i-0.15),pos[substance][i],'n = {}'.format(ns.iloc[i]))
+            axe.text((i-0.2),pos[substance][i],'n = {}'.format(ns.iloc[i]),fontsize = 14)
             axe.plot([4],[10**5.432], marker='D')
             axe.tick_params(axis = 'both', which = 'major', labelsize = 14)
     

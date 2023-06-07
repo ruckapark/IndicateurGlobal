@@ -89,8 +89,8 @@ unwanted_files = ['760_Methomyl2.xls','760_Methomyl5.xls','761_Methomyl4.xls','7
 #%% code
 if __name__ == "__main__":
     
-    directory = r'D:\VP\ARTICLE1_methomyl\Data' #methomyl or copper
-    substance = 'meth' #meth or copper
+    directory = r'D:\VP\ARTICLE1_copper\Data' #methomyl or copper
+    substance = 'copper' #meth or copper
     
     #Article1 data
     os.chdir(directory)
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     axe.set_yscale('log')
     axe.set_title('Dose Response - {}'.format(s),fontsize = 20)
     axe.set_xlabel('Concentration $(\mu gL^{-1})$',fontsize = 18)
-    axe.set_ylabel('Total Avoidance $(mm^{2})$',fontsize = 18)
+    axe.set_ylabel('Total Avoidance $(mm^{2}s^{-1})$',fontsize = 18)
     
     for i in range(len(ns)):
         if s == 'Copper':

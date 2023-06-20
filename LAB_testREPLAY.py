@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing
 from datetime import timedelta
+from scipy import signal
 
 #%% IMPORT personal mods
 os.chdir('MODS')
@@ -36,15 +37,40 @@ roots = ['765_20211022',
 
 def TLCC(df1,df2):
     """ Time lagged cross correlation - expecting high positive value """
-    return None
+    arg_lags = np.zeros(df1.shape[1])
+    
+    for x,col in enumerate(df1.columns):
+    
+        i = np.random.randint(50,500)
+        
+        #what if dead organism (error?)
+        while True:
+            serie1 = df1[col].iloc[i:i+30]
+            if np.sum(serie1<10) > 10: #only take a series where there is significant movement
+                i += 100
+            else:
+                break
+        serie2 = df2[col].iloc[i:i+30]
+        if np.sum(serie2<10) > 10: continue
+        
+        c = np.correlate(serie1, serie2, 'full')
+        lags = signal.correlation_lags(len(serie1), len(serie2))
+        arg_lags[x] = lags[np.argmax(c)]
+    
+    return np.median(arg_lags)
 
-def ccf_values(series1, series2):
-    p = series1
-    q = series2
-    p = (p - np.mean(p)) / (np.std(p) * len(p))
-    q = (q - np.mean(q)) / (np.std(q))  
-    c = np.correlate(p, q, 'full')
-    return c
+def plot_distribution(val1,val2,species = 'R'):
+    xlims = {'E':350,'G':350,'R':200}
+    
+    plt.figure()
+    sns.histplot(val1)
+    sns.histplot(val2)
+    plt.xlim(0,xlims[species])
+    
+    plt.figure()
+    plt.plot(np.arange(0,1,0.01),np.array([np.quantile(val1,i/100) for i in range(100)]))
+    plt.plot(np.arange(0,1,0.01),np.array([np.quantile(val2,i/100) for i in range(100)]))
+
 
 #%% Code
 
@@ -73,35 +99,66 @@ if __name__ == '__main__':
     
     #register
     #dope_df = dope_read_extend()
-    
-    #%% Start with Radix
-    
-    for i in range(1,17):
-        plt.figure()
-        plt.plot(np.arange(dfs_og['R'].shape[0]),dfs_og['R'][i])
-        plt.plot(np.arange(dfs_copy['R'].shape[0]),dfs_copy['R'][i])
         
         
-    #%% Radix in first cage
-    df1,df2 = dfs_og['R'],dfs_copy['R']
+    #%% Use Gammarus for lag estimates (TLCC)
+    df1,df2 = dfs_og['G'],dfs_copy['G']
     indexing = min(df1.shape[0],df2.shape[0])
     df1,df2 = df1.iloc[:indexing],df2.iloc[:indexing]
     
-    #%% check for TLCC (time lag cross correlation)
+    tlc = TLCC(df1,df2)
+    print("Median lag between series: ",tlc)
+    if tlc != 0: print('tracking lag error!')
     
-    #extract 50 point series from copies - assume movement at beginning of distribution
-    ti = 50
-    #what if dead organism (error?)
-    while True:
-        serie1 = df1[1].iloc[ti:ti+200]
-        if np.sum(serie1<1) > 15:
-            ti += 100
-        else:
-            break
-    serie2 = df2[1].iloc[ti:ti+50]
     
-    c = np.correlate(serie1, serie2, 'full')
+    #%% Start with Radix
+    species = 'R'
+    df1,df2 = dfs_og[species],dfs_copy[species]
+    indexing = min(df1.shape[0],df2.shape[0])
+    df1,df2 = df1.iloc[:indexing],df2.iloc[:indexing]
+    df1_m,df2_m = d_.rolling_mean(df1,5),d_.rolling_mean(df2,5)
     
-    from scipy import signal
-    lags = signal.correlation_lags(len(serie1), len(serie2))
-    #no normalisation necessary
+    fig,axe = plt.subplots(2,8,figsize = (25,6),sharex = True)
+    for i in range(16):
+        axe[i//8,i%8].plot(np.arange(df1.shape[0]),df1[i+1])
+        axe[i//8,i%8].plot(np.arange(df2.shape[0]),df2[i+1])
+    fig.tight_layout()
+    
+    fig,axe = plt.subplots(2,8,figsize = (25,6),sharex = True,sharey = True)
+    for i in range(16):
+        axe[i//8,i%8].plot(np.arange(df1_m.shape[0]),df1_m[i+1])
+        axe[i//8,i%8].plot(np.arange(df2_m.shape[0]),df2_m[i+1])
+        axe[i//8,i%8].set_ylim([0,200])
+    fig.tight_layout()
+    
+    #plot distribution comparison
+    values1,values2 = df1.values.flatten(),df2.values.flatten()
+    values1,values2 = values1[values1 > 0],values2[values2 > 0]
+    
+    plot_distribution(values1,values2,species)
+    
+    #%% Erpobdella
+    species = 'E'
+    df1,df2 = dfs_og[species],dfs_copy[species]
+    indexing = min(df1.shape[0],df2.shape[0])
+    df1,df2 = df1.iloc[:indexing],df2.iloc[:indexing]
+    df1_m,df2_m = d_.rolling_mean(df1,5),d_.rolling_mean(df2,5)
+    
+    fig,axe = plt.subplots(2,8,figsize = (25,6),sharex = True)
+    for i in range(16):
+        axe[i//8,i%8].plot(np.arange(df1.shape[0]),df1[i+1])
+        axe[i//8,i%8].plot(np.arange(df2.shape[0]),df2[i+1])
+    fig.tight_layout()
+    
+    fig,axe = plt.subplots(2,8,figsize = (25,6),sharex = True,sharey = True)
+    for i in range(16):
+        axe[i//8,i%8].plot(np.arange(df1_m.shape[0]),df1_m[i+1])
+        axe[i//8,i%8].plot(np.arange(df2_m.shape[0]),df2_m[i+1])
+        axe[i//8,i%8].set_ylim([0,350])
+    fig.tight_layout()
+    
+    #plot distribution comparison
+    values1,values2 = df1.values.flatten(),df2.values.flatten()
+    values1,values2 = values1[values1 > 0],values2[values2 > 0]
+    
+    plot_distribution(values1,values2,species)

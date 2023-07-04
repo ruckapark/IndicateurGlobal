@@ -35,6 +35,8 @@ roots = ['765_20211022',
          '765_20220310',
          '765_20220317']
 
+roots_test = []
+
 def TLCC(df1,df2):
     """ Time lagged cross correlation - expecting high positive value """
     arg_lags = np.zeros(df1.shape[1])

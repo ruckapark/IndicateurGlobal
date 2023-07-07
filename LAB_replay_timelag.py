@@ -13,6 +13,7 @@ import seaborn as sns
 from sklearn import preprocessing
 from datetime import timedelta
 from scipy import signal
+from sklearn.linear_model import LogisticRegression
 
 #%% IMPORT personal mods
 os.chdir('MODS')
@@ -21,7 +22,7 @@ from dope_reg import dope_read_extend
 import dataread as d_
 os.chdir('..')
 
-#%% Relevant directories
+#%% Relevant directories - all performed on different PCs
 roots = ['765_20211022',
          '767_20211022',
          '762_20211022',
@@ -36,12 +37,13 @@ roots = ['765_20211022',
 roots_test = []
 
 def TLCC(df1,df2):
-    """ Time lagged cross correlation - expecting high positive value """
+    """ Time lagged cross correlation for two dataframes with multiple comlumns """
     args = np.array([])
     xreg = []
     yreg = []
     
-    for y in range(3):
+    #5 repetitions to generate more data per time point
+    for y in range(5):
         
         arg_lags = np.zeros(df1.shape[1])
         for x,col in enumerate(df1.columns):
@@ -87,6 +89,15 @@ def TLCC(df1,df2):
     
     return np.median(arg_lags),xreg,yreg
 
+def log_reg(x,y):
+    """ O.5 limit with logistic regression """
+    
+    clf = LogisticRegression(random_state=0).fit(x,y)
+    lim = (0.5 - clf.intercept_[0])/clf.coef_[0]
+    standardiser = [max(y) - 1,min(y)]
+    
+    return clf,lim,standardiser
+
 def plot_distribution(val1,val2,species = 'R',figname = None):
     xlims = {'E':1000,'G':1000,'R':200}
     
@@ -103,7 +114,32 @@ def plot_distribution(val1,val2,species = 'R',figname = None):
     
     if figname: plt.savefig(r'C:\Users\George\Documents\Figures\DeepReplay\{}_{}_QuantilePlot.jpg'.format(species,figname))
     
+def find_stepcutoff(x,y,cutoffs = [500,800,1100,1400,1700,2000]):
+    
+    lims = []
+    for i in range(0,5):
+        x1,x2 = np.copy(x),np.copy(x)
+        x1 = np.where((y == -i)&(x < cutoffs[i]),x1,np.nan)
+        x2 = np.where((y == -(i+1))&(x < cutoffs[i+1]),x2,np.nan)
+        
+        x1,x2 = x1[~np.isnan(x1)],x2[~np.isnan(x2)]
+        y1,y2 = -i*np.ones(len(x1)),-(i+1)*np.ones(len(x2))
+        
+        if len(x1) and len(x2):
+            xlog,ylog = np.concatenate((x1,x2)).reshape(-1,1),np.concatenate((y1,y2))
+            lim = log_reg(xlog,ylog)[1]
+        else:
+            lim = [0]
+        lims.append(lim[0])
+    return lims
 
+def plot_logit():
+    def model(x):
+        return 1 / (1 + np.exp(-x))
+    loss = model(xloss * clf.coef_ + clf.intercept_).ravel()
+    plt.plot(xloss, loss-2, color='red', linewidth=3)
+    
+    plt.axvline((0.5 - clf.intercept_[0])/clf.coef_[0])
 
 #%% Code
 
@@ -156,9 +192,39 @@ if __name__ == '__main__':
     xreg = pd.DataFrame(index = np.arange(max([len(x[c]) for c in [*x]])),columns = [*x])
     yreg = pd.DataFrame(index = np.arange(max([len(x[c]) for c in [*x]])),columns = [*x])
     
+    #%%
     for comp in [*x]:
         xreg[comp].iloc[:len(x[comp])] = x[comp]
         yreg[comp].iloc[:len(y[comp])] = y[comp]
+        
+    x_values,y_values = np.array(xreg,dtype = float).flatten(),np.array(yreg,dtype = float).flatten()
+    x_values,y_values = x_values[~np.isnan(x_values)],y_values[~np.isnan(y_values)]
+    
+    lims = np.array(find_stepcutoff(x_values, y_values))
+    lims_sub = {}
+        
+    fig_all = plt.figure(figsize=(10, 5))
+    axe_all = fig_all.add_axes([0.1,0.1,0.8,0.8])    
+    for lim in lims: axe_all.axvline(lim)
+    axe_all.set_ylim((-6,1))
+    axe_all.set_xlim((0,2200))
+    
+    fig_sub,axe_sub = plt.subplots(2,5,figsize = (20,7))
+    for i in range(10):
+        axe_all.scatter(xreg[i],yreg[i])
+        
+        axe_sub[i//5,i%5].scatter(xreg[i],yreg[i])
+        axe_sub[i//5,i%5].set_xlim((0,2000))
+        axe_sub[i//5,i%5].set_ylim((-6,1))
+        
+        lims_sub.update({i:np.array(find_stepcutoff(np.array(xreg[i].dropna(),dtype = float),np.array(yreg[i].dropna(),dtype = float)))})
+        
+        for lim in lims_sub[i]: axe_sub[i//5,i%5].axvline(lim)
+        
+    #check influence of PC
+    #for i in range()
+    
+        
     """
     #%% Start with Radix
     species = 'R'

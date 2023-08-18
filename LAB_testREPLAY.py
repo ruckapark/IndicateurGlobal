@@ -93,7 +93,7 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
-    for r in roots:
+    for r in [roots[0]]:
         Tox = r.split('_')[0]
         
         stem = [d for d in os.listdir(r'I:\TXM{}-PC'.format(Tox)) if r.split('_')[-1] in d]
@@ -115,16 +115,12 @@ if __name__ == '__main__':
         #reset index to seconds 0 at time of dopage - this code should exist somewhere
         
         #compare 2 IGT plots from before and after changes
-            
-            
-        #%% Use Gammarus for lag estimates (TLCC)
-        df1,df2 = dfs_og['G'],dfs_copy['G']
-        indexing = min(df1.shape[0],df2.shape[0])
-        df1,df2 = df1.iloc[:indexing],df2.iloc[:indexing]
         
-        tlc = TLCC(df1,df2)
-        print("Median lag between series: ",tlc)
-        if tlc != 0: print('tracking lag error!')
+        #%% Correct timelag        
+        time_correction = 0.997
+        
+        #from video find start time of data file
+        
         
         
         #%% Start with Radix

@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing
-from datetime import timedelta
+from datetime import timedelta,datetime
 from scipy import signal
 from sklearn.linear_model import LogisticRegression
 
@@ -143,6 +143,13 @@ def find_stepcutoff(x,y,cutoffs = [500,800,1100,1400,1700,2000]):
         lims.append(lim[0])
     return lims
 
+def read_starttime(root):
+    """ read datetime and convert to object from txt file """
+    startfile = open(r'{}\start.txt'.format(root),"r")
+    starttime = startfile.read()
+    startfile.close()
+    return datetime.strptime(starttime,'%d/%m/%Y %H:%M:%S')
+
 """
 def plot_logit():
     def model(x):
@@ -165,13 +172,14 @@ if __name__ == '__main__':
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     x,y = {},{}
-    for comp,r in enumerate(roots):
+    for comp,r in enumerate(roots[:3]):
         Tox = r.split('_')[0]
         
+        #navigate to correct directory
         stem = [d for d in os.listdir(r'I:\TXM{}-PC'.format(Tox)) if r.split('_')[-1] in d]
         root = r'I:\TXM{}-PC\{}'.format(Tox,stem[0])
         
-        #locate original and copy
+        #locate original and the copy (VP replay version - 'copy')
         file_og = r'{}\{}.xls.zip'.format(root,stem[0])
         file_copy = r'{}\{}.replay.xls.zip'.format(root,stem[0])
         
@@ -181,12 +189,10 @@ if __name__ == '__main__':
         
         #register
         dope_df = dope_read_extend()
+        dopage = d_.dope_params(dope_df,Tox,df_og.index[0],df_og.index[-1])[0]
         
-        #read first image of video to extract dopage, if not already there
-        
-        #reset index to seconds 0 at time of dopage - this code should exist somewhere
-        
-        #compare 2 IGT plots from before and after changes
+        #read start time of original video from txt file
+        starttime = read_starttime(root)
             
             
         #%% Use Gammarus for lag estimates (TLCC)

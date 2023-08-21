@@ -174,8 +174,8 @@ if __name__ == '__main__':
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     x,y = {},{}
-    for comp,r in enumerate(roots[:10]):
-        Tox = r.split('_')[0]
+    for comp,r in enumerate(roots[:1]):
+        Tox = int(r.split('_')[0])
         
         #navigate to correct directory
         stem = [d for d in os.listdir(r'I:\TXM{}-PC'.format(Tox)) if r.split('_')[-1] in d]
@@ -191,7 +191,7 @@ if __name__ == '__main__':
         
         #register
         dope_df = dope_read_extend()
-        #dopage = d_.dope_params(dope_df,Tox,dfs_og[[*dfs_og][0]].index[0],dfs_og[[*dfs_og][0]].index[-1])[0]
+        dopage = d_.dope_params(dope_df,Tox,dfs_og[[*dfs_og][0]].index[0],dfs_og[[*dfs_og][0]].index[-1])[0]
         
         #read start time of original video from txt file
         starttime = read_starttime(root)
@@ -241,13 +241,28 @@ if __name__ == '__main__':
         lims_sub.update({i:np.array(find_stepcutoff(np.array(xreg[i].dropna(),dtype = float),np.array(yreg[i].dropna(),dtype = float)))})
         
         for lim in lims_sub[i]: axe_sub[i//5,i%5].axvline(lim)
-        
-    #check influence of PC
-    #for i in range()
+    
+    #%% Show before and after
+    #timedelta start to dopage (shifted represented by underscore _)
+    time_index = np.array((df1.index - df1.index[0]).total_seconds())/60
+    fig,axe = plt.subplots(2,1,sharex = True,sharey = True)
+    axe[0].plot(time_index,np.array(df1[1]),color = 'blue')
+    axe[0].plot(time_index,np.array(df2[1]),color = 'orange')
+    
+    correction = 0.997
+    dopage_ = dopage - starttime
+    index_ = np.array((df2.index - df2.index[0]).total_seconds() * correction)
+    index_ = pd.to_datetime(index_*pd.Timedelta(1,unit = 's') + df1.index[0])
+    df2.index = index_
+    
+    time_index1 = np.array((df1.index - df1.index[0]).total_seconds())/60
+    time_index2 = np.array((df2.index - df2.index[0]).total_seconds())/60
+    axe[1].plot(time_index1,np.array(df1[1]),color = 'blue')
+    axe[1].plot(time_index2,np.array(df2[1]),color = 'red',linestyle = '--',alpha = 0.75)
     
         
-    """
     #%% Start with Radix
+    """
     species = 'R'
     df1,df2 = dfs_og[species],dfs_copy[species]
     indexing = min(df1.shape[0],df2.shape[0])

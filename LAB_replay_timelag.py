@@ -46,7 +46,7 @@ roots = ['765_20211022',
 
 roots_test = []
 
-def TLCC(df1,df2):
+def TLCC(df1,df2,plot = False):
     """ Time lagged cross correlation for two dataframes with multiple comlumns """
     args = np.array([])
     xreg = []
@@ -72,7 +72,8 @@ def TLCC(df1,df2):
                 arg_lags[x] = np.nan
                 continue
         
-            grad1,grad2 = serie1[1:] - serie1[:-1],serie2[1:] - serie2[:-1]
+            #test of using graident rather than raw value but no good.
+            #grad1,grad2 = serie1[1:] - serie1[:-1],serie2[1:] - serie2[:-1]
             
             if len(serie1): 
                 c = np.correlate(serie1, serie2, 'full')
@@ -82,13 +83,14 @@ def TLCC(df1,df2):
                 xreg.append(i)
                 yreg.append(lag)
                 
-                plt.figure()
-                plt.plot(np.arange(0,len(serie1)),serie1,color = 'blue')
-                plt.plot(np.arange(0,len(serie2)),serie2,color = 'orange')
-                if abs(lag) >= 1:
-                    plt.plot(np.arange(0,len(serie1))+lag,serie2,color = 'red',linestyle = '--')
-                    
-                plt.title('Cage {}, Time into experiment {}mins'.format(col,i*20//60))
+                if plot:
+                    plt.figure()
+                    plt.plot(np.arange(0,len(serie1)),serie1,color = 'blue')
+                    plt.plot(np.arange(0,len(serie2)),serie2,color = 'orange')
+                    if abs(lag) >= 1:
+                        plt.plot(np.arange(0,len(serie1))+lag,serie2,color = 'red',linestyle = '--')
+                        
+                    plt.title('Cage {}, Time into experiment {}mins'.format(col,i*20//60))
                 
             else:
                 arg_lags[x] = np.nan
@@ -172,7 +174,7 @@ if __name__ == '__main__':
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     x,y = {},{}
-    for comp,r in enumerate(roots[:3]):
+    for comp,r in enumerate(roots[:10]):
         Tox = r.split('_')[0]
         
         #navigate to correct directory
@@ -189,18 +191,17 @@ if __name__ == '__main__':
         
         #register
         dope_df = dope_read_extend()
-        dopage = d_.dope_params(dope_df,Tox,df_og.index[0],df_og.index[-1])[0]
+        #dopage = d_.dope_params(dope_df,Tox,dfs_og[[*dfs_og][0]].index[0],dfs_og[[*dfs_og][0]].index[-1])[0]
         
         #read start time of original video from txt file
         starttime = read_starttime(root)
-            
             
         #%% Use Gammarus for lag estimates (TLCC)
         df1,df2 = dfs_og['G'],dfs_copy['G']
         indexing = min(df1.shape[0],df2.shape[0])
         df1,df2 = df1.iloc[:indexing],df2.iloc[:indexing]
         
-        tlc,xreg,yreg = TLCC(df1,df2)
+        tlc,xreg,yreg = TLCC(df1,df2,plot = False)
         x.update({comp:xreg})
         y.update({comp:yreg})
         print("Median lag between series: ",tlc)
@@ -220,19 +221,21 @@ if __name__ == '__main__':
     
     lims = np.array(find_stepcutoff(x_values, y_values))
     lims_sub = {}
+    
+    #%% scatter plots
         
     fig_all = plt.figure(figsize=(10, 5))
     axe_all = fig_all.add_axes([0.1,0.1,0.8,0.8])    
     for lim in lims: axe_all.axvline(lim)
-    axe_all.set_ylim((-6,1))
+    axe_all.set_ylim((-7,2))
     axe_all.set_xlim((0,2200))
     
     fig_sub,axe_sub = plt.subplots(2,5,figsize = (20,7))
-    for i in range(10):
+    for i in range(len(x)):
         axe_all.scatter(xreg[i],yreg[i])
         
         axe_sub[i//5,i%5].scatter(xreg[i],yreg[i])
-        axe_sub[i//5,i%5].set_xlim((0,2000))
+        axe_sub[i//5,i%5].set_xlim((0,2100))
         axe_sub[i//5,i%5].set_ylim((-6,1))
         
         lims_sub.update({i:np.array(find_stepcutoff(np.array(xreg[i].dropna(),dtype = float),np.array(yreg[i].dropna(),dtype = float)))})

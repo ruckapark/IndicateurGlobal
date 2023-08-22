@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing
-from datetime import timedelta
+from datetime import timedelta,datetime
 from scipy import signal
 
 #%% IMPORT personal mods
@@ -33,36 +33,17 @@ roots = ['765_20211022',
          '763_20220225',
          '764_20220310',
          '765_20220310',
-         '765_20220317']
-
-roots_test = []
-
-def TLCC(df1,df2):
-    """ Time lagged cross correlation - expecting high positive value """
-    arg_lags = np.zeros(df1.shape[1])
-    
-    for x,col in enumerate(df1.columns):
-    
-        i = np.random.randint(50,500)
-        
-        #what if dead organism (error?)
-        while True:
-            serie1 = df1[col].iloc[i:i+30]
-            if np.sum(serie1<10) > 10: #only take a series where there is significant movement
-                i += 100
-            else:
-                break
-        serie2 = df2[col].iloc[i:i+30]
-        if np.sum(serie2<10) > 10: continue
-        
-        if len(serie1): 
-            c = np.correlate(serie1, serie2, 'full')
-            lags = signal.correlation_lags(len(serie1), len(serie2))
-            arg_lags[x] = lags[np.argmax(c)]
-        else:
-            continue
-    
-    return np.median(arg_lags)
+         '765_20220317',
+         '760_20220708',
+         '761_20220708',
+         '762_20220708',
+         '763_20220708',
+         '764_20220708',
+         '765_20220708',
+         '766_20220708',
+         '767_20220708',
+         '768_20220708',
+         '769_20220708']
 
 def plot_distribution(val1,val2,species = 'R',figname = None):
     xlims = {'E':1000,'G':1000,'R':200}
@@ -80,7 +61,20 @@ def plot_distribution(val1,val2,species = 'R',figname = None):
     
     if figname: plt.savefig(r'C:\Users\George\Documents\Figures\DeepReplay\{}_{}_QuantilePlot.jpg'.format(species,figname))
     
+def read_starttime(root):
+    """ read datetime and convert to object from txt file """
+    startfile = open(r'{}\start.txt'.format(root),"r")
+    starttime = startfile.read()
+    startfile.close()
+    return datetime.strptime(starttime,'%d/%m/%Y %H:%M:%S')
 
+def correct_index(df,start,correction = 0.997):
+    """ Account for time warp error in video generation """
+    ind = np.array((df.index - df.index[0]).total_seconds() * correction)
+    ind = pd.to_datetime(ind*pd.Timedelta(1,unit = 's') + pd.to_datetime(start))
+    df_ = df.copy()
+    df_.index = ind
+    return df_
 
 #%% Code
 
@@ -92,12 +86,15 @@ average difference between values
 if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
+    time_correction = 0.997
     
     for r in [roots[0]]:
-        Tox = r.split('_')[0]
+        
+        Tox = int(r.split('_')[0])
         
         stem = [d for d in os.listdir(r'I:\TXM{}-PC'.format(Tox)) if r.split('_')[-1] in d]
         root = r'I:\TXM{}-PC\{}'.format(Tox,stem[0])
+        starttime = read_starttime(root)
         
         #locate original and copy
         file_og = r'{}\{}.xls.zip'.format(root,stem[0])
@@ -107,39 +104,30 @@ if __name__ == '__main__':
         df_og,df_copy = d_.read_merge([file_og]),d_.read_merge([file_copy])
         dfs_og,dfs_copy = d_.preproc(df_og),d_.preproc(df_copy)
         
-        #register
-        dope_df = dope_read_extend()
+        for s in specie:
+            dfs_copy[s] = correct_index(dfs_copy[s], starttime, time_correction)
         
-        #read first image of video to extract dopage, if not already there
-        
-        #reset index to seconds 0 at time of dopage - this code should exist somewhere
-        
-        #compare 2 IGT plots from before and after changes
-        
-        #%% Correct timelag        
-        time_correction = 0.997
-        
-        #from video find start time of data file
-        
-        
-        
-        #%% Start with Radix
         species = 'R'
         df1,df2 = dfs_og[species],dfs_copy[species]
-        indexing = min(df1.shape[0],df2.shape[0])
-        df1,df2 = df1.iloc[:indexing],df2.iloc[:indexing]
         df1_m,df2_m = d_.rolling_mean(df1,5),d_.rolling_mean(df2,5)
+        
+        #%% Read in calibration scales and add to preprocessing
+        
+        #%% Start with Radix
+        
+        t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
+        tm_ind1,tm_ind2 = np.array((df1_m.index - df1_m.index[0]).total_seconds()),np.array((df2_m.index - df2_m.index[0]).total_seconds())
         
         fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
         for i in range(16):
-            axe[i//4,i%4].plot(np.arange(df1.shape[0]),df1[i+1])
-            axe[i//4,i%4].plot(np.arange(df2.shape[0]),df2[i+1])
+            axe[i//4,i%4].plot(t_ind1,df1[i+1])
+            axe[i//4,i%4].plot(t_ind2,df2[i+1])
         fig.tight_layout()
         
         fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True,sharey = True)
         for i in range(16):
-            axe[i//4,i%4].plot(np.arange(df1_m.shape[0]),df1_m[i+1])
-            axe[i//4,i%4].plot(np.arange(df2_m.shape[0]),df2_m[i+1])
+            axe[i//4,i%4].plot(tm_ind1,df1_m[i+1])
+            axe[i//4,i%4].plot(tm_ind2,df2_m[i+1])
             axe[i//4,i%4].set_ylim([0,800])
         fig.tight_layout()
         

@@ -43,7 +43,7 @@ roots = ['765_20211022',
          '766_20220708',
          '767_20220708',
          '768_20220708',
-         '769_20220708',]
+         '769_20220708']
 
 roots_test = []
 
@@ -111,22 +111,6 @@ def log_reg(x,y):
     
     return clf,lim,standardiser
 
-def plot_distribution(val1,val2,species = 'R',figname = None):
-    xlims = {'E':1000,'G':1000,'R':200}
-    
-    plt.figure()
-    sns.histplot(val1)
-    sns.histplot(val2)
-    plt.xlim(0,xlims[species])
-    
-    if figname: plt.savefig(r'C:\Users\George\Documents\Figures\DeepReplay\{}_{}_histogram.jpg'.format(species,figname))
-    
-    plt.figure()
-    plt.plot(np.arange(0,1,0.01),np.array([np.quantile(val1,i/100) for i in range(100)]))
-    plt.plot(np.arange(0,1,0.01),np.array([np.quantile(val2,i/100) for i in range(100)]))
-    
-    if figname: plt.savefig(r'C:\Users\George\Documents\Figures\DeepReplay\{}_{}_QuantilePlot.jpg'.format(species,figname))
-    
 def find_stepcutoff(x,y,cutoffs = [500,800,1100,1400,1700,2000]):
     
     lims = []

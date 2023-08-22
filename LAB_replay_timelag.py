@@ -21,6 +21,7 @@ from data_merge import merge_dfs
 from dope_reg import dope_read_extend
 import dataread as d_
 os.chdir('..')
+import LAB_readxls as xls_
 
 #%% Relevant directories - all performed on different PCs
 roots = ['765_20211022',
@@ -253,38 +254,25 @@ if __name__ == '__main__':
     dopage_ = dopage - starttime
     index_ = np.array((df2.index - df2.index[0]).total_seconds() * correction)
     index_ = pd.to_datetime(index_*pd.Timedelta(1,unit = 's') + df1.index[0])
-    df2.index = index_
+    df2_ = df2.copy()
+    df2_.index = index_
     
     time_index1 = np.array((df1.index - df1.index[0]).total_seconds())/60
-    time_index2 = np.array((df2.index - df2.index[0]).total_seconds())/60
+    time_index2 = np.array((df2_.index - df2_.index[0]).total_seconds())/60
     axe[1].plot(time_index1,np.array(df1[1]),color = 'blue')
-    axe[1].plot(time_index2,np.array(df2[1]),color = 'red',linestyle = '--',alpha = 0.75)
+    axe[1].plot(time_index2,np.array(df2_[1]),color = 'red',linestyle = '--',alpha = 0.75)
     
-        
-    #%% Start with Radix
-    """
-    species = 'R'
-    df1,df2 = dfs_og[species],dfs_copy[species]
-    indexing = min(df1.shape[0],df2.shape[0])
-    df1,df2 = df1.iloc[:indexing],df2.iloc[:indexing]
-    df1_m,df2_m = d_.rolling_mean(df1,5),d_.rolling_mean(df2,5)
+    #%% Calculate IGT    
+    t_mins = 5
+    df_m1,df_m2 = d_.rolling_mean(df1,t_mins),d_.rolling_mean(df2_,t_mins)
     
-    fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-    for i in range(16):
-        axe[i//4,i%4].plot(np.arange(df1.shape[0]),df1[i+1])
-        axe[i//4,i%4].plot(np.arange(df2.shape[0]),df2[i+1])
-    fig.tight_layout()
+    xls_.IGT(df_m1,dopage)
     
-    fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True,sharey = True)
-    for i in range(16):
-        axe[i//4,i%4].plot(np.arange(df1_m.shape[0]),df1_m[i+1])
-        axe[i//4,i%4].plot(np.arange(df2_m.shape[0]),df2_m[i+1])
-        axe[i//4,i%4].set_ylim([0,800])
-    fig.tight_layout()
     
-    #plot distribution comparison
-    values1,values2 = df1.values.flatten(),df2.values.flatten()
-    values1,values2 = values1[values1 > 0],values2[values2 > 0]
+    qq1,qq2 = df_m1.quantile(q = 0.05, axis = 1)**2,df_m2.quantile(q = 0.05, axis = 1)**2
     
-    plot_distribution(values1,values2,species,figname = r)
-    """
+    plt.figure()
+    plt.plot(df_m1.index,np.array(qq1))
+    plt.plot(df_m2.index,np.array(qq2))
+    
+    plt.axvline(dopage,color = 'red')

@@ -26,6 +26,46 @@ os.chdir('..')
 
 #%% FUNCTIONS
 
+def IGT(df,dopage = None):
+    IGT = df.quantile(q = 0.05, axis = 1)**2
+    if dopage:
+        if type(df.index) == pd.core.indexes.datetimes.DatetimeIndex:
+            time = np.array((df.index - df.index[0]).total_seconds())/60
+            plt.figure()
+            plt.plot(time,np.array(IGT),label = 'IGT')
+            plt.axvline((dopage - df.index[0]).total_seconds()/60,label = dopage.strftime('%d/%m/%Y %H:%M:%S'))
+            plt.legend()
+        elif type(df.index) == pd.core.indexes.base.Index:
+            if type(dopage) == pd._libs.tslibs.timestamps.Timestamp:
+                print('Dopage should be numeric in seconds')
+            else:
+                plt.figure()
+                plt.plot(IGT.index,np.array(IGT),label = 'IGT')
+                plt.axvline(dopage/60,label = dopage.strftime('{} minutes'.format(dopage/60)))
+                plt.legend()
+    return IGT
+
+def mean():
+    mean = df.mean(axis = 1)
+    if dopage:
+        if type(df.index) == pd.core.indexes.datetimes.DatetimeIndex:
+            time = np.array((df.index - df.index[0]).total_seconds())/60
+            plt.figure()
+            plt.plot(time,np.array(mean),label = 'mean movement')
+            plt.axvline((dopage - df.index[0]).seconds/60,label = dopage.strftime('%d/%m/%Y %H:%M:%S'))
+            plt.legend()
+        elif type(df.index) == pd.core.indexes.base.Index:
+            if type(dopage) == pd._libs.tslibs.timestamps.Timestamp:
+                print('Dopage should be numeric in seconds')
+            else:
+                plt.figure()
+                plt.plot(mean.index,np.array(mean),label = 'mean')
+                plt.axvline(dopage/60,label = dopage.strftime('{} minutes'.format(dopage/60)))
+                plt.legend()
+    return IGT
+
+#%% main
+
 if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}

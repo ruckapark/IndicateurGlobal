@@ -359,6 +359,23 @@ def convert_date(filename):
     
     return pd.to_datetime(date, format = "%Y/%m/%d %H:%M:%S")
 
+def read_calibrationscale(Tox,start):
+    """
+    Read relevant scales
+    
+    Read calibrations after given date for input date (start)
+    Return most recent after date, or last in list
+    """
+    calibrations = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\calibrationscales.csv',header = None)
+    calibrations[1] = pd.to_datetime(calibrations,format = '%Y%m%d')
+    calibrations = calibrations[calibrations[0] == Tox]
+    
+    #dates are one out of shift, select most recent after date
+    try:
+        return np.array(calibrations[calibrations[1] > start].iloc[0][2:])
+    except:
+        return np.array(calibrations.iloc[-1][2:])
+
 
 def correct_dates(file):   
     

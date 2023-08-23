@@ -367,7 +367,7 @@ def read_calibrationscale(Tox,start):
     Return most recent after date, or last in list
     """
     calibrations = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\calibrationscales.csv',header = None)
-    calibrations[1] = pd.to_datetime(calibrations,format = '%Y%m%d')
+    calibrations[1] = pd.to_datetime(calibrations[1],format = '%Y%m%d')
     calibrations = calibrations[calibrations[0] == Tox]
     
     #dates are one out of shift, select most recent after date
@@ -375,6 +375,13 @@ def read_calibrationscale(Tox,start):
         return np.array(calibrations[calibrations[1] > start].iloc[0][2:])
     except:
         return np.array(calibrations.iloc[-1][2:])
+    
+def calibrate(dfs,Tox,start):
+    """ Use read calibration to correct dfs """
+    calibration = read_calibrationscale(Tox, start)
+    for i,s in enumerate(dfs):
+        dfs[s] = dfs[s]/calibration[i]
+    return dfs
 
 
 def correct_dates(file):   

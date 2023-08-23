@@ -87,8 +87,10 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     time_correction = 0.997
+    thresh_ = [[],[]]
+    values_old,values_new = np.array([]),np.array([])
     
-    for r in [roots[0]]:
+    for r in roots[5:6]:
         
         Tox = int(r.split('_')[0])
         
@@ -103,6 +105,7 @@ if __name__ == '__main__':
         #read file
         df_og,df_copy = d_.read_merge([file_og]),d_.read_merge([file_copy])
         dfs_og,dfs_copy = d_.preproc(df_og),d_.preproc(df_copy)
+        dfs_og,dfs_copy = d_.calibrate(dfs_og,Tox,starttime),d_.calibrate(dfs_copy,Tox,starttime)
         
         for s in specie:
             dfs_copy[s] = correct_index(dfs_copy[s], starttime, time_correction)
@@ -111,7 +114,6 @@ if __name__ == '__main__':
         df1,df2 = dfs_og[species],dfs_copy[species]
         df1_m,df2_m = d_.rolling_mean(df1,5),d_.rolling_mean(df2,5)
         
-        #%% Read in calibration scales and add to preprocessing
         
         #%% Start with Radix
         
@@ -135,30 +137,47 @@ if __name__ == '__main__':
         values1,values2 = df1.values.flatten(),df2.values.flatten()
         values1,values2 = values1[values1 > 0],values2[values2 > 0]
         
-        plot_distribution(values1,values2,species,figname = r)
-        
-        #%% Erpobdella
-        species = 'E'
-        df1,df2 = dfs_og[species],dfs_copy[species]
-        indexing = min(df1.shape[0],df2.shape[0])
-        df1,df2 = df1.iloc[:indexing],df2.iloc[:indexing]
-        df1_m,df2_m = d_.rolling_mean(df1,5),d_.rolling_mean(df2,5)
-        
-        fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-        for i in range(16):
-            axe[i//4,i%4].plot(np.arange(df1.shape[0]),df1[i+1])
-            axe[i//4,i%4].plot(np.arange(df2.shape[0]),df2[i+1])
-        fig.tight_layout()
-        
-        fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True,sharey = True)
-        for i in range(16):
-            axe[i//4,i%4].plot(np.arange(df1_m.shape[0]),df1_m[i+1])
-            axe[i//4,i%4].plot(np.arange(df2_m.shape[0]),df2_m[i+1])
-            axe[i//4,i%4].set_ylim([0,800])
-        fig.tight_layout()
-        
-        #plot distribution comparison
-        values1,values2 = df1.values.flatten(),df2.values.flatten()
-        values1,values2 = values1[values1 > 0],values2[values2 > 0]
+        values_old,values_new = np.hstack((values_old,values1)),np.hstack((values_new,values2))
         
         plot_distribution(values1,values2,species,figname = r)
+        
+        #two thresholds, one for evaluation and one for direct cut
+        thresh_bur = np.quantile(values2,0.98)
+        thresh_mid = np.quantile(values2,0.97) #could also base this on organism size as well
+        thresh_[0].append(thresh_bur),thresh_[1].append(thresh_mid)
+        
+        
+    plot_distribution(values_old,values_new,species)
+    
+    #%%
+    #thresh_high = round(np.quantile(values_new,0.99))*1.1
+    #thresh_mid = round(np.quantile(values_new,0.98))
+    thresh_high = 33
+    thresh_mid = 21
+    
+    for i in df2.columns:
+        replay = df2[i]
+        old = df1[i]
+        outliers = replay[replay > thresh_high]
+        
+        for t in outliers.index:
+            ind_old = old[(old.index > t - pd.Timedelta(11,'s')) & (old.index < t + pd.Timedelta(11,'s'))].index[0]
+            if old.loc[ind_old] < thresh_mid:
+                df2.loc[t][i] = old.loc[ind_old]
+            else:
+                df2.loc[t][i] = 0.0
+                
+    fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+    for i in range(16):
+        axe[i//4,i%4].plot(t_ind1,df1[i+1])
+        axe[i//4,i%4].plot(t_ind2,df2[i+1])
+    fig.tight_layout()
+    
+    df2__m = d_.rolling_mean(df2,5)
+    #%%
+    fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+    for i in range(16):
+        axe[i//4,i%4].plot(tm_ind1,df1_m[i+1])
+        axe[i//4,i%4].plot(tm_ind2,df2__m[i+1],color = 'r',linestyle = '--',alpha = 0.5)
+        axe[i//4,i%4].set_ylim([0,80])
+    fig.tight_layout()

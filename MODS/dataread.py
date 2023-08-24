@@ -77,8 +77,37 @@ def read_merge(files,datechange = True,oldfiles = False):
     else:
         return merge_dfs_nodatechange(dfs)
     
+def read_quant(files,datechange = True):
     
-def preproc(df, oldfiles = False):
+    dfs = []
+    for file in files:
+        df = pd.read_csv(file,sep = '\t',encoding = 'utf-16')
+        df = df[df['datatype'] == 'Quantization'] 
+
+        #sort values sn = , pn = ,location = E01-16 etcc., aname = A01-04,B01-04 etc.
+        df = df.sort_values(by = ['sn','pn','location','aname'])
+        df = df.reset_index(drop = True)
+
+        #treat time variable - this gets the days and months the wrong way round
+        try:
+            df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%d/%m/%Y %H:%M:%S')
+        except ValueError:
+            try:
+                df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                df['time'] = pd.to_datetime(df['stdate'] + " " + df['sttime'], format = '%m/%d/%Y %H:%M:%S')
+        
+        maxrows = len(df)//48
+        df = df.iloc[:maxrows*48]
+        dfs.append(df)
+        
+    if datechange:    
+        return merge_dfs(dfs)
+    else:
+        return merge_dfs_nodatechange(dfs)
+    
+    
+def preproc(df, oldfiles = False,quant = False):
     """
     Preprocessing of the df to get it in correct form
     Return dictionary of dfs for each species - only with distances
@@ -100,6 +129,7 @@ def preproc(df, oldfiles = False):
         
         #moi le column 'animal' n'a que des NaNs
         good_cols = ['time','location','stdate','specie','inact','inadur','inadist','smlct','smldur','smldist','larct','lardur','lardist','emptyct','emptydur']
+        if quant: good_cols = ['time','location','stdate','specie','frect','fredur','midct','middur']
         df = df[good_cols]
         
         #create animal 1-16 for all species
@@ -108,24 +138,44 @@ def preproc(df, oldfiles = False):
     df['abtime'] = df['time'].astype('int64')//1e9 #convert nano
     df['abtime'] = df['abtime'] - df['abtime'][0]
     
-    #total distance inadist is only zeros?
-    df['dist'] = df['inadist'] + df['smldist'] + df['lardist']
-    
-    #seperate into three dfs
-    dfs = {}
-    for spec in specie:
+    if not quant:
+        #total distance inadist is only zeros?
+        df['dist'] = df['inadist'] + df['smldist'] + df['lardist']
         
-        temp = df[df['specie'] == specie[spec]]   
-        timestamps = temp['time'].unique()
-        animals = temp['animal'].unique()   
-        df_dist = 0
-        df_dist = pd.DataFrame(index = timestamps,columns = animals)
+        #seperate into three dfs
+        dfs = {}
+        for spec in specie:
+            
+            temp = df[df['specie'] == specie[spec]]   
+            timestamps = temp['time'].unique()
+            animals = temp['animal'].unique()   
+            df_dist = 0
+            df_dist = pd.DataFrame(index = timestamps,columns = animals)
+            
+            for i in animals:
+                temp_df = temp[temp['animal'] == i]
+                df_dist[i] = temp_df['dist'].values
+            
+            dfs.update({spec:df_dist})
+    else:
+        #total distance inadist is only zeros?
+        df['midtime'] = df['middur'] / (df['fredur'] + df['middur'])
         
-        for i in animals:
-            temp_df = temp[temp['animal'] == i]
-            df_dist[i] = temp_df['dist'].values
-        
-        dfs.update({spec:df_dist})
+        #seperate into three dfs
+        dfs = {}
+        for spec in specie:
+            
+            temp = df[df['specie'] == specie[spec]]   
+            timestamps = temp['time'].unique()
+            animals = temp['animal'].unique()   
+            df_quant = 0
+            df_quant = pd.DataFrame(index = timestamps,columns = animals)
+            
+            for i in animals:
+                temp_df = temp[temp['animal'] == i]
+                df_quant[i] = temp_df['midtime'].values
+            
+            dfs.update({spec:df_quant})
         
     return dfs
  
@@ -191,6 +241,12 @@ def remove_dead(df,species):
             
         print(max_counts)
         return [col+1 for col,val in enumerate(max_counts) if val > threshold_dead[species]]
+    
+def remove_dead_known(dfs,morts):
+    
+    for s in dfs:
+        dfs[s] = dfs[s].drop(columns = morts[s])
+    return dfs
             
 def gendirs(et_no):
     

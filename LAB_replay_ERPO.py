@@ -150,6 +150,74 @@ if __name__ == '__main__':
             axe_q[i//4,i%4].plot(t_ind1,df_q[i+1],color = 'r',alpha = 0.3)
         fig.tight_layout()
         
+        
+        #%% Start threshold treatments
+        thresh_high = 250
+        thresh_mid = 150
+        thresh_low = 100
+        thresh_q = 0.8
+        for i in df2.columns:
+            replay = df2[i]
+            old = df1[i]
+            outliers_high = replay[replay > thresh_high]
+            
+            ## loop high outliers
+            for t in outliers_high.index:
+                
+                #surrounding timestamps from old df +- 30 seconds
+                qs = df_q[(df_q.index > t - pd.Timedelta(30,'s')) & (df_q.index < t + pd.Timedelta(30,'s'))][i]
+                
+                #get timestamp of highest value in quantization
+                ind_old = qs.idxmax()
+                
+                #if max quant around outliers below threshold
+                if qs[ind_old] < thresh_q:
+                    
+                    #if old value is low use this
+                    if old.loc[ind_old] < thresh_low:
+                        df2.loc[t][i] = old.loc[ind_old]
+                    #otherwise add 0.0
+                    else:
+                        df2.loc[t][i] = 0.0
+                        
+                #if high quantization value
+                else:
+                    if old.loc[ind_old] < replay[t]:
+                        df2.loc[t][i] = old.loc[ind_old]
+                        
+            print('{} high values filtered in column: {}'.format(outliers_high.shape[0],i))
+            
+            replay = df2[i]
+            old = df1[i]
+            outliers_mid = replay[replay > thresh_mid]
+            
+            ## loop mid outliers
+            for t in outliers_mid.index:
+                
+                #surrounding values from old df +- 20 seconds
+                old_close = old[(df1.index > t - pd.Timedelta(20,'s')) & (df1.index < t + pd.Timedelta(20,'s'))]
+                
+                #if corresponding value less than low thresh
+                if old_close.values.max() < df2.loc[t][i]:
+                    df2.loc[t][i] = old_close.values.max()
+                
+            print('{} mid values filtered in column: {}'.format(outliers_mid.shape[0],i))
+            
+            
+        # low outliers - check surrounding values for high quantile 95, if so replace with old value
+        
+        fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+        for i in range(16):
+            if i+1 not in df1.columns: continue
+            axe[i//4,i%4].plot(t_ind1,df1[i+1])
+            axe[i//4,i%4].plot(t_ind2,df2[i+1],color = 'red',alpha = 0.75)
+        fig.tight_layout()
+        
+        
+        
+        
+        
+        """
         fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True,sharey = True)
         for i in range(16):
             if i+1 not in df1.columns: continue
@@ -158,18 +226,39 @@ if __name__ == '__main__':
             axe[i//4,i%4].set_ylim([0,800])
         fig.tight_layout()
         
-        #%% plot distribution comparison
-        values1,values2 = df1.values.flatten(),df2.values.flatten()
-        values1,values2 = values1[values1 > 0],values2[values2 > 0]
+        #%% Quantization
         
-        values_old,values_new = np.hstack((values_old,values1)),np.hstack((values_new,values2))
-        
-        plot_distribution(values1,values2,species,figname = r)
-        
-        #two thresholds, one for evaluation and one for direct cut
-        thresh_bur = np.quantile(values2,0.98)
-        thresh_mid = np.quantile(values2,0.97) #could also base this on organism size as well
-        thresh_[0].append(thresh_bur),thresh_[1].append(thresh_mid)
+        fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True,sharey = True)
+        df_qm = d_.rolling_mean(df_q,20)
+        tq = (df_qm.index - df_qm.index[0]).total_seconds()
+        for i in range(16):
+            if i+1 not in df_qm.columns: continue
+            axe[i//4,i%4].plot(tq,df_qm[i+1])
+        fig.tight_layout()
         
         
-    plot_distribution(values_old,values_new,species)
+        #periods of high activity
+        high_activity = {
+            1:[0,100000],
+            2:[0,100000],
+            3:[0,60000],
+            4:[40000,60000],
+            5:[43000,60000],
+            6:[0,40000],
+            7:[0,55000],
+            9:[0,100000],
+            11:[0,35000],
+            12:[0,60000],
+            13:[30000,40000],
+            14:[65000,100000],
+            15:[0,120000],
+            16:[40000,120000]}
+        
+        for col in high_activity:
+            start_ = starttime + pd.Timedelta(high_activity[col][0],unit = 's')
+            end_ = starttime + pd.Timedelta(high_activity[col][1],unit = 's')
+            
+            og,copy = df1[col][(df1.index > start_) & (df1.index < end_)],df2[col][(df2.index > start_) & (df2.index < end_)]
+            
+            print('Original quantile: {}'.format(int(og.quantile(0.95))),'Copied quantile: {}'.format(int(copy.quantile(0.95))))
+        """

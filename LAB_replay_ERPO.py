@@ -108,7 +108,7 @@ def filter_erpo(df_r,df,df_q):
     
     for col in df_r.columns:
         replay = df_r[col]
-        old = df_r[col]
+        old = df[col]
         
         """
         high outliers 
@@ -127,18 +127,18 @@ def filter_erpo(df_r,df,df_q):
                 
                 #if old value is low use this
                 if old.loc[ind_old] < thresh_erpo['low']:
-                    df_r.loc[t][i] = old.loc[ind_old]
+                    df_r.loc[t][col] = old.loc[ind_old]
                 #otherwise add 0.0
                 else:
-                    df2.loc[t][i] = 0.0
+                    df_r.loc[t][col] = 0.0
                     
             #if high quantization value
             else:
                 if old.loc[ind_old] < replay[t]:
-                    df2.loc[t][i] = old.loc[ind_old]
+                    df_r.loc[t][col] = old.loc[ind_old]
         
         replay = df_r[col]
-        old = df_r[col]
+        old = df[col]
                     
         """
         mid outliers 
@@ -151,8 +151,8 @@ def filter_erpo(df_r,df,df_q):
             old_close = old[(df.index > t - pd.Timedelta(20,'s')) & (df.index < t + pd.Timedelta(20,'s'))]
             
             #if corresponding value less than low thresh
-            if old_close.values.max() < df_r.loc[t][i]:
-                df_r.loc[t][i] = old_close.values.max()
+            if old_close.values.max() < df_r.loc[t][col]:
+                df_r.loc[t][col] = old_close.values.max()
                     
     
     return df_r
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     time_correction = 0.997
     values_old,values_new = np.array([]),np.array([])
     
-    for r in roots[2:3]:
+    for r in roots[0:1]:
         
         Tox = int(r.split('_')[0])
         
@@ -279,3 +279,6 @@ if __name__ == '__main__':
             axe[i//4,i%4].plot(t_ind1,df1[i+1])
             axe[i//4,i%4].plot(t_ind2,df2[i+1],color = 'red',alpha = 0.75)
         fig.tight_layout()
+        
+        #%%
+        filter_erpo(df2,df1,df_q)

@@ -13,7 +13,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import timedelta
+import csv
+from datetime import timedelta,datetime
 from data_merge import merge_dfs,merge_dfs_nodatechange
 
 # FUNCTIONS
@@ -439,6 +440,33 @@ def calibrate(dfs,Tox,start):
         dfs[s] = dfs[s]/calibration[i]
     return dfs
 
+def read_starttime(root):
+    """ read datetime and convert to object from txt file """
+    startfile = open(r'{}\start.txt'.format(root),"r")
+    starttime = startfile.read()
+    startfile.close()
+    return datetime.strptime(starttime,'%d/%m/%Y %H:%M:%S')
+
+def read_dead(directory):
+    
+    morts = {'E':[],'G':[],'R':[]}
+    with open(r'{}\morts.csv'.format(directory)) as f:
+        reader_obj = csv.reader(f)
+        for row in reader_obj:
+            try:
+                int(row[1])
+                morts[row[0][0]] = [int(x) for x in row[1:]]
+            except ValueError:
+                continue
+    return morts
+
+def correct_index(df,start,correction = 0.997):
+    """ Account for time warp error in video generation """
+    ind = np.array((df.index - df.index[0]).total_seconds() * correction)
+    ind = pd.to_datetime(ind*pd.Timedelta(1,unit = 's') + pd.to_datetime(start))
+    df_ = df.copy()
+    df_.index = ind
+    return df_
 
 def correct_dates(file):   
     

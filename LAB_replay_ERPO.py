@@ -168,7 +168,6 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     time_correction = 0.997
-    thresh_ = [[],[]]
     values_old,values_new = np.array([]),np.array([])
     
     for r in roots[2:3]:
@@ -280,53 +279,3 @@ if __name__ == '__main__':
             axe[i//4,i%4].plot(t_ind1,df1[i+1])
             axe[i//4,i%4].plot(t_ind2,df2[i+1],color = 'red',alpha = 0.75)
         fig.tight_layout()
-        
-        
-        
-        
-        
-        """
-        fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True,sharey = True)
-        for i in range(16):
-            if i+1 not in df1.columns: continue
-            axe[i//4,i%4].plot(tm_ind1,df1_m[i+1])
-            axe[i//4,i%4].plot(tm_ind2,df2_m[i+1])
-            axe[i//4,i%4].set_ylim([0,800])
-        fig.tight_layout()
-        
-        #%% Quantization
-        
-        fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True,sharey = True)
-        df_qm = d_.rolling_mean(df_q,20)
-        tq = (df_qm.index - df_qm.index[0]).total_seconds()
-        for i in range(16):
-            if i+1 not in df_qm.columns: continue
-            axe[i//4,i%4].plot(tq,df_qm[i+1])
-        fig.tight_layout()
-        
-        
-        #periods of high activity
-        high_activity = {
-            1:[0,100000],
-            2:[0,100000],
-            3:[0,60000],
-            4:[40000,60000],
-            5:[43000,60000],
-            6:[0,40000],
-            7:[0,55000],
-            9:[0,100000],
-            11:[0,35000],
-            12:[0,60000],
-            13:[30000,40000],
-            14:[65000,100000],
-            15:[0,120000],
-            16:[40000,120000]}
-        
-        for col in high_activity:
-            start_ = starttime + pd.Timedelta(high_activity[col][0],unit = 's')
-            end_ = starttime + pd.Timedelta(high_activity[col][1],unit = 's')
-            
-            og,copy = df1[col][(df1.index > start_) & (df1.index < end_)],df2[col][(df2.index > start_) & (df2.index < end_)]
-            
-            print('Original quantile: {}'.format(int(og.quantile(0.95))),'Copied quantile: {}'.format(int(copy.quantile(0.95))))
-        """

@@ -147,6 +147,34 @@ def plot_logit():
     plt.axvline((0.5 - clf.intercept_[0])/clf.coef_[0])
 """
 
+def filter_gammarus(df_r,df):
+    
+    """
+    df_ is the replayed version with corrected index
+    df original
+    
+    use Radix specific algorithm to filter data and create new df
+    """
+    
+    thresh_gammarus = {
+        'high':220,
+        'mid':200
+        }
+    
+    for col in df_r.columns:
+        replay = df_r[col]
+        old = df[col]
+        outliers = replay[replay > thresh_gammarus['high']]
+        
+        for t in outliers.index:
+            ind_old = old[(old.index > t - pd.Timedelta(11,'s')) & (old.index < t + pd.Timedelta(11,'s'))].index[0]
+            if old.loc[ind_old] < thresh_gammarus['mid']:
+                df_r.loc[t][col] = old.loc[ind_old]
+            else:
+                df_r.loc[t][col] = 0.0
+    
+    return df_r
+
 #%% Code
 
 """
@@ -170,16 +198,16 @@ if __name__ == '__main__':
         file_og = r'{}\{}.xls.zip'.format(root,stem[0])
         file_copy = r'{}\{}.replay.xls.zip'.format(root,stem[0])
         
+        starttime = d_.read_starttime(root)
+        
         #read file
         df_og,df_copy = d_.read_merge([file_og]),d_.read_merge([file_copy])
         dfs_og,dfs_copy = d_.preproc(df_og),d_.preproc(df_copy)
+        dfs_og,dfs_copy = d_.calibrate(dfs_og,Tox,starttime),d_.calibrate(dfs_copy,Tox,starttime)
         
         #register
         dope_df = dope_read_extend()
         dopage = d_.dope_params(dope_df,Tox,dfs_og[[*dfs_og][0]].index[0],dfs_og[[*dfs_og][0]].index[-1])[0]
-        
-        #read start time of original video from txt file
-        starttime = read_starttime(root)
             
         #%% Use Gammarus for lag estimates (TLCC)
         df1,df2 = dfs_og['G'],dfs_copy['G']
@@ -231,8 +259,8 @@ if __name__ == '__main__':
     #timedelta start to dopage (shifted represented by underscore _)
     time_index = np.array((df1.index - df1.index[0]).total_seconds())/60
     fig,axe = plt.subplots(2,1,sharex = True,sharey = True)
-    axe[0].plot(time_index,np.array(df1[1]),color = 'blue')
-    axe[0].plot(time_index,np.array(df2[1]),color = 'orange')
+    axe[0].plot(time_index,np.array(df1[14]),color = 'blue')
+    axe[0].plot(time_index,np.array(df2[14]),color = 'orange')
     
     correction = 0.997
     dopage_ = dopage - starttime

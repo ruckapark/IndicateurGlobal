@@ -33,7 +33,7 @@ def IGT(df,dopage = None):
             time = np.array((df.index - df.index[0]).total_seconds())/60
             plt.figure()
             plt.plot(time,np.array(IGT),label = 'IGT')
-            plt.axvline((dopage - df.index[0]).total_seconds()/60,label = dopage.strftime('%d/%m/%Y %H:%M:%S'),color = 'r', linestykle = '--')
+            plt.axvline((dopage - df.index[0]).total_seconds()/60,label = dopage.strftime('%d/%m/%Y %H:%M:%S'),color = 'r', linestyle = '--')
             plt.legend()
         elif type(df.index) == pd.core.indexes.base.Index:
             if type(dopage) == pd._libs.tslibs.timestamps.Timestamp:

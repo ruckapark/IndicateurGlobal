@@ -89,6 +89,74 @@ def read_dead(directory):
                 continue
     return morts
 
+def filter_erpo(df_r,df,df_q):
+    
+    """
+    df_ is the replayed version with corrected index
+    df original
+    df_q quantization original
+    
+    use Erpo specific algorithm to filter data and create new df
+    """
+    
+    thresh_erpo = {
+        'high':250,
+        'mid':150,
+        'low':100,
+        'q':0.8
+        }
+    
+    for col in df_r.columns:
+        replay = df_r[col]
+        old = df_r[col]
+        
+        """
+        high outliers 
+        check quantization to decided if noise or real high value
+        """
+        outliers_high = replay[replay > thresh_erpo['high']]
+        for t in outliers_high.index:
+            
+            #surrounding quantizations from surrounding df
+            qs = df_q[(df_q.index > t - pd.Timedelta(30,'s')) & (df_q.index < t + pd.Timedelta(30,'s'))][col]
+            #get timestamp of highest value in quantization
+            ind_old = qs.idxmax()
+            
+            #if max quantif around outliers below 0.8 or quantization threshold
+            if qs[ind_old] < thresh_erpo['q']:
+                
+                #if old value is low use this
+                if old.loc[ind_old] < thresh_erpo['low']:
+                    df_r.loc[t][i] = old.loc[ind_old]
+                #otherwise add 0.0
+                else:
+                    df2.loc[t][i] = 0.0
+                    
+            #if high quantization value
+            else:
+                if old.loc[ind_old] < replay[t]:
+                    df2.loc[t][i] = old.loc[ind_old]
+        
+        replay = df_r[col]
+        old = df_r[col]
+                    
+        """
+        mid outliers 
+        check for more reasonable values in original df
+        """
+        outliers_mid = replay[replay > thresh_erpo['mid']]
+        for t in outliers_mid.index:
+            
+            #surrounding values from old df +- 20 seconds
+            old_close = old[(df.index > t - pd.Timedelta(20,'s')) & (df.index < t + pd.Timedelta(20,'s'))]
+            
+            #if corresponding value less than low thresh
+            if old_close.values.max() < df_r.loc[t][i]:
+                df_r.loc[t][i] = old_close.values.max()
+                    
+    
+    return df_r
+
 #%% Code
 
 """
@@ -135,7 +203,7 @@ if __name__ == '__main__':
         df_quant_mid = d_.read_quant([file_og])
         df_q = d_.preproc(df_quant_mid,quant = True)[species]
         
-        #%% Start with Radix
+        #%%
         
         t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
         tm_ind1,tm_ind2 = np.array((df1_m.index - df1_m.index[0]).total_seconds()),np.array((df2_m.index - df2_m.index[0]).total_seconds())

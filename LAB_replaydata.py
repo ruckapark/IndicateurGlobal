@@ -32,7 +32,7 @@ os.chdir('..')
 #%% IMPORT replay files
 from LAB_replay_ERPO import filter_erpo
 #from LAB_replay_timelag import filter_gammarus
-#from LAB_replay_RADIX import filter_radix
+from LAB_replay_RADIX import filter_radix
 
 #%% Relevant directories
 roots = ['765_20211022',
@@ -90,6 +90,9 @@ if __name__ == "__main__":
     morts = d_.read_dead(root)
     dfs_og,dfs_copy = d_.remove_dead_known(dfs_og,morts),d_.remove_dead_known(dfs_copy,morts)
     
+    #%% Gammarus
+    
+    #%% Erpobdella
     species = 'E'
     df1,df2 = dfs_og[species],dfs_copy[species]
     
@@ -97,6 +100,7 @@ if __name__ == "__main__":
     df_quant_mid = d_.read_quant([file_og])
     df_q = d_.preproc(df_quant_mid,quant = True)[species]
     
+    #get seconds time indexes and plot original graph with quant figure
     t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
     fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
     axe_q = np.empty(axe.shape,dtype = object)
@@ -109,3 +113,36 @@ if __name__ == "__main__":
     fig.tight_layout()
     
     df_r = filter_erpo(df2,df1,df_q)
+    
+    #plot amended time series
+    fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+    for i in range(16):
+        if i+1 not in df1.columns: continue
+        axe[i//4,i%4].plot(t_ind1,df1[i+1])
+        axe[i//4,i%4].plot(t_ind2,df_r[i+1],color = 'red',alpha = 0.75)
+    fig.tight_layout()
+    
+    #%% Radix
+    species = 'R'
+    df1,df2 = dfs_og[species],dfs_copy[species]
+    
+    #get seconds time indexes and plot original graph with quant figure
+    t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
+    fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+    axe_q = np.empty(axe.shape,dtype = object)
+    for i in range(16):
+        axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
+        if i+1 not in df1.columns: continue
+        axe[i//4,i%4].plot(t_ind1,df1[i+1])
+        axe[i//4,i%4].plot(t_ind2,df2[i+1])
+    fig.tight_layout()
+    
+    df_r = filter_radix(df2,df1)
+    
+    #plot amended time series
+    fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+    for i in range(16):
+        if i+1 not in df1.columns: continue
+        axe[i//4,i%4].plot(t_ind1,df1[i+1])
+        axe[i//4,i%4].plot(t_ind2,df_r[i+1],color = 'red',alpha = 0.75)
+    fig.tight_layout()

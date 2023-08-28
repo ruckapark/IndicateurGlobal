@@ -76,6 +76,34 @@ def correct_index(df,start,correction = 0.997):
     df_.index = ind
     return df_
 
+def filter_radix(df_r,df):
+    
+    """
+    df_ is the replayed version with corrected index
+    df original
+    
+    use Radix specific algorithm to filter data and create new df
+    """
+    
+    thresh_radix = {
+        'high':33,
+        'mid':21
+        }
+    
+    for col in df_r.columns:
+        replay = df_r[col]
+        old = df[col]
+        outliers = replay[replay > thresh_radix['high']]
+        
+        for t in outliers.index:
+            ind_old = old[(old.index > t - pd.Timedelta(11,'s')) & (old.index < t + pd.Timedelta(11,'s'))].index[0]
+            if old.loc[ind_old] < thresh_radix['mid']:
+                df_r.loc[t][col] = old.loc[ind_old]
+            else:
+                df_r.loc[t][col] = 0.0
+    
+    return df_r
+
 #%% Code
 
 """

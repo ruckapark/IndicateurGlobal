@@ -58,3 +58,9 @@ if __name__ == '__main__':
                 except:
                     print('Check zipfiles: ',output_dir)
                     continue
+                
+        try:
+            shutil.move(r'{}\morts.csv'.format(input_dir),r'{}\morts.csv'.format(output_dir))
+        except:
+            print('Morts.csv missing for: ',output_dir.split('\\')[-1])
+            

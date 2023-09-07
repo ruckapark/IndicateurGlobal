@@ -22,6 +22,7 @@ def zipfile():
 
 if __name__ == '__main__':
     
+    #root specific to each PC
     root = r'C:\Users\George\Documents\ReplayTxM_files\763'
     roots = read_roots(root)
     
@@ -31,6 +32,7 @@ if __name__ == '__main__':
         input_dir = r'{}\{}'.format(root,r)
         os.chdir(input_dir)
         
+        #check only one phr file - if not delete files
         input_file = [f for f in os.listdir() if '.phr' in f]
         if len(input_file) != 1:
             print('Check root:', r)
@@ -38,11 +40,15 @@ if __name__ == '__main__':
         else:
             input_file = input_file[0].split('.')[0]
         
-        #locate correct output in I drive and use shutil to copy to this location
-        [Tox,direc] = input_dir.split('\\')[-1].split('_')
-        base_out = r'I:\TXM{}-PC'.format(Tox)
-        dir_out = [d for d in os.listdir(base_out) if direc in d][0]
-        output_dir = r'{}\{}'.format(base_out,dir_out)
+        #locate correct output in I drive and use shutil to copy to this location - if failed then no matching directory
+        try:
+            [Tox,direc] = input_dir.split('\\')[-1].split('_')
+            base_out = r'I:\TXM{}-PC'.format(Tox)
+            dir_out = [d for d in os.listdir(base_out) if direc in d][0]
+            output_dir = r'{}\{}'.format(base_out,dir_out)
+        except:
+            print('No matching directory: ',input_dir.split('\\')[-1].split('_')[-1])
+            continue
         
         for extension in ['.phr.zip','.raw.zip','.xls.zip']:
             f = r'{}\{}{}'.format(input_dir,input_file,extension)

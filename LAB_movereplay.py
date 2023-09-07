@@ -54,7 +54,7 @@ if __name__ == '__main__':
             f = r'{}\{}{}'.format(input_dir,input_file,extension)
             if not os.path.isfile(r'{}\{}.replay.{}'.format(output_dir,dir_out,extension)):
                 try:
-                    shutil.move(f,r'{}\{}.replay.{}'.format(output_dir,dir_out,extension))
+                    shutil.move(f,r'{}\{}.replay{}'.format(output_dir,dir_out,extension))
                 except:
                     print('Check zipfiles: ',output_dir)
                     continue

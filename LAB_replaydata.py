@@ -48,6 +48,7 @@ if __name__ == "__main__":
     roots = read_roots()
     failed = []
     nodead = []
+    datafailure = []
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
@@ -108,161 +109,179 @@ if __name__ == "__main__":
         except:
             nodead.append(r)
         
-        #%% Gammarus
-        if file_og:
-            species = 'G'
-            df1,df2 = dfs_og[species],dfs_copy[species]
-            
-            #get seconds time indexes and plot original graph with quant figure
-            t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            axe_q = np.empty(axe.shape,dtype = object)
-            for i in range(16):
-                axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
-                if i+1 not in df1.columns: continue
-                axe[i//4,i%4].plot(t_ind1,df1[i+1])
-                axe[i//4,i%4].plot(t_ind2,df2[i+1])
-            fig.tight_layout()
-            
-            df_r = filter_gammarus(df2,df1)
-            replay_data.update({species:df_r.copy()})
-            
-            #plot amended time series
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            for i in range(16):
-                if i+1 not in df1.columns: continue
-                axe[i//4,i%4].plot(t_ind1,df1[i+1])
-                axe[i//4,i%4].plot(t_ind2,df_r[i+1],color = 'red',alpha = 0.75)
-            fig.tight_layout()
-            
-            #%% Erpobdella
-            species = 'E'
-            df1,df2 = dfs_og[species],dfs_copy[species]
-            
-            #read in quantization and check for count of mid bursts
-            df_quant_mid = d_.read_quant([file_og])
-            df_q = d_.preproc(df_quant_mid,quant = True)[species]
-            
-            #get seconds time indexes and plot original graph with quant figure
-            t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            axe_q = np.empty(axe.shape,dtype = object)
-            for i in range(16):
-                axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
-                if i+1 not in df1.columns: continue
-                axe[i//4,i%4].plot(t_ind1,df1[i+1])
-                axe[i//4,i%4].plot(t_ind2,df2[i+1])
-                axe_q[i//4,i%4].plot(t_ind1,df_q[i+1],color = 'r',alpha = 0.3)
-            fig.tight_layout()
-            
-            df_r = filter_erpo(df2,df1,df_q)
-            replay_data.update({species:df_r.copy()})
-            
-            #plot amended time series
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            for i in range(16):
-                if i+1 not in df1.columns: continue
-                axe[i//4,i%4].plot(t_ind1,df1[i+1])
-                axe[i//4,i%4].plot(t_ind2,df_r[i+1],color = 'red',alpha = 0.75)
-            fig.tight_layout()
-            
-            #%% Radix
-            species = 'R'
-            df1,df2 = dfs_og[species],dfs_copy[species]
-            
-            #get seconds time indexes and plot original graph with quant figure
-            t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            axe_q = np.empty(axe.shape,dtype = object)
-            for i in range(16):
-                axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
-                if i+1 not in df1.columns: continue
-                axe[i//4,i%4].plot(t_ind1,df1[i+1])
-                axe[i//4,i%4].plot(t_ind2,df2[i+1])
-            fig.tight_layout()
-            
-            df_r = filter_radix(df2,df1)
-            replay_data.update({species:df_r.copy()})
-            
-            #plot amended time series
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            for i in range(16):
-                if i+1 not in df1.columns: continue
-                axe[i//4,i%4].plot(t_ind1,df1[i+1])
-                axe[i//4,i%4].plot(t_ind2,df_r[i+1],color = 'red',alpha = 0.75)
-            fig.tight_layout()
-            
-            #%% write files and zip
-            for s in replay_data:
-                filename = '{}_{}'.format(stem.split('-')[0],specie[s])
-                if os.path.isfile(r'{}\{}.zip'.format(root,filename)):
-                    print('Files already exist')
-                    break
-                compression_options = dict(method='zip', archive_name='{}.csv'.format(filename))
-                replay_data[s].to_csv(r'{}\{}.csv.zip'.format(root,filename))
         
-        
-        
-        else:
+        try:
+            #%% Gammarus
+            if file_og:
+                species = 'G'
+                df1,df2 = dfs_og[species],dfs_copy[species]
+                
+                #get seconds time indexes and plot original graph with quant figure
+                t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                axe_q = np.empty(axe.shape,dtype = object)
+                for i in range(16):
+                    axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
+                    if i+1 not in df1.columns: continue
+                    axe[i//4,i%4].plot(t_ind1,df1[i+1])
+                    axe[i//4,i%4].plot(t_ind2,df2[i+1])
+                fig.tight_layout()
+                
+                fig.savefig(r'{}\G_rawdata.jpg'.format(r))
+                
+                df_r = filter_gammarus(df2,df1)
+                replay_data.update({species:df_r.copy()})
+                
+                #plot amended time series
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                for i in range(16):
+                    if i+1 not in df1.columns: continue
+                    axe[i//4,i%4].plot(t_ind1,df1[i+1])
+                    axe[i//4,i%4].plot(t_ind2,df_r[i+1],color = 'red',alpha = 0.75)
+                fig.tight_layout()
+                
+                fig.savefig(r'{}\G_before_after.jpg'.format(r))
+                
+                #%% Erpobdella
+                species = 'E'
+                df1,df2 = dfs_og[species],dfs_copy[species]
+                
+                #read in quantization and check for count of mid bursts
+                df_quant_mid = d_.read_quant([file_og])
+                df_q = d_.preproc(df_quant_mid,quant = True)[species]
+                
+                #get seconds time indexes and plot original graph with quant figure
+                t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                axe_q = np.empty(axe.shape,dtype = object)
+                for i in range(16):
+                    axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
+                    if i+1 not in df1.columns: continue
+                    axe[i//4,i%4].plot(t_ind1,df1[i+1])
+                    axe[i//4,i%4].plot(t_ind2,df2[i+1])
+                    axe_q[i//4,i%4].plot(t_ind1,df_q[i+1],color = 'r',alpha = 0.3)
+                fig.tight_layout()
+                
+                fig.savefig(r'{}\E_rawdata.jpg'.format(r))
+                
+                df_r = filter_erpo(df2,df1,df_q)
+                replay_data.update({species:df_r.copy()})
+                
+                #plot amended time series
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                for i in range(16):
+                    if i+1 not in df1.columns: continue
+                    axe[i//4,i%4].plot(t_ind1,df1[i+1])
+                    axe[i//4,i%4].plot(t_ind2,df_r[i+1],color = 'red',alpha = 0.75)
+                fig.tight_layout()
+                
+                fig.savefig(r'{}\E_before_after.jpg'.format(r))
+                
+                #%% Radix
+                species = 'R'
+                df1,df2 = dfs_og[species],dfs_copy[species]
+                
+                #get seconds time indexes and plot original graph with quant figure
+                t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                axe_q = np.empty(axe.shape,dtype = object)
+                for i in range(16):
+                    axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
+                    if i+1 not in df1.columns: continue
+                    axe[i//4,i%4].plot(t_ind1,df1[i+1])
+                    axe[i//4,i%4].plot(t_ind2,df2[i+1])
+                fig.tight_layout()
+                
+                fig.savefig(r'{}\R_rawdata.jpg'.format(r))
+                
+                df_r = filter_radix(df2,df1)
+                replay_data.update({species:df_r.copy()})
+                
+                #plot amended time series
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                for i in range(16):
+                    if i+1 not in df1.columns: continue
+                    axe[i//4,i%4].plot(t_ind1,df1[i+1])
+                    axe[i//4,i%4].plot(t_ind2,df_r[i+1],color = 'red',alpha = 0.75)
+                fig.tight_layout()
+                
+                fig.savefig(r'{}\R_before_after.jpg'.format(r))
+                
+                #%% write files and zip
+                for s in replay_data:
+                    filename = '{}_{}'.format(stem.split('-')[0],specie[s])
+                    if os.path.isfile(r'{}\{}.zip'.format(root,filename)):
+                        print('Files already exist')
+                        break
+                    compression_options = dict(method='zip', archive_name='{}.csv'.format(filename))
+                    replay_data[s].to_csv(r'{}\{}.csv.zip'.format(root,filename))
             
-            species = 'G'
-            df = dfs_copy[species]
             
-            #get seconds time indexes and plot original graph with quant figure
-            t_ind = np.array((df.index - df.index[0]).total_seconds())
             
-            df_r = filter_gammarus(df,df1 = None)
-            replay_data.update({species:df_r.copy()})
-            
-            #plot amended time series
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            for i in range(16):
-                if i+1 not in df.columns: continue
-                axe[i//4,i%4].plot(t_ind,df_r[i+1])
-            fig.tight_layout()
-            
-            #%% Erpobdella
-            species = 'E'
-            df = dfs_copy[species]
-            
-            #get seconds time indexes and plot original graph with quant figure
-            t_ind = np.array((df.index - df.index[0]).total_seconds())
-            
-            df_r = filter_erpo(df,df1 = None,df_q = None)
-            replay_data.update({species:df_r.copy()})
-            
-            #plot amended time series
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            for i in range(16):
-                if i+1 not in df.columns: continue
-                axe[i//4,i%4].plot(t_ind,df_r[i+1])
-            fig.tight_layout()
-            
-            #%% Radix
-            species = 'R'
-            df = dfs_copy[species]
-            
-            #get seconds time indexes and plot original graph with quant figure
-            t_ind = np.array((df.index - df.index[0]).total_seconds())
-            
-            df_r = filter_radix(df,df1 = None)
-            replay_data.update({species:df_r.copy()})
-            
-            #plot amended time series
-            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-            for i in range(16):
-                if i+1 not in df.columns: continue
-                axe[i//4,i%4].plot(t_ind,df_r[i+1])
-            fig.tight_layout()
-            
-            #%% write files and zip
-            for s in replay_data:
-                filename = '{}_{}'.format(stem.split('-')[0],specie[s])
-                if os.path.isfile(r'{}\{}.zip'.format(root,filename)):
-                    print('Files already exist')
-                    break
-                compression_options = dict(method='zip', archive_name=f'{filename}.csv')
-                replay_data[s].to_csv(r'{}\{}.zip'.format(root,filename))
+            else:
+                
+                species = 'G'
+                df = dfs_copy[species]
+                
+                #get seconds time indexes and plot original graph with quant figure
+                t_ind = np.array((df.index - df.index[0]).total_seconds())
+                
+                df_r = filter_gammarus(df,df1 = None)
+                replay_data.update({species:df_r.copy()})
+                
+                #plot amended time series
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                for i in range(16):
+                    if i+1 not in df.columns: continue
+                    axe[i//4,i%4].plot(t_ind,df_r[i+1])
+                fig.tight_layout()
+                
+                #%% Erpobdella
+                species = 'E'
+                df = dfs_copy[species]
+                
+                #get seconds time indexes and plot original graph with quant figure
+                t_ind = np.array((df.index - df.index[0]).total_seconds())
+                
+                df_r = filter_erpo(df,df1 = None,df_q = None)
+                replay_data.update({species:df_r.copy()})
+                
+                #plot amended time series
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                for i in range(16):
+                    if i+1 not in df.columns: continue
+                    axe[i//4,i%4].plot(t_ind,df_r[i+1])
+                fig.tight_layout()
+                
+                #%% Radix
+                species = 'R'
+                df = dfs_copy[species]
+                
+                #get seconds time indexes and plot original graph with quant figure
+                t_ind = np.array((df.index - df.index[0]).total_seconds())
+                
+                df_r = filter_radix(df,df1 = None)
+                replay_data.update({species:df_r.copy()})
+                
+                #plot amended time series
+                fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+                for i in range(16):
+                    if i+1 not in df.columns: continue
+                    axe[i//4,i%4].plot(t_ind,df_r[i+1])
+                fig.tight_layout()
+                
+                #%% write files and zip
+                for s in replay_data:
+                    filename = '{}_{}'.format(stem.split('-')[0],specie[s])
+                    if os.path.isfile(r'{}\{}.zip'.format(root,filename)):
+                        print('Files already exist')
+                        break
+                    compression_options = dict(method='zip', archive_name=f'{filename}.csv')
+                    replay_data[s].to_csv(r'{}\{}.zip'.format(root,filename))
+        except:
+            datafailure.append(r)
+            continue
     
     for f in failed: print('Check starttime for: {}'.format(f))
     for f in nodead: print('Check dead for: {}'.format(f))
+    for f in datafailure: print('Check dataread for: {}'.format(f))

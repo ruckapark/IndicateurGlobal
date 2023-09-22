@@ -44,13 +44,15 @@ def read_roots():
 
 if __name__ == "__main__":
     
+    #read files to be studied
     roots = read_roots()
     failed = []
     nodead = []
     
+    specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
+    
     for r in roots:
     
-        specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
         time_correction = 0.997
         values_old,values_new = np.array([]),np.array([])
         

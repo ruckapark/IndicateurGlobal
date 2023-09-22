@@ -15,6 +15,8 @@ import os
 
 if __name__ == '__main__':
     
+    addfiles = []
+    
     for Tox in range(760,770):
         
         basedir = r'I:\TXM{}-PC'.format(Tox)
@@ -22,10 +24,23 @@ if __name__ == '__main__':
         dirs = [d for d in os.listdir() if os.path.isdir(d)]
         for d in dirs:
             files = os.listdir(d)
-            replayxls = [f for f in files is 'replay.xls' in files]
-            xls = [f for f in files if '.xls' in ]
+            replayxls = [f for f in files if 'replay.xls' in f]
+            xls = [f for f in files if '.xls' in f]
             if len(replayxls) == 1:
-                if len xls == 2:
+                directory = r'{}\{}'.format(basedir,d)
+                if len(xls) == 2:
                     #add to list
-                elif len xls == 1:
-                    print('Check dir')
+                    addfiles.append(directory)
+                else:
+                    print('Check dir: ',directory)
+                    
+    #add all files
+    addfile = r'D:\VP\Viewpoint_data\replaydata.txt'
+    if os.path.isfile(addfile):
+        os.remove(addfile)
+        file = open(addfile,'w')
+        for item in addfiles:
+        	file.write(item+"\n")
+        file.close()
+    else:
+        print('Try again file does not exist!')

@@ -28,6 +28,11 @@ if __name__ == '__main__':
             xls = [f for f in files if '.xls' in f]
             if len(replayxls) == 1:
                 directory = r'{}\{}'.format(basedir,d)
+                
+                #Check if already treated
+                if len([f for f in files if 'Gammarus.zip' in f]):
+                    continue
+                
                 if len(xls) == 2:
                     #add to list
                     addfiles.append(directory)

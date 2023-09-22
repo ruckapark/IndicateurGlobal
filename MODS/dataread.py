@@ -159,8 +159,13 @@ def preproc(df, oldfiles = False,quant = False):
             
             dfs.update({spec:df_dist})
     else:
+        
+        
         #total distance inadist is only zeros?
         df['midtime'] = df['middur'] / (df['fredur'] + df['middur'])
+        
+        #replace nans with 1
+        df = df.fillna(1.)
         
         #seperate into three dfs
         dfs = {}

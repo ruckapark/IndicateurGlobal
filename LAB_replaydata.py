@@ -40,7 +40,7 @@ def read_roots():
     
     file1 = open(r'D:\VP\Viewpoint_data\replaydata.txt', 'r')
     Lines = file1.readlines()
-    return [r.split(',')[0] for r in Lines]
+    return [r.split(',')[0][:-1] for r in Lines]  #-1 is short fix for function read \n at end of every line
 
 if __name__ == "__main__":
     
@@ -51,16 +51,19 @@ if __name__ == "__main__":
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
-    for r in roots:
+    #debug
+    for r in ['I:\\TXM761-PC\\20220527-111630']:
+    #for r in roots:
     
         time_correction = 0.997
         values_old,values_new = np.array([]),np.array([])
         
         replay_data = {}
         
-        Tox = int(r.split('_')[0])
-        stem = [d for d in os.listdir(r'I:\TXM{}-PC'.format(Tox)) if r.split('_')[-1] in d]
-        root = r'I:\TXM{}-PC\{}'.format(Tox,stem[0])
+        Tox = int(r.split('\\')[1].split('-')[0][3:])
+        #stem = [d for d in os.listdir(r'I:\TXM{}-PC'.format(Tox)) if r.split('_')[-1] in d]
+        stem = r.split('\\')[-1]
+        root = r
         
         try:
             starttime = d_.read_starttime(root)
@@ -68,12 +71,12 @@ if __name__ == "__main__":
             failed.append(r)
             continue
         
-        #read old and new xls file - what if the old file no longer exists? simplify functions.
+        #read old and new xls file - what if the old file no longer exists? simplify functions
         try:
-            file_og = r'{}\{}.xls.zip'.format(root,stem[0])
+            file_og = r'{}\{}.xls.zip'.format(root,stem)
         except:
             file_og = None
-        file_copy = r'{}\{}.replay.xls.zip'.format(root,stem[0])
+        file_copy = r'{}\{}.replay.xls.zip'.format(root,stem)
         
         #read file, wrangle and calibrate
         if file_og:
@@ -191,12 +194,12 @@ if __name__ == "__main__":
             
             #%% write files and zip
             for s in replay_data:
-                filename = '{}_{}'.format(stem[0].split('-')[0],specie[s])
+                filename = '{}_{}'.format(stem.split('-')[0],specie[s])
                 if os.path.isfile(r'{}\{}.zip'.format(root,filename)):
                     print('Files already exist')
                     break
-                compression_options = dict(method='zip', archive_name=f'{filename}.csv')
-                replay_data[s].to_csv(r'{}\{}.zip'.format(root,filename))
+                compression_options = dict(method='zip', archive_name='{}.csv'.format(filename))
+                replay_data[s].to_csv(r'{}\{}.csv.zip'.format(root,filename))
         
         
         
@@ -254,7 +257,7 @@ if __name__ == "__main__":
             
             #%% write files and zip
             for s in replay_data:
-                filename = '{}_{}'.format(stem[0].split('-')[0],specie[s])
+                filename = '{}_{}'.format(stem.split('-')[0],specie[s])
                 if os.path.isfile(r'{}\{}.zip'.format(root,filename)):
                     print('Files already exist')
                     break

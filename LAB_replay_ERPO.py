@@ -25,6 +25,7 @@ import dataread as d_
 os.chdir('..')
 
 #%% Relevant directories
+"""
 roots = ['765_20211022',
          '762_20211022',
          '763_20211022',
@@ -44,6 +45,8 @@ roots = ['765_20211022',
          '767_20220708',
          '768_20220708',
          '769_20220708']
+"""
+roots = ['761_20220527']
 
 def plot_distribution(val1,val2,species = 'E',figname = None):
     xlims = {'E':1000,'G':1000,'R':200}

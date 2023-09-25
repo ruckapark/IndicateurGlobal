@@ -54,7 +54,7 @@ if __name__ == "__main__":
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     #debug
-    #for r in ['I:\\TXM763-PC\\20210618-142125']:
+    #for r in ['I:\\TXM764-PC\\20220127-180339']:
     for r in roots:
     
         time_correction = 0.997

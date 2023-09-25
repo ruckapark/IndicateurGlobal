@@ -90,21 +90,32 @@ if __name__ == "__main__":
             df_copy = d_.read_merge([file_copy])
             dfs_copy = d_.preproc(df_copy)
             dfs_copy = d_.calibrate(dfs_copy,Tox,starttime)
+        
+            #correct time index including time warp, original if necessary
+            reset_original = False
+            if file_og:
+                start_ind = None
+                if dfs_og[[*dfs_og][0]].shape[0]:
+                    start_ind = dfs_og[[*dfs_og][0]].index[0]
+                elif dfs_og[[*dfs_og][1]].shape[0]:
+                    start_ind = dfs_og[[*dfs_og][1]].index[0]
+                elif dfs_og[[*dfs_og][2]].shape[0]:
+                    start_ind = dfs_og[[*dfs_og][2]].index[0]
+                else:
+                    preprocessfailure.append(r)
+                    continue
+                
+                if datetime.strptime(str(start_ind).split(' ')[0],'%Y-%m-%d') == starttime.replace(hour=0, minute=0, second=0):
+                    reset_original = False
+                else:
+                    reset_original = True
+                    
+            for s in specie:
+                dfs_copy[s] = d_.correct_index(dfs_copy[s], starttime, time_correction)
+                if reset_original: d_.correct_index(dfs_og[s], starttime, correction = 1)    
         except:
             preprocessfailure.append(r)
             continue
-        
-        #correct time index including time warp, original if necessary
-        reset_original = False
-        if file_og:
-            if datetime.strptime(str(dfs_og[[*dfs_og][0]].index[0]).split(' ')[0],'%Y-%m-%d') == starttime.replace(hour=0, minute=0, second=0):
-                reset_original = False
-            else:
-                reset_original = True
-                
-        for s in specie:
-            dfs_copy[s] = d_.correct_index(dfs_copy[s], starttime, time_correction)
-            if reset_original: d_.correct_index(dfs_og[s], starttime, correction = 1)
             
         #read dead values
         try:
@@ -113,6 +124,7 @@ if __name__ == "__main__":
             dfs_copy = d_.remove_dead_known(dfs_copy,morts)
         except:
             nodead.append(r)
+            continue
         
         
         #%% Gammarus

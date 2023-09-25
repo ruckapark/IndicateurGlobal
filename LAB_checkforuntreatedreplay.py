@@ -30,7 +30,7 @@ if __name__ == '__main__':
                 directory = r'{}\{}'.format(basedir,d)
                 
                 #Check if already treated
-                if len([f for f in files if 'Gammarus.zip' in f]):
+                if len([f for f in files if 'Gammarus.csv.zip' in f]):
                     continue
                 
                 if len(xls) == 2:
@@ -43,9 +43,7 @@ if __name__ == '__main__':
     addfile = r'D:\VP\Viewpoint_data\replaydata.txt'
     if os.path.isfile(addfile):
         os.remove(addfile)
-        file = open(addfile,'w')
-        for item in addfiles:
-        	file.write(item+"\n")
-        file.close()
-    else:
-        print('Try again file does not exist!')
+    file = open(addfile,'w')
+    for item in addfiles:
+    	file.write(item+"\n")
+    file.close()

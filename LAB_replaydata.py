@@ -48,12 +48,13 @@ if __name__ == "__main__":
     roots = read_roots()
     failed = []
     nodead = []
+    preprocessfailure = []
     datafailure = []
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     #debug
-    #for r in ['I:\\TXM761-PC\\20220527-111630']:
+    #for r in ['I:\\TXM763-PC\\20210618-142125']:
     for r in roots:
     
         time_correction = 0.997
@@ -84,10 +85,14 @@ if __name__ == "__main__":
             df_og = d_.read_merge([file_og])
             dfs_og = d_.preproc(df_og)
             dfs_og = d_.calibrate(dfs_og,Tox,starttime)
-
-        df_copy = d_.read_merge([file_copy])
-        dfs_copy = d_.preproc(df_copy)
-        dfs_copy = d_.calibrate(dfs_copy,Tox,starttime)
+            
+        try:
+            df_copy = d_.read_merge([file_copy])
+            dfs_copy = d_.preproc(df_copy)
+            dfs_copy = d_.calibrate(dfs_copy,Tox,starttime)
+        except:
+            preprocessfailure.append(r)
+            continue
         
         #correct time index including time warp, original if necessary
         reset_original = False
@@ -289,4 +294,5 @@ if __name__ == "__main__":
     
     for f in failed: print('Check starttime for: {}'.format(f))
     for f in nodead: print('Check dead for: {}'.format(f))
+    for f in preprocessfailure: print('Check preprocessing for: {}'.format(f))
     for f in datafailure: print('Check dataread for: {}'.format(f))

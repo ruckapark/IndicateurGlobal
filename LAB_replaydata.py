@@ -56,6 +56,8 @@ if __name__ == "__main__":
     #debug
     #for r in ['I:\\TXM764-PC\\20220127-180339']:
     for r in roots:
+        
+        plt.close('all')
     
         time_correction = 0.997
         values_old,values_new = np.array([]),np.array([])

@@ -247,6 +247,33 @@ def remove_dead(df,species):
             
         print(max_counts)
         return [col+1 for col,val in enumerate(max_counts) if val > threshold_dead[species]]
+
+def check_dead(df,species):
+    threshold_dead = {'G':1000,'E':1000,'R':2000}
+    max_counts = []
+    for col in df.columns:
+        
+        # find max zero counter excluding single peaks
+        counter = 0
+        max_count = 0
+        for i in range(1,df.shape[0]):
+            if df[col].iloc[i]:
+                if df[col].iloc[i-1]:
+                    #add max count if it is greater than current
+                    if counter > max_count: max_count = counter
+                    counter = 0
+            else:
+                counter += 1
+            
+        if counter > max_count: max_count = counter
+        
+        max_counts.append(max_count)
+   
+    return [df.columns[i] for i,val in enumerate(max_counts) if val > threshold_dead[species]]
+    
+def write_csv(df,s,root):
+    #write as zip file to math format in NAS
+    return None
     
 def remove_dead_known(dfs,morts):
     

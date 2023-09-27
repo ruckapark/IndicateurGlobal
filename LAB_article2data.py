@@ -70,12 +70,14 @@ studies = {
     'Verapamil':verapamils,
     'Zinc':zincs}
 
+ylims = {'E':150,'G':150,'R':15}
+
 #%% Main code
 if __name__ == '__main__':
     
-    plt.close('all')
     for substance in [*studies]:
         for study in studies[substance]:
+            plt.close('all')
             dfs = LABcsv.main(study)
             figure_dir = r'C:\Users\George\Documents\Figures\Article2\{}'.format(substance)
             
@@ -140,6 +142,8 @@ if __name__ == '__main__':
                     axe.set_title(study)
                     axe.legend(fontsize = 17, loc = 'upper right')
                     
+                    axe.set_ylim((0,ylims[s]))
+                    
                     plt.tight_layout()
                     
                 fig.savefig(r'{}\{}_HighQuantile_Study{}'.format(figure_dir,s,study.split('\\')[-1]))
@@ -164,6 +168,8 @@ if __name__ == '__main__':
                     
                     axe.set_title(study)
                     axe.legend(fontsize = 17, loc = 'upper right')
+                    
+                    axe.set_ylim((0,ylims[s]))
                     
                     plt.tight_layout()
                     

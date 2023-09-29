@@ -84,7 +84,7 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    root = r'I:\TXM760-PC\20210520-224501'
+    root = r'I:\TXM760-PC\20220225-090811'
     rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
     
     try:

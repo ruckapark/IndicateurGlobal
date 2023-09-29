@@ -44,7 +44,11 @@ coppers = [
     r'I:\TXM765-PC\20210422-111620',
     r'I:\TXM767-PC\20210430-124553',
     r'I:\TXM767-PC\20210513-231929',
-    r'I:\TXM763-PC\20210528-113951'
+    r'I:\TXM763-PC\20210528-113951',
+    r'I:\TXM765-PC\20210326-154629',
+    r'I:\TXM765-PC\20210402-160649',
+    r'I:\TXM763-PC\20210402-160442',
+    r'I:\TXM764-PC\20210409-135918'
     ]
 
 #morts treated
@@ -53,7 +57,11 @@ zincs = [
     r'I:\TXM763-PC\20210506-230746',
     r'I:\TXM763-PC\20210513-230658',
     r'I:\TXM763-PC\20210520-224858',
-    r'I:\TXM763-PC\20210430-125225'
+    r'I:\TXM763-PC\20210430-125225',
+    r'I:\TXM763-PC\20210325-104933',
+    r'I:\TXM763-PC\20210409-140200',
+    r'I:\TXM763-PC\20210422-111813',
+    
     ]
 
 methomyls = [
@@ -63,12 +71,47 @@ methomyls = [
     r'I:\TXM761-PC\20210625-093641'
     ]
 
+dics = [
+    r'I:\TXM765-PC\20211022-095148',
+    r'I:\TXM767-PC\20211022-100308',
+    r'I:\TXM765-PC\20211029-075240'      
+    ]
+
+#760 data in doubt
+hydrazines = [
+    r'I:\TXM760-PC\20211022-095044',
+    r'I:\TXM761-PC\20211022-102804',
+    r'I:\TXM760-PC\20211029-074210',
+    r'I:\TXM761-PC\20211029-074545'
+    ]
+
+#760 data in doubt
+#761 data in doubt
+ciprofloxacins = [
+    #r'I:\TXM760-PC\20220225-090811',
+    r'I:\TXM761-PC\20220225-091850',
+    r'I:\TXM762-PC\20220310-113536',
+    ]
+
+ofloxacins = [
+    r'I:\TXM764-PC\20220225-091550',
+    r'I:\TXM765-PC\20220225-090923',
+    r'I:\TXM767-PC\20220310-113737',
+    r'I:\TXM768-PC\20220310-113753',
+    r'I:\TXM767-PC\20220317-164814',
+    r'I:\TXM768-PC\20220317-165322'
+    ]
+
+
 studies = {
     'Copper':coppers,
     'Methomyl':methomyls,
     'Tramadol':tramadols,
     'Verapamil':verapamils,
-    'Zinc':zincs}
+    'Zinc':zincs,
+    '12Dichloroethane':dics,
+    'Ciprofloxacin':ciprofloxacins,
+    'Ofloxacin':ofloxacins}
 
 ylims = {'E':150,'G':150,'R':15}
 

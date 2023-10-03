@@ -47,6 +47,7 @@ roots = ['765_20211022',
          '769_20220708']
 """
 roots = ['760_20220225']
+    
 
 def plot_distribution(val1,val2,species = 'E',figname = None):
     xlims = {'E':1000,'G':1000,'R':200}
@@ -209,8 +210,12 @@ if __name__ == '__main__':
         df_quant_mid = d_.read_quant([file_og])
         df_q = d_.preproc(df_quant_mid,quant = True)[species]
         
+        temp1 = df_q[8]
+        
         #check mapping
         df_q = d_.check_mapping(df_q,mapping[species])
+        
+        temp2 = df_q[16]
         
         #%%
         

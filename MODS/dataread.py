@@ -246,10 +246,11 @@ def check_mapping(dfs,mapping):
                 pass
             else:
                 df = pd.DataFrame(index = dfs[s].index)
-                for i in range(dfs[s].shape[1]):
-                    df[i+1] = dfs[s][mapping[s][i]]
+                for i,x in enumerate(mapping[s]):
+                    df[x] = dfs[s][i+1]
+                df = df[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]]
                 dfs[s] = df
-                
+            
         return dfs
     
     #case of single df (mapping should be list)          
@@ -258,10 +259,11 @@ def check_mapping(dfs,mapping):
             pass
         else:
             df = pd.DataFrame(index = dfs.index)
-            for i in range(dfs.shape[1]):
-                df[i+1] = dfs[mapping[i]]
-        
-        return df 
+            for i,x in enumerate(mapping):
+                df[x] = dfs[i+1]
+                df = df[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]]
+                
+        return df
     
     
 def remove_dead(df,species):

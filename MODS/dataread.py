@@ -237,6 +237,32 @@ def read_mapping(Tox,rootdate = 20220225):
                 
     return mapping
     
+def check_mapping(dfs,mapping):
+    
+    #check all values
+    if type(dfs) == dict:
+        for s in dfs:
+            if mapping[s] == [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]: 
+                pass
+            else:
+                df = pd.DataFrame(index = dfs[s].index)
+                for i in range(dfs[s].shape[1]):
+                    df[i+1] = dfs[s][mapping[s][i]]
+                dfs[s] = df
+                
+        return dfs
+    
+    #case of single df (mapping should be list)          
+    else:
+        if mapping == [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]: 
+            pass
+        else:
+            df = pd.DataFrame(index = dfs.index)
+            for i in range(dfs.shape[1]):
+                df[i+1] = dfs[mapping[i]]
+        
+        return df 
+    
     
 def remove_dead(df,species):
     

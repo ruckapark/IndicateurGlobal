@@ -184,11 +184,15 @@ if __name__ == '__main__':
         #locate original and copy
         file_og = r'{}\{}.xls.zip'.format(root,stem[0])
         file_copy = r'{}\{}.replay.xls.zip'.format(root,stem[0])
+        mapping = d_.read_mapping(Tox,int(r.split('_')[-1]))
         
         #read file
         df_og,df_copy = d_.read_merge([file_og]),d_.read_merge([file_copy])
         dfs_og,dfs_copy = d_.preproc(df_og),d_.preproc(df_copy)
         dfs_og,dfs_copy = d_.calibrate(dfs_og,Tox,starttime),d_.calibrate(dfs_copy,Tox,starttime)
+        
+        #check mapping
+        dfs_og = d_.check_mapping(dfs_og,mapping)
         
         #read dead values
         morts = read_dead(root)
@@ -204,6 +208,9 @@ if __name__ == '__main__':
         #read in quantization and check for count of mid bursts
         df_quant_mid = d_.read_quant([file_og])
         df_q = d_.preproc(df_quant_mid,quant = True)[species]
+        
+        #check mapping
+        df_q = d_.check_mapping(df_q,mapping[species])
         
         #%%
         

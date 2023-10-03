@@ -10,6 +10,7 @@ Coordinates in image start in the top left.
 
 import os
 import cv2
+import csv
 import xml.etree.ElementTree as ET
 import numpy as np
 import matplotlib.pyplot as plt
@@ -110,7 +111,52 @@ class Config:
             true_index = self.mapping[sp].index(i+1)
             ax.add_patch(Polygon(self.points[sp][true_index]))
             plt.text(np.mean(self.points[sp][true_index][:,0]),np.mean(self.points[sp][true_index][:,1]),i+1)
-          
+            
+def write_mapping(config,filedate,Tox):
+    
+    #dictionary to rows
+    rows = [[key]+config[key] for key in config]
+    
+    #write txt file with mapping. File name corresponds to date of config.
+    with open(r'I:\Shared\Configs\Mappings\{}\{}.csv'.format(Tox,filedate), 'w', newline='') as f:
+     
+        # using csv.writer method from CSV package
+        write = csv.writer(f)
+        write.writerows(rows)
+        
+def read_mapping(Tox,rootdate = 20220225):
+    
+    #configroot i.e. r'I:\Shared\Configs\Mappings\769'
+    #rootdate of datafile not mapping i.e. 20210702 from I:\TXM762-PC\20210702-082335
+    #rootdate unless specified assumed tobe recent
+    
+    mapping = {}
+    configroot = r'I:\Shared\Configs\Mappings\{}'.format(Tox)
+    mappings = os.listdir(configroot)
+    configpath = None
+    
+    if len(mappings) == 1:
+        configpath = r'{}\{}'.format(configroot,mappings[0])
+                
+    else:        
+        #loop from most recent date
+        for m in mappings[::-1][1:]:
+            mapdate = int(m.split('.')[0])
+            if int(rootdate) > mapdate:
+                configpath = r'{}\{}'.format(configroot,m)
+                break
+            
+    if not configpath: configpath = r'{}\{}'.format(configroot,mappings[0])
+                
+    #read three line csv file containing true mapping order
+    with open(configpath, 'r') as file:
+        csvreader = csv.reader(file)
+        for row in csvreader:
+            mapping.update({row[0]:[int(x) for x in row[1:]]})
+                
+    return mapping
+            
+
 if __name__ == "__main__":
     
     """
@@ -129,15 +175,24 @@ if __name__ == "__main__":
         
         #base
         base = r'I:\Shared\Configs\Record\{}'.format(Tox)
+        current,old = None,None
         
         #config
-        for conf in os.listdir(base)[::-1]:
+        for i,conf in enumerate(os.listdir(base)[::-1]):
             config = Config(r'{}\{}'.format(base,conf))
+            if i:
+                old = current
+            current = config.mapping
+                
             if config.mapping != nomap:
                 print(Tox)
                 print('\n')
                 print(config.mapping)
                 print('\n')
-        
-        #Analysis shows this has never changed
-        
+            
+            #write most most recent mapping (else) or a changed mapping (if)
+            if i:
+                if old != current: write_mapping(current,conf.split('-')[0],Tox)
+            else:
+                write_mapping(current,int(conf.split('-')[0]),Tox)
+              

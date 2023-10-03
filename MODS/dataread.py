@@ -204,6 +204,38 @@ def rolling_mean(df,timestep):
     #convert mins to number of 20 second intervals
     timestep = (timestep * 60)//20
     return df.rolling(timestep).mean().dropna()
+
+def read_mapping(Tox,rootdate = 20220225):
+    
+    #configroot i.e. r'I:\Shared\Configs\Mappings\769'
+    #rootdate of datafile not mapping i.e. 20210702 from I:\TXM762-PC\20210702-082335
+    #rootdate unless specified assumed tobe recent
+    
+    mapping = {}
+    configroot = r'I:\Shared\Configs\Mappings\{}'.format(Tox)
+    mappings = os.listdir(configroot)
+    configpath = None
+    
+    if len(mappings) == 1:
+        configpath = r'{}\{}'.format(configroot,mappings[0])
+                
+    else:        
+        #loop from most recent date
+        for m in mappings[::-1][1:]:
+            mapdate = int(m.split('.')[0])
+            if int(rootdate) > mapdate:
+                configpath = r'{}\{}'.format(configroot,m)
+                break
+            
+    if not configpath: configpath = r'{}\{}'.format(configroot,mappings[0])
+                
+    #read three line csv file containing true mapping order
+    with open(configpath, 'r') as file:
+        csvreader = csv.reader(file)
+        for row in csvreader:
+            mapping.update({row[0]:[int(x) for x in row[1:]]})
+                
+    return mapping
     
     
 def remove_dead(df,species):

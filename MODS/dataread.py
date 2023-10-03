@@ -261,7 +261,7 @@ def check_mapping(dfs,mapping):
             df = pd.DataFrame(index = dfs.index)
             for i,x in enumerate(mapping):
                 df[x] = dfs[i+1]
-                df = df[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]]
+            df = df[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]]
                 
         return df
     

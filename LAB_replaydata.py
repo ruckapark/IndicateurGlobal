@@ -54,8 +54,8 @@ if __name__ == "__main__":
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     #debug
-    for r in [r'I:\TXM760-PC\20220225-090811']:
-    #for r in roots:
+    #for r in [r'I:\TXM760-PC\20220225-090811']:
+    for r in roots:
         
         plt.close('all')
     

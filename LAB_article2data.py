@@ -88,8 +88,8 @@ hydrazines = [
 #760 data in doubt
 #761 data in doubt
 ciprofloxacins = [
-    #r'I:\TXM760-PC\20220225-090811',
-    r'I:\TXM761-PC\20220225-091850',
+    r'I:\TXM760-PC\20220225-090811',
+    #r'I:\TXM761-PC\20220225-091850',
     r'I:\TXM762-PC\20220310-113536',
     ]
 
@@ -104,11 +104,12 @@ ofloxacins = [
 
 
 studies = {
-    'Copper':coppers,
-    'Methomyl':methomyls,
-    'Tramadol':tramadols,
-    'Verapamil':verapamils,
-    'Zinc':zincs,
+    #'Copper':coppers,
+    #'Methomyl':methomyls,
+    #'Tramadol':tramadols,
+    #'Verapamil':verapamils,
+    #'Zinc':zincs,
+    'Hydrazine':hydrazines,
     '12Dichloroethane':dics,
     'Ciprofloxacin':ciprofloxacins,
     'Ofloxacin':ofloxacins}

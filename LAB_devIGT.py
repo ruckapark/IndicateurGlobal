@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Sep 26 14:55:28 2023
-
-csv files for individual species - already treated read from the NAS
+Created on Wed Oct  4 13:44:38 2023
 
 @author: George
 """

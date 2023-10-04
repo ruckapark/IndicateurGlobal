@@ -54,8 +54,8 @@ if __name__ == "__main__":
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     #debug
-    #for r in ['I:\\TXM767-PC\\20210430-124553']:
-    for r in roots:
+    for r in [r'I:\TXM760-PC\20220225-090811']:
+    #for r in roots:
         
         plt.close('all')
     
@@ -68,6 +68,7 @@ if __name__ == "__main__":
         #stem = [d for d in os.listdir(r'I:\TXM{}-PC'.format(Tox)) if r.split('_')[-1] in d]
         stem = r.split('\\')[-1]
         root = r
+        mapping = d_.read_mapping(Tox) #if mapping date necessary: int(r.split('\\')[-1].split('-')[0])
         
         try:
             starttime = d_.read_starttime(root)
@@ -87,6 +88,7 @@ if __name__ == "__main__":
             df_og = d_.read_merge([file_og])
             dfs_og = d_.preproc(df_og)
             dfs_og = d_.calibrate(dfs_og,Tox,starttime)
+            dfs_og = d_.check_mapping(dfs_og,mapping)
             
         try:
             df_copy = d_.read_merge([file_copy])
@@ -168,6 +170,7 @@ if __name__ == "__main__":
                 #read in quantization and check for count of mid bursts
                 df_quant_mid = d_.read_quant([file_og])
                 df_q = d_.preproc(df_quant_mid,quant = True)[species]
+                df_q = d_.check_mapping(df_q,mapping[species])
                 
                 #get seconds time indexes and plot original graph with quant figure
                 t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())

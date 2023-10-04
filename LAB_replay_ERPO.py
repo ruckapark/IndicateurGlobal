@@ -210,15 +210,10 @@ if __name__ == '__main__':
         df_quant_mid = d_.read_quant([file_og])
         df_q = d_.preproc(df_quant_mid,quant = True)[species]
         
-        temp1 = df_q[8]
-        
         #check mapping
         df_q = d_.check_mapping(df_q,mapping[species])
         
-        temp2 = df_q[16]
-        
         #%%
-        
         t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
         tm_ind1,tm_ind2 = np.array((df1_m.index - df1_m.index[0]).total_seconds()),np.array((df2_m.index - df2_m.index[0]).total_seconds())
         

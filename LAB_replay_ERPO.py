@@ -46,7 +46,7 @@ roots = ['765_20211022',
          '768_20220708',
          '769_20220708']
 """
-roots = ['760_20220225']
+roots = ['769_20220610']
     
 
 def plot_distribution(val1,val2,species = 'E',figname = None):

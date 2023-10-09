@@ -170,7 +170,8 @@ if __name__ == "__main__":
     
     nomap = {'E':[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],'G': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],'R':[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}
     
-    for Tox in range(760,770):
+    #The problem with 769 is it was always incorrect even in the replayed version. Skip it and correct in post treatment.
+    for Tox in range(760,769):
     #Tox = 763
         
         #base

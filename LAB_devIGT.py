@@ -40,49 +40,19 @@ def preproc_csv(df):
     df.columns = [int(c) for c in df.columns]
     return df
 
-def main(root):
-    
-    specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
-    dfs = {}
-    rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
-    
-    try:
-        morts = d_.read_dead(root)
-    except:
-        print('No mortality register')
-        os._exit()
-        
-    for s in specie:
-        species = specie[s]
-        if len(morts[s]) > 11:
-            print('\n Excessive mortality: ',species)
-            continue
-        
-        #read in dataframe
-        df = pd.read_csv(r'{}{}.csv.zip'.format(rootfile_stem,species),index_col = 0)
-        df = preproc_csv(df)
-        
-        #check for unnoticed mortality
-        print('Check mortality for: ',species,d_.check_dead(df,s))
-        
-        rewrite_csv = False
-        for m in morts[s]:
-            if m in df.columns: 
-                df = df.drop(columns = [m])
-                rewrite_csv = True
-        if rewrite_csv: 
-            d_.write_csv(df,s,root)         
-            print('Youre in!')
-            
-        dfs.update({s:df})
-    return dfs
+methomyls = [
+    r'I:\TXM760-PC\20210520-224501',
+    r'I:\TXM760-PC\20210625-093621',
+    r'I:\TXM761-PC\20210520-224549',
+    r'I:\TXM761-PC\20210625-093641'
+    ]
 
 #%% main code
 if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    root = r'I:\TXM760-PC\20211022-095044'
+    root = methomyls[3]
     rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
     
     try:
@@ -120,7 +90,7 @@ if __name__ == '__main__':
     dopage_entry = find_dopage_entry(dope_df, root)
     dopage = dopage_entry['Start']    
     
-    #%%
+    #%% IGT is the IGT of the filtered series (is this the best option?)
     s = 'E'
     df = dfs[s]
     
@@ -130,9 +100,33 @@ if __name__ == '__main__':
     
     d_.plot_16(df_mean,mark = [dopage_entry['Start'],dopage_entry['End']])
     
-    #IGT
+    #lower quantile
     quantile_distRAW = df.quantile(q = 0.10, axis = 1)**2
-    quantile_dist = df_mean.quantile(q = 0.10, axis = 1)**2
+    quantile_dist = df_mean.quantile(q = 0.10, axis = 1)**2    
     
+    #Calcul du signal pour avec 95% des replicats les moins actifs (quantile 95%)
+    #only take values under 3 (nautral log 30)
+    
+    low_cutoff = 30
+    maxvalue = 80
+    scale_factor = maxvalue/low_cutoff
+    
+    quantile_low = df_mean.quantile(q = 0.90, axis = 1)
+    IGT_low = quantile_low - 30
+    IGT_low[IGT_low > 0] = 0.0
+    IGT_low = -((IGT_low) * scale_factor)**2
+    
+    # low_cutoff = 30 ** (1/np.exp(1))
+    # scale_factor = 10
+    # quantile_low = df_mean.quantile(q = 0.90, axis = 1)
+    # logQtl95 = np.log(quantile_low + 1)
+    # IGT_low_activity = logQtl95 - low_cutoff
+    # IGT_low_activity[IGT_low_activity > 0] = 0.0
+    # IGT_low_activity = np.abs(IGT_low_activity) * scale_factor
+    
+    #visualise IGT
     fig,axe = d_.single_plot(quantile_dist)
+    axe.plot(IGT_low.index,IGT_low)
     axe.axvline(dopage,color = 'red')
+    
+    #12 dichlor for radix dev.

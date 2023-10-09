@@ -54,8 +54,8 @@ if __name__ == "__main__":
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     #debug
-    #for r in [r'I:\TXM769-PC\20220610-113241']:
-    for r in roots:
+    for r in [r'I:\TXM769-PC\20220127-180446']:
+    #for r in roots:
         
         plt.close('all')
     
@@ -69,6 +69,10 @@ if __name__ == "__main__":
         stem = r.split('\\')[-1]
         root = r
         mapping = d_.read_mapping(Tox) #if mapping date necessary: int(r.split('\\')[-1].split('-')[0])
+        
+        #account for false 769 data
+        remapping = None
+        if Tox == 769: remapping = d_.read_mapping(Tox,remapping = True)
         
         try:
             starttime = d_.read_starttime(root)
@@ -94,6 +98,7 @@ if __name__ == "__main__":
             df_copy = d_.read_merge([file_copy])
             dfs_copy = d_.preproc(df_copy)
             dfs_copy = d_.calibrate(dfs_copy,Tox,starttime)
+            if remapping: dfs_copy = d_.check_mapping(dfs_copy,remapping)
         
             #correct time index including time warp, original if necessary
             reset_original = False

@@ -205,7 +205,7 @@ def rolling_mean(df,timestep):
     timestep = (timestep * 60)//20
     return df.rolling(timestep).mean().dropna()
 
-def read_mapping(Tox,rootdate = 20220225):
+def read_mapping(Tox,rootdate = 20220225,remapping = False):
     
     #configroot i.e. r'I:\Shared\Configs\Mappings\769'
     #rootdate of datafile not mapping i.e. 20210702 from I:\TXM762-PC\20210702-082335
@@ -213,6 +213,7 @@ def read_mapping(Tox,rootdate = 20220225):
     
     mapping = {}
     configroot = r'I:\Shared\Configs\Mappings\{}'.format(Tox)
+    if remapping: configroot = r'I:\Shared\Configs\ReMappings\{}'.format(Tox)
     mappings = os.listdir(configroot)
     configpath = None
     

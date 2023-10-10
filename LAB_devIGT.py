@@ -47,12 +47,20 @@ methomyls = [
     r'I:\TXM761-PC\20210625-093641'
     ]
 
+dics = [
+    r'I:\TXM765-PC\20211022-095148',
+    r'I:\TXM767-PC\20211022-100308',
+    r'I:\TXM765-PC\20211029-075240'      
+    ]
+
 #%% main code
 if __name__ == '__main__':
     
+    plt.close('all')
+    
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    root = methomyls[3]
+    root = dics[2]
     rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
     
     try:
@@ -112,7 +120,7 @@ if __name__ == '__main__':
     scale_factor = maxvalue/low_cutoff
     
     quantile_low = df_mean.quantile(q = 0.90, axis = 1)
-    IGT_low = quantile_low - 30
+    IGT_low = quantile_low - low_cutoff
     IGT_low[IGT_low > 0] = 0.0
     IGT_low = -((IGT_low) * scale_factor)**2
     
@@ -130,3 +138,28 @@ if __name__ == '__main__':
     axe.axvline(dopage,color = 'red')
     
     #12 dichlor for radix dev.
+    s = 'R'
+    df = dfs[s]
+    
+    #mean treatment of data
+    t_mins = 5
+    df_mean = d_.rolling_mean(df,t_mins)
+    
+    d_.plot_16(df_mean,mark = [dopage_entry['Start'],dopage_entry['End']])
+    
+    #lower quantile
+    quantile_distRAW = df.quantile(q = 0.10, axis = 1)**2
+    quantile_dist = df_mean.quantile(q = 0.10, axis = 1)**2
+    
+    low_cutoff = 4
+    maxvalue = 4
+    scale_factor = maxvalue/low_cutoff
+    
+    quantile_low = df_mean.quantile(q = 0.90, axis = 1)
+    IGT_low = quantile_low - low_cutoff
+    IGT_low[IGT_low > 0] = 0.0
+    IGT_low = -((IGT_low) * scale_factor)**2
+    
+    fig,axe = d_.single_plot(quantile_dist)
+    axe.plot(IGT_low.index,IGT_low)
+    axe.axvline(dopage,color = 'red')

@@ -34,14 +34,16 @@ if __name__ == '__main__':
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     directories = {s:[] for s in specie}
     
-    quantiles = [0.05,0.1,0.15,0.25,0.5,0.75,0.85,0.9,0.95]
-    low_q,mid_q,high_q = [0.5,0.1,0.15],[0.25,0.5,0.75],[0.85,0.9,0.95]
+    quantiles = [0.0667,0.12917,0.19091,0.25,0.5,0.75,0.80909,0.87083,0.9333]
+    low_q,mid_q,high_q = [0.0667,0.12917,0.19091],[0.25,0.5,0.75],[0.80909,0.87083,0.9333]
     #quantiles = [0.1] #debug
     controldata = {s:{q:np.array([],dtype = float) for q in quantiles} for s in specie}
+    spikedata = {s:{q:np.array([],dtype = float) for q in quantiles} for s in specie}
     
     #collect relevant roots eventually looping through species
     for s in specie:
         for Tox in range(760,769):
+            if Tox == 766: continue #temoin
             base = r'I:\TXM{}-PC'.format(Tox)
             for d in [direc for direc in os.listdir(base) if os.path.isdir(r'{}\{}'.format(base,direc))]:
                 filename = '{}_{}.csv.zip'.format(d.split('-')[0],specie[s])
@@ -82,11 +84,18 @@ if __name__ == '__main__':
                 d_.write_csv(df,s,root)
                 
             #select all data from previous to one hour before dopage
-            df = df[df.index < dopage - pd.Timedelta(hours = 1)]
+            df_control = df[(df.index > dopage - pd.Timedelta(hours = 12)) & (df.index < dopage - pd.Timedelta(hours = 0.5))]
+            df_spike = df[(df.index > dopage) & (df.index < dopage + pd.Timedelta(hours = 4))]
             
             for quantile in quantiles:
-                quantdata = np.array(df.quantile(q = quantile, axis = 1))
+                
+                #control data
+                quantdata = np.array(df_control.quantile(q = quantile, axis = 1))
                 controldata[s][quantile] = np.hstack((controldata[s][quantile],quantdata))
+                
+                #spike data
+                quantdata_spike = np.array(df_spike.quantile(q = quantile, axis = 1))
+                spikedata[s][quantile] = np.hstack((spikedata[s][quantile],quantdata_spike))
     
     #%% plot histograms
     plt.close('all')
@@ -94,29 +103,75 @@ if __name__ == '__main__':
     
     #plot histograms
     for s in specie:
+        
+        #lower quantiles
         for quantile in low_q:
+            
+            #control
             ratio_q = np.sum(controldata[s][quantile] < 1) / controldata[s][quantile].shape[0]
             histdata = controldata[s][quantile][controldata[s][quantile] > 1]
-            fig = plt.figure(figsize = (12,7))
-            axe = fig.add_axes([0.1,0.1,0.8,0.8])
-            axe.set_title('{} Control Distiburion: Q = {}   -   {:.2f}% values below 1.0'.format(specie[s],quantile,100*ratio_q))
-            sns.histplot(histdata,ax=axe)
             
+            #spike data
+            ratio_q_spike = np.sum(spikedata[s][quantile] < 1) / spikedata[s][quantile].shape[0]
+            histdata_spike = spikedata[s][quantile][spikedata[s][quantile] > 1]
+            
+            fig,axes = plt.subplots(1,2,figsize = (16,7),sharex = True)
+            plt.suptitle('{} Control Distiburion: Q = {}'.format(specie[s],quantile))
+            
+            #control
+            sns.histplot(histdata,ax=axes[0])
+            axes[0].set_title('{:.2f}% values below 1.0'.format(100*ratio_q))
+            
+            #spike
+            sns.histplot(histdata_spike,ax=axes[1])
+            axes[1].set_title('{:.2f}% values below 1.0'.format(100*ratio_q_spike)) #spike
+        
+            
+        #mid quantiles
         for quantile in mid_q:
-            histdata = controldata[s][quantile]
-            mean,median,std = np.mean(histdata),np.median(histdata),np.std(histdata)
-            fig = plt.figure(figsize = (12,7))
-            axe = fig.add_axes([0.1,0.1,0.8,0.8])
-            axe.set_title('{} Control Distiburion: Q = {}   -   Mean{:.2f}  Median{:.2f}  Std{:.2f}'.format(specie[s],quantile,mean,median,std))
-            sns.histplot(histdata,ax=axe)
             
-        for quantile in high_q:
             histdata = controldata[s][quantile]
             mean,median,std = np.mean(histdata),np.median(histdata),np.std(histdata)
-            fig = plt.figure(figsize = (12,7))
-            axe = fig.add_axes([0.1,0.1,0.8,0.8])
-            axe.set_title('{} Control Distiburion: Q = {}   -   Mean{:.2f}  Median{:.2f}  Std{:.2f}'.format(specie[s],quantile,mean,median,std))
+            
+            histdata_spike = spikedata[s][quantile]
+            mean_spike,median_spike,std_spike = np.mean(histdata_spike),np.median(histdata_spike),np.std(histdata_spike)
+            
+            fig,axes = plt.subplots(1,2,figsize = (16,7),sharex = True)
+            plt.suptitle('{} Control Distiburion: Q = {}'.format(specie[s],quantile))
+            
+            #control
+            sns.histplot(histdata,ax=axes[0])
+            axes[0].set_title('Mean{:.2f}  Median{:.2f}  Std{:.2f}'.format(mean,median,std))
+            
+            #spike
+            sns.histplot(histdata_spike,ax=axes[1])
+            axes[1].set_title('Mean{:.2f}  Median{:.2f}  Std{:.2f}'.format(mean_spike,median_spike,std_spike))
+        
+        
+        #high quantiles
+        for quantile in high_q:
+            
+            histdata = controldata[s][quantile]
+            mean,median,std = np.mean(histdata),np.median(histdata),np.std(histdata)
+            
+            histdata_spike = spikedata[s][quantile]
+            mean_spike,median_spike,std_spike = np.mean(histdata_spike),np.median(histdata_spike),np.std(histdata_spike)
+            
+            fig,axes = plt.subplots(1,2,figsize = (16,7),sharex = True)
+            plt.suptitle('{} Control Distiburion: Q = {}'.format(specie[s],quantile))
+            
             if s != 'G':
-                axe.axvline(mean - 1.5*std,color = 'r')
-                axe.axvline(mean + 1.5*std,color = 'r')
-            sns.histplot(histdata,ax=axe)
+                for i in range(2):
+                    axes[i].axvline(mean - 1.5*std,color = 'black')
+                    axes[i].axvline(mean + 1.5*std,color = 'black')
+                    
+                    axes[i].axvline(mean - 2*std,color = 'black',linestyle = '--')
+                    axes[i].axvline(mean + 2*std,color = 'black',linestyle = '--')
+                
+            #control
+            sns.histplot(histdata,ax=axes[0])
+            axes[0].set_title('Mean{:.2f}  Median{:.2f}  Std{:.2f}'.format(mean,median,std))
+            
+            #spike
+            sns.histplot(histdata_spike,ax=axes[1])
+            axes[1].set_title('Mean{:.2f}  Median{:.2f}  Std{:.2f}'.format(mean_spike,median_spike,std_spike))

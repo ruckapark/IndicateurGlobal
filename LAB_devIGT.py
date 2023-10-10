@@ -60,7 +60,7 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    root = dics[2]
+    root = methomyls[0]
     rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
     
     try:
@@ -109,17 +109,17 @@ if __name__ == '__main__':
     d_.plot_16(df_mean,mark = [dopage_entry['Start'],dopage_entry['End']])
     
     #lower quantile
-    quantile_distRAW = df.quantile(q = 0.10, axis = 1)**2
-    quantile_dist = df_mean.quantile(q = 0.10, axis = 1)**2    
+    quantile_distRAW = df.quantile(q = 0.129167, axis = 1)**2
+    quantile_dist = df_mean.quantile(q = 0.129167, axis = 1)**2    
     
     #Calcul du signal pour avec 95% des replicats les moins actifs (quantile 95%)
     #only take values under 3 (nautral log 30)
     
-    low_cutoff = 30
-    maxvalue = 80
+    low_cutoff = 20
+    maxvalue = 70
     scale_factor = maxvalue/low_cutoff
     
-    quantile_low = df_mean.quantile(q = 0.90, axis = 1)
+    quantile_low = df_mean.quantile(q = 0.87083, axis = 1)
     IGT_low = quantile_low - low_cutoff
     IGT_low[IGT_low > 0] = 0.0
     IGT_low = -((IGT_low) * scale_factor)**2
@@ -136,6 +136,7 @@ if __name__ == '__main__':
     fig,axe = d_.single_plot(quantile_dist)
     axe.plot(IGT_low.index,IGT_low)
     axe.axvline(dopage,color = 'red')
+    axe.set_ylim((-6000,6000))
     
     #12 dichlor for radix dev.
     s = 'R'
@@ -148,14 +149,14 @@ if __name__ == '__main__':
     d_.plot_16(df_mean,mark = [dopage_entry['Start'],dopage_entry['End']])
     
     #lower quantile
-    quantile_distRAW = df.quantile(q = 0.10, axis = 1)**2
-    quantile_dist = df_mean.quantile(q = 0.10, axis = 1)**2
+    quantile_distRAW = df.quantile(q = 0.129167, axis = 1)**2
+    quantile_dist = df_mean.quantile(q = 0.129167, axis = 1)**2
     
-    low_cutoff = 4
-    maxvalue = 4
+    low_cutoff = 2.34
+    maxvalue = 6
     scale_factor = maxvalue/low_cutoff
     
-    quantile_low = df_mean.quantile(q = 0.90, axis = 1)
+    quantile_low = df_mean.quantile(q = 0.93333, axis = 1)
     IGT_low = quantile_low - low_cutoff
     IGT_low[IGT_low > 0] = 0.0
     IGT_low = -((IGT_low) * scale_factor)**2
@@ -163,3 +164,4 @@ if __name__ == '__main__':
     fig,axe = d_.single_plot(quantile_dist)
     axe.plot(IGT_low.index,IGT_low)
     axe.axvline(dopage,color = 'red')
+    axe.set_ylim((-100,100))

@@ -46,7 +46,7 @@ roots = ['765_20211022',
          '768_20220708',
          '769_20220708']
 """
-roots = ['769_20220610']
+roots = ['764_20210514']
     
 
 def plot_distribution(val1,val2,species = 'E',figname = None):
@@ -216,6 +216,7 @@ if __name__ == '__main__':
         #%%
         t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
         tm_ind1,tm_ind2 = np.array((df1_m.index - df1_m.index[0]).total_seconds()),np.array((df2_m.index - df2_m.index[0]).total_seconds())
+        t_indq = np.array((df_q.index - df_q.index[0]).total_seconds())
         
         fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
         axe_q = np.empty(axe.shape,dtype = object)
@@ -224,7 +225,7 @@ if __name__ == '__main__':
             if i+1 not in df1.columns: continue
             axe[i//4,i%4].plot(t_ind1,df1[i+1])
             axe[i//4,i%4].plot(t_ind2,df2[i+1])
-            axe_q[i//4,i%4].plot(t_ind1,df_q[i+1],color = 'r',alpha = 0.3)
+            axe_q[i//4,i%4].plot(t_indq,df_q[i+1],color = 'r',alpha = 0.3)
         fig.tight_layout()
         
         

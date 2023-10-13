@@ -171,17 +171,17 @@ def preproc(df, oldfiles = False,quant = False):
         dfs = {}
         for spec in specie:
             
-            temp = df[df['specie'] == specie[spec]]   
-            timestamps = temp['time'].unique()
-            animals = temp['animal'].unique()   
-            df_quant = 0
+            df_spec = df[df['specie'] == specie[spec]]   
+            timestamps = df_spec['time'].unique()
+            animals = df_spec['animal'].unique()   
+            df_quant = None
             df_quant = pd.DataFrame(index = timestamps,columns = animals)
             
             for i in animals:
-                temp_df = temp[temp['animal'] == i]
-                df_quant[i] = temp_df['midtime'].values
+                temp_df = df_spec[df_spec['animal'] == i]
+                df_quant[i].loc[temp_df['time']] = temp_df['midtime'].values
             
-            dfs.update({spec:df_quant})
+            dfs.update({spec:df_quant.fillna(0)})
         
     return dfs
  

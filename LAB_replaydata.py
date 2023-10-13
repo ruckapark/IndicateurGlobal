@@ -54,8 +54,8 @@ if __name__ == "__main__":
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     #debug
-    for r in [r'I:\TXM764-PC\20210514-084510']:
-    #for r in roots:
+    #for r in [r'I:\TXM764-PC\20210514-084510']:
+    for r in roots:
         
         plt.close('all')
     
@@ -89,10 +89,14 @@ if __name__ == "__main__":
         
         #read file, wrangle and calibrate
         if file_og:
-            df_og = d_.read_merge([file_og])
-            dfs_og = d_.preproc(df_og)
-            dfs_og = d_.calibrate(dfs_og,Tox,starttime)
-            dfs_og = d_.check_mapping(dfs_og,mapping)
+            try:
+                df_og = d_.read_merge([file_og])
+                dfs_og = d_.preproc(df_og)
+                dfs_og = d_.calibrate(dfs_og,Tox,starttime)
+                dfs_og = d_.check_mapping(dfs_og,mapping)
+            except:
+                preprocessfailure.append(r)
+                continue
             
         try:
             df_copy = d_.read_merge([file_copy])

@@ -29,11 +29,13 @@ class csvDATA:
         self.Tox = self.find_tox()
         self.rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
         self.colors = ['blue','orange','green','red','purple','brown','pink','grey','olive','cyan']
+        self.species_colors = {'E':'#de8e0d','G':'#057d25','R':'#1607e8'}
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
         self.morts = d_.read_dead(root)
         self.data = self.get_dfs()
         self.dopage_entry = self.find_dopage_entry(dope_df)
         self.dopage = self.dopage_entry['Start']
+        self.data_short = self.condense_data()
         
             
     def find_rootstem(self):
@@ -81,6 +83,18 @@ class csvDATA:
             print('No dopage found')
             return row
     
+    def condense_data(self): #later should be data class with entry as data with condensed data series
+        
+        data_short = {}
+        for s in self.data:
+            df = self.data[s].copy()
+            df = df[df.index > self.dopage - pd.Timedelta(hours = 1)]
+            df = df[df.index < self.dopage + pd.Timedelta(hours = 5)]
+            zero_index = np.argmin(abs((self.dopage - df.index).total_seconds())) - 1
+            index = (df.index - df.index[zero_index]).total_seconds()
+            df = df.set_index(np.array(index,dtype = int),drop = True)
+            data_short.update({s:df})
+        return data_short
     
     def bSpline(self,i,col,order = 3,k = 10):
         """ Assume optimum knots 10 """
@@ -102,6 +116,13 @@ class csvDATA:
         #make all smoothing cooefficients equal
         self.x_smooth[col][:len(x)] = interpolate.splev(ticks,(tx,cx,kx))
         self.y_smooth[col][:len(y)] = interpolate.splev(ticks,(ty,cy,ky))
+
+"""        
+class speciesDATA():
+    
+    #child class from csv Data, one for each species
+    return None
+"""
 
 
 

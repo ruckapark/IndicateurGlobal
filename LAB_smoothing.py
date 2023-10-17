@@ -68,7 +68,10 @@ if __name__ == '__main__':
         axes_i[i].axvline(0,color = 'black')
         
     test = 'Rolling mean RightTrail'
-    #test = 'Rolling mean Centre'
+    test = 'Rolling mean Centre'
+    test = 'Kernel Gaussian'
+    #test = 'Kernel DPSS'
+    #test = 'Kernel Exponential'
         
     """
     Moving means
@@ -78,10 +81,17 @@ if __name__ == '__main__':
     Rolling mean function: default right edge mean - centre may be better
     
     Here we will try both and more
+    
+    Various windows
+    
+    Chosen windows:
+        -Gaussian
+        -dpss - varied tail steepness
+        -Exponential - steep centre based on tau  
     """
     if test == 'Rolling mean RightTrail':
         
-        spacing  = np.array([3,6,9,12,15])
+        spacing  = np.array([3,4,5,6])
         timesteps = spacing * 3
         for x,t in enumerate(timesteps):
             
@@ -106,7 +116,7 @@ if __name__ == '__main__':
         
     elif test == 'Rolling mean Centre':
         
-        spacing  = np.array([3,6,9,12,15])
+        spacing  = np.array([3,4,5,6])
         timesteps = spacing * 3
         for x,t in enumerate(timesteps):
             
@@ -115,8 +125,8 @@ if __name__ == '__main__':
                 mean = mean_data[s].rolling(t,center = True).mean().dropna()
                 IGT = IGT_data[s].rolling(t,center = True).mean().dropna()
                 
-                axes_m[i].plot(mean.index[t//2:400-t//2],mean.values[t//2:400-t//2],color = data.colors[x],label = '{} mins'.format(t//3))
-                axes_i[i].plot(IGT.index[t//2:400-t//2],IGT.values[t//2:400-t//2],color = data.colors[x],label = '{} mins'.format(t//3))
+                axes_m[i].plot(mean.index[:400-t//2],mean.values[:400-t//2],color = data.colors[x],label = '{} mins'.format(t//3))
+                axes_i[i].plot(IGT.index[:400-t//2],IGT.values[:400-t//2],color = data.colors[x],label = '{} mins'.format(t//3))
                 
         fig_m.suptitle('{} Mean data'.format(test))
         fig_i.suptitle('{} IGT data'.format(test))
@@ -129,11 +139,34 @@ if __name__ == '__main__':
         fig_m.legend(handles, labels)
         fig_i.legend(handles, labels)
     
+    elif test == 'Kernel Gaussian':
+        
+        spacing  = 10
+        t = spacing * 3
+        alphas = t/np.array([2,4,6,8])
+        for x,a in enumerate(alphas):
+            
+            stdev = (t-1)/(2*a)
+            
+            for i,s in enumerate(mean_data):
+                
+                mean = mean_data[s].rolling(window=t,win_type = 'gaussian',center = True).mean(std = stdev).dropna()
+                IGT = IGT_data[s].rolling(window=t,win_type = 'gaussian',center = True).mean(std = stdev).dropna()
+                
+                axes_m[i].plot(mean.index[t//2:400-t//2],mean.values[t//2:400-t//2],color = data.colors[x],label = 'Alpha {}'.format(a))
+                axes_i[i].plot(IGT.index[t//2:400-t//2],IGT.values[t//2:400-t//2],color = data.colors[x],label = 'Alpha {}'.format(a))
+                
+        fig_m.suptitle('{} Mean data'.format(test))
+        fig_i.suptitle('{} IGT data'.format(test))
+        
+        for i,s in enumerate(list(data.species.values())):
+            axes_m[i].set_title(s)
+            axes_i[i].set_title(s)
+        
+        handles, labels = axes_m[i].get_legend_handles_labels()
+        fig_m.legend(handles, labels)
+        fig_i.legend(handles, labels)
     
-    """
-    Gaussian means
-    
-    """
     
     """
     #Exponent means

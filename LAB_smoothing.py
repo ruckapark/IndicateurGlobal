@@ -71,7 +71,7 @@ if __name__ == '__main__':
     test = 'Rolling mean Centre'
     test = 'Kernel Gaussian'
     #test = 'Kernel DPSS'
-    #test = 'Kernel Exponential'
+    test = 'Kernel Exponential'
         
     """
     Moving means
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     
     elif test == 'Kernel Gaussian':
         
-        spacing  = 10
+        spacing  = 5
         t = spacing * 3
         alphas = t/np.array([2,4,6,8])
         for x,a in enumerate(alphas):
@@ -155,6 +155,34 @@ if __name__ == '__main__':
                 
                 axes_m[i].plot(mean.index[t//2:400-t//2],mean.values[t//2:400-t//2],color = data.colors[x],label = 'Alpha {}'.format(a))
                 axes_i[i].plot(IGT.index[t//2:400-t//2],IGT.values[t//2:400-t//2],color = data.colors[x],label = 'Alpha {}'.format(a))
+                
+        fig_m.suptitle('{} Mean data'.format(test))
+        fig_i.suptitle('{} IGT data'.format(test))
+        
+        for i,s in enumerate(list(data.species.values())):
+            axes_m[i].set_title(s)
+            axes_i[i].set_title(s)
+        
+        handles, labels = axes_m[i].get_legend_handles_labels()
+        fig_m.legend(handles, labels)
+        fig_i.legend(handles, labels)
+        
+    elif test == 'Kernel Exponential':
+        
+        spacing  = 5
+        t = spacing * 3
+        taus = np.array([1,2,3,4,5])
+        for x,tau in enumerate(taus):
+            
+            #stdev = (t-1)/(2*a)
+            
+            for i,s in enumerate(mean_data):
+                
+                mean = mean_data[s].rolling(window=t,win_type = 'exponential',center = True).mean(tau = tau).dropna()
+                IGT = IGT_data[s].rolling(window=t,win_type = 'exponential',center = True).mean(tau = tau).dropna()
+                
+                axes_m[i].plot(mean.index[t//2:400-t//2],mean.values[t//2:400-t//2],color = data.colors[x],label = 'Tau {}'.format(tau))
+                axes_i[i].plot(IGT.index[t//2:400-t//2],IGT.values[t//2:400-t//2],color = data.colors[x],label = 'Tau {}'.format(tau))
                 
         fig_m.suptitle('{} Mean data'.format(test))
         fig_i.suptitle('{} IGT data'.format(test))

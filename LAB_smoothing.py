@@ -47,9 +47,27 @@ if __name__ == '__main__':
     mean_data = {s:None for s in data.species}
     for s in mean_data:
         mean_data[s] = data.data_short[s].mean(axis = 1)
+        
+    IGT_data = {s:None for s in data.species}
+    for s in IGT_data:
+        IGT_data[s] = data.data_short[s].quantile(0.129167,axis = 1)
     
-    #plot data
+    #%%plot data
     plt.close('all')
-    fig,axes = plt.subplots(1,3,figsize = (19,7),sharex = True)
+    fig_m,axes_m = plt.subplots(1,3,figsize = (19,7),sharex = True)
+    fig_i,axes_i = plt.subplots(1,3,figsize = (19,7),sharex = True)
+    
     for i,s in enumerate(mean_data):
-        axes[i].plot(mean_data[s].index,mean_data[s].values,color = data.species_colors[s])
+        axes_m[i].plot(mean_data[s].index[:400],mean_data[s].values[:400],color = data.species_colors[s])
+        axes_m[i].axvline(0,color = 'black')
+        
+    for i,s in enumerate(IGT_data):
+        axes_i[i].plot(IGT_data[s].index[:400],IGT_data[s].values[:400],color = data.species_colors[s])
+        axes_i[i].axvline(0,color = 'black')
+        
+    #Moving means
+    
+    
+    #Gaussian means
+    
+    #Exponent means

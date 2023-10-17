@@ -65,9 +65,45 @@ if __name__ == '__main__':
         axes_i[i].plot(IGT_data[s].index[:400],IGT_data[s].values[:400],color = data.species_colors[s])
         axes_i[i].axvline(0,color = 'black')
         
-    #Moving means
+    test = 'mean_rolling_righttrail'
+        
+    """
+    Moving means
+    d_.rolling_mean(df,5) #5 minutes used typically on rolling mean
+    d_.rolling_mean(d_.block_mean(df,10), 4) #grouped mean + rolling mean used in article 1
+    
+    Rolling mean function: default right edge mean - centre may be better
+    
+    Here we will try both and more
+    """
+    if test == 'mean_rolling_righttrail':
+        
+        spacing  = np.array([2,5,10,15,20,30])
+        timesteps = spacing * 3
+        for x,t in enumerate(timesteps):
+            
+            for i,s in enumerate(mean_data):
+                
+                mean = mean_data[s].rolling(t).mean().dropna()
+                IGT = IGT_data[s].rolling(t).mean().dropna()
+                
+                axes_m[i].plot(mean.index[:400-t],mean.values[:400-t],color = data.colors[x],label = '{} mins'.format(t//3))
+                axes_i[i].plot(IGT.index[:400-t],IGT.values[:400-t],color = data.colors[x],label = '{} mins'.format(t//3))
+                
+        fig_m.suptitle('{} Mean data'.format(test))
+        fig_i.suptitle('{} IGT data'.format(test))
+        
+        handles, labels = axes_m[i].get_legend_handles_labels()
+        fig_m.legend(handles, labels)
+        fig_i.legend(handles, labels)
     
     
-    #Gaussian means
+    """
+    Gaussian means
     
+    """
+    
+    """
     #Exponent means
+    
+    """

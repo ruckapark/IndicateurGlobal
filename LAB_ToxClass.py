@@ -28,7 +28,7 @@ class csvDATA:
         self.root = root
         self.Tox = self.find_tox()
         self.rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
-        self.colors = ['blue','orange','green','red','purple','brown','pink','grey','olive','cyan']
+        self.colors = ['red','purple','brown','pink','grey','olive','cyan','blue','orange','green']
         self.species_colors = {'E':'#de8e0d','G':'#057d25','R':'#1607e8'}
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
         self.morts = d_.read_dead(root)

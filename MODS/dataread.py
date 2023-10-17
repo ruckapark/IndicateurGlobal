@@ -200,7 +200,7 @@ def dataplot_mark_dopage(axe,date_range):
     #could add possibility to put xtick in location of doping?
     
 def rolling_mean(df,timestep):
-    
+    """ Timestep in minutes """
     #convert mins to number of 20 second intervals
     timestep = (timestep * 60)//20
     return df.rolling(timestep).mean().dropna()

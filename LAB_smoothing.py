@@ -81,7 +81,7 @@ if __name__ == '__main__':
     """
     if test == 'Rolling mean RightTrail':
         
-        spacing  = np.array([2,5,10,15,20,30])
+        spacing  = np.array([3,6,9,12,15])
         timesteps = spacing * 3
         for x,t in enumerate(timesteps):
             
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         
     elif test == 'Rolling mean Centre':
         
-        spacing  = np.array([2,5,10,15,20,30])
+        spacing  = np.array([3,6,9,12,15])
         timesteps = spacing * 3
         for x,t in enumerate(timesteps):
             

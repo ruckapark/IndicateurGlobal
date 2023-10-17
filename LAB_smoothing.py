@@ -53,6 +53,8 @@ if __name__ == '__main__':
         IGT_data[s] = data.data_short[s].quantile(0.129167,axis = 1)
     
     #%%plot data
+    directory = r'C:\Users\George\Documents\Figures\Methods'
+    
     plt.close('all')
     fig_m,axes_m = plt.subplots(1,3,figsize = (19,7),sharex = True)
     fig_i,axes_i = plt.subplots(1,3,figsize = (19,7),sharex = True)
@@ -65,7 +67,8 @@ if __name__ == '__main__':
         axes_i[i].plot(IGT_data[s].index[:400],IGT_data[s].values[:400],color = data.species_colors[s])
         axes_i[i].axvline(0,color = 'black')
         
-    test = 'mean_rolling_righttrail'
+    test = 'Rolling mean RightTrail'
+    #test = 'Rolling mean Centre'
         
     """
     Moving means
@@ -76,7 +79,7 @@ if __name__ == '__main__':
     
     Here we will try both and more
     """
-    if test == 'mean_rolling_righttrail':
+    if test == 'Rolling mean RightTrail':
         
         spacing  = np.array([2,5,10,15,20,30])
         timesteps = spacing * 3
@@ -92,6 +95,35 @@ if __name__ == '__main__':
                 
         fig_m.suptitle('{} Mean data'.format(test))
         fig_i.suptitle('{} IGT data'.format(test))
+        
+        for i,s in enumerate(list(data.species.values())):
+            axes_m[i].set_title(s)
+            axes_i[i].set_title(s)
+        
+        handles, labels = axes_m[i].get_legend_handles_labels()
+        fig_m.legend(handles, labels)
+        fig_i.legend(handles, labels)
+        
+    elif test == 'Rolling mean Centre':
+        
+        spacing  = np.array([2,5,10,15,20,30])
+        timesteps = spacing * 3
+        for x,t in enumerate(timesteps):
+            
+            for i,s in enumerate(mean_data):
+                
+                mean = mean_data[s].rolling(t,center = True).mean().dropna()
+                IGT = IGT_data[s].rolling(t,center = True).mean().dropna()
+                
+                axes_m[i].plot(mean.index[t//2:400-t//2],mean.values[t//2:400-t//2],color = data.colors[x],label = '{} mins'.format(t//3))
+                axes_i[i].plot(IGT.index[t//2:400-t//2],IGT.values[t//2:400-t//2],color = data.colors[x],label = '{} mins'.format(t//3))
+                
+        fig_m.suptitle('{} Mean data'.format(test))
+        fig_i.suptitle('{} IGT data'.format(test))
+        
+        for i,s in enumerate(list(data.species.values())):
+            axes_m[i].set_title(s)
+            axes_i[i].set_title(s)
         
         handles, labels = axes_m[i].get_legend_handles_labels()
         fig_m.legend(handles, labels)

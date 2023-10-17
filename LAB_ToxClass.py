@@ -42,7 +42,7 @@ class csvDATA:
         return self.root + r'\\' + self.root.split('\\')[-1].split('-')[0] + '_'
     
     def find_tox(self):
-        return self.root.split('\\')[1].split('-')[0][-3:]
+        return int(self.root.split('\\')[1].split('-')[0][-3:])
     
     def get_dfs(self):
         

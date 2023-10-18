@@ -108,11 +108,24 @@ class csvDATA:
         self.data_short = self.condense_data()
         self.meandata_short = self.condense_data(mean = True)
         
-        self.mean = self.get_mean()
-        self.IGT = self.get_IGT()
+        self.low_quantiles = {'E':0.129167,'G':0.129167,'R':0.129167}
+        self.high_quantiles = {'E':0.95,'G':0.95,'R':0.95}
         
-        self.mean_short = self.get_mean(short = True)
-        self.IGT_short = self.get_IGT(short = True)
+        self.mean_raw = self.get_mean_raw()
+        self.mean_raw_short = self.get_mean_raw(short = True)
+        
+        self.IGT_raw_low = self.get_quantile_raw()
+        self.IGT_raw_high = self.get_quantile_raw(high = True)
+        self.IGT_raw_low_short = self.get_quantile_raw(short = True)
+        self.IGT_raw_high_short = self.get_quantile_raw(high = True,short = True)
+        
+        self.mean = self.get_mean()
+        self.IGT_low = self.get_quantile()
+        self.IGT_high = self.get_quantile(high = True)
+        self.IGT = self.combine_IGT()
+        
+        #self.mean_short = self.get_mean(short = True)
+        #self.IGT_short = self.get_IGT(short = True)
         
             
     def find_rootstem(self):
@@ -191,15 +204,52 @@ class csvDATA:
             data_short.update({s:df})
         return data_short
     
-    def get_mean(self):
+    def get_mean_raw(self,short = False):
+        if short:
+            return {s:self.data_short[s].mean(axis = 1) for s in self.species}
+        else:
+            return {s:self.data[s].mean(axis = 1) for s in self.species}
+        
+    def get_quantile_raw(self,short = False,high = False):
+        
+        if high:
+            quantiles = self.high_quantiles
+        else:
+            quantiles = self.low_quantiles
+        
+        if short:
+            return {s:self.data_short[s].quantile(quantiles[s],axis = 1) for s in self.species}
+        else:
+            return {s:self.data[s].quantile(quantiles[s],axis = 1) for s in self.species}
+    
+    def get_mean(self, short=False, smoothing='Gaussian'):
         """ Overall mean of all data """
-        mean = {s:None for s in self.data.species}
+        mean = {s:None for s in self.species}
+        for s in mean:
+            if short:
+                mean[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.mean_raw_short[s])
+            else:
+                mean[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.mean_raw[s])
         return mean
     
-    def get_IGT(self):
+    def get_quantile(self, short = False, high = False, smoothing='Gaussian'):
         """ Overall IGT data """
-        IGT = {s:None for s in self.data.species}
+        IGT = {s:None for s in self.species}
+        for s in IGT:
+            if short:
+                if high:
+                    IGT[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.IGT_raw_high_short[s])
+                else:
+                    IGT[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.IGT_raw_low_short[s])
+            else:
+                if high:
+                    IGT[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.IGT_raw_high[s])
+                else:
+                    IGT[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.IGT_raw_low[s])
         return IGT
+    
+    def combine_IGT(self):
+        return None
     
     def bSpline(self,i,col,order = 3,k = 10):
         """ Assume optimum knots 10 """
@@ -257,12 +307,12 @@ class ToxPLOT:
                 if mark:
                     self.mark_spike(axes,short)
                     
-        return fig,axes   
+        return fig,axes
     
     def mark_spike(self,axes,short = True):
         
         for i in range(16):
-            if short: 
+            if short:
                 axes[i//4,i%4].axvline(0,color = 'black')
             else:
                 axes[i//4,i%4].axvline(self.data.dopage,color = 'black')

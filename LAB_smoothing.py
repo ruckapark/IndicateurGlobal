@@ -60,18 +60,19 @@ if __name__ == '__main__':
     fig_i,axes_i = plt.subplots(1,3,figsize = (19,7),sharex = True)
     
     for i,s in enumerate(mean_data):
-        axes_m[i].plot(mean_data[s].index[:400],mean_data[s].values[:400],color = data.species_colors[s])
+        axes_m[i].plot(mean_data[s].index[150:400],mean_data[s].values[150:400],color = data.species_colors[s])
         axes_m[i].axvline(0,color = 'black')
         
     for i,s in enumerate(IGT_data):
-        axes_i[i].plot(IGT_data[s].index[:400],IGT_data[s].values[:400],color = data.species_colors[s])
+        axes_i[i].plot(IGT_data[s].index[150:400],IGT_data[s].values[150:400],color = data.species_colors[s])
         axes_i[i].axvline(0,color = 'black')
         
     test = 'Rolling mean RightTrail'
     test = 'Rolling mean Centre'
     test = 'Kernel Gaussian'
-    #test = 'Kernel DPSS'
     test = 'Kernel Exponential'
+    test = 'Exponential single'
+    test = 'Exponential double'
         
     """
     Moving means
@@ -86,8 +87,11 @@ if __name__ == '__main__':
     
     Chosen windows:
         -Gaussian
-        -dpss - varied tail steepness
         -Exponential - steep centre based on tau  
+        
+    Exponentail Smoothing:
+        - single smoothing: alpha between 0-1 check 0.1 - 0.6
+        - Double smoothing: take two alphas including optimum and test beta values
     """
     if test == 'Rolling mean RightTrail':
         
@@ -194,9 +198,65 @@ if __name__ == '__main__':
         handles, labels = axes_m[i].get_legend_handles_labels()
         fig_m.legend(handles, labels)
         fig_i.legend(handles, labels)
-    
-    
-    """
-    #Exponent means
-    
-    """
+        
+    elif test == 'Exponential single':
+        
+        from statsmodels.tsa.api import SimpleExpSmoothing
+        alphas = np.array([0.15])
+        
+        for x in range(len(alphas)):
+            for i,s in enumerate(mean_data):
+                
+                smoother_m = SimpleExpSmoothing(mean_data[s])
+                smoother_i = SimpleExpSmoothing(IGT_data[s])
+                
+                mean = smoother_m.fit(smoothing_level=alphas[x],optimized = False).fittedvalues
+                IGT = smoother_i.fit(smoothing_level=alphas[x],optimized = False).fittedvalues
+                
+                axes_m[i].plot(mean.index[150:400],mean.values[150:400],color = data.colors[x],label = 'Alpha {}'.format(alphas[x]))
+                axes_i[i].plot(IGT.index[150:400],IGT.values[150:400],color = data.colors[x],label = 'Alpha {}'.format(alphas[x]))
+                
+        fig_m.suptitle('{} Mean data'.format(test))
+        fig_i.suptitle('{} IGT data'.format(test))
+        
+        for i,s in enumerate(list(data.species.values())):
+            axes_m[i].set_title(s)
+            axes_i[i].set_title(s)
+        
+        handles, labels = axes_m[i].get_legend_handles_labels()
+        fig_m.legend(handles, labels)
+        fig_i.legend(handles, labels)
+        
+        #optimum around 0.15
+        
+    elif test == 'Exponential double':
+        
+        from statsmodels.tsa.api import Holt
+        alphas = np.array([0.15,0.25])
+        betas = np.array([0.04,0.07])
+        
+        for y,alpha in enumerate(alphas):
+            for x,beta in enumerate(betas):
+                for i,s in enumerate(mean_data):
+                    
+                    smoother_m = Holt(mean_data[s])
+                    smoother_i = Holt(IGT_data[s])
+                    
+                    mean = smoother_m.fit(smoothing_level=alpha,smoothing_trend=beta,optimized = False).fittedvalues
+                    IGT = smoother_i.fit(smoothing_level=alpha,smoothing_trend=beta,optimized = False).fittedvalues
+                    
+                    axes_m[i].plot(mean.index[150:400],mean.values[150:400],color = data.colors[y*len(alphas) + x],label = 'Alpha {}, Beta {}'.format(alpha,beta))
+                    axes_i[i].plot(IGT.index[150:400],IGT.values[150:400],color = data.colors[y*len(alphas) + x],label = 'Alpha {}, Beta {}'.format(alpha,beta))
+                
+        fig_m.suptitle('{} Mean data'.format(test))
+        fig_i.suptitle('{} IGT data'.format(test))
+        
+        for i,s in enumerate(list(data.species.values())):
+            axes_m[i].set_title(s)
+            axes_i[i].set_title(s)
+        
+        handles, labels = axes_m[i].get_legend_handles_labels()
+        fig_m.legend(handles, labels)
+        fig_i.legend(handles, labels)
+        
+        #optimums around 0.15 0.07

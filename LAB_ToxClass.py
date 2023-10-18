@@ -97,13 +97,22 @@ class csvDATA:
         self.species_colors = {'E':'#de8e0d','G':'#057d25','R':'#1607e8'}
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
         self.morts = d_.read_dead(root)
+        
         self.data = self.get_dfs()
         self.meandata = self.get_meandfs(smoothing_PARAMETERS(smoothing))
+        
         self.dopage_entry = self.find_dopage_entry(dope_df)
         self.dopage = self.dopage_entry['Start']
         self.date = str(self.dopage)[:10]
+        
         self.data_short = self.condense_data()
         self.meandata_short = self.condense_data(mean = True)
+        
+        self.mean = self.get_mean()
+        self.IGT = self.get_IGT()
+        
+        self.mean_short = self.get_mean(short = True)
+        self.IGT_short = self.get_IGT(short = True)
         
             
     def find_rootstem(self):
@@ -181,6 +190,16 @@ class csvDATA:
             df = df.set_index(np.array(index,dtype = int),drop = True)
             data_short.update({s:df})
         return data_short
+    
+    def get_mean(self):
+        """ Overall mean of all data """
+        mean = {s:None for s in self.data.species}
+        return mean
+    
+    def get_IGT(self):
+        """ Overall IGT data """
+        IGT = {s:None for s in self.data.species}
+        return IGT
     
     def bSpline(self,i,col,order = 3,k = 10):
         """ Assume optimum knots 10 """

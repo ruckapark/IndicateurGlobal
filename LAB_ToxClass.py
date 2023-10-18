@@ -69,7 +69,7 @@ class smoothing_PARAMETERS:
             return None
         
         elif self.method == 'Gaussian':
-            return data.rolling(window = self.parameters['t'],win_type = self.method.lower(),center = True).mean(std = self.params['std']).dropna()
+            return data.rolling(window = self.params['t'],win_type = self.method.lower(),center = True).mean(std = self.params['std']).dropna()
             
         elif self.method == 'Exponential':
             print('Smoothing method unknown')
@@ -103,6 +103,7 @@ class csvDATA:
         self.dopage = self.dopage_entry['Start']
         self.date = str(self.dopage)[:10]
         self.data_short = self.condense_data()
+        self.meandata_short = self.condense_data(mean = True)
         
             
     def find_rootstem(self):
@@ -129,7 +130,22 @@ class csvDATA:
                     df = df.drop(columns = [m])
                     
             dfs.update({s:df})
-        return dfs            
+        return dfs
+
+    def get_meandfs(self,smoothing):
+        
+        #should this be mean of every column or just the mean series?
+        
+        dfs = {s:None for s in self.species}
+        for s in dfs:
+            if len(self.morts[s]) > 8:
+                print('{} : Excessive mortality'.format(self.species[s]))
+                continue
+            
+            df = self.data[s].copy()
+            dfs.update({s:smoothing.moving_mean(df)})
+            
+        return dfs
             
     def preproc_csv(self,df):
         df.index = pd.to_datetime(df.index)
@@ -149,11 +165,15 @@ class csvDATA:
             print('No dopage found')
             return row
     
-    def condense_data(self): #later should be data class with entry as data with condensed data series
+    def condense_data(self,mean = False): #later should be data class with entry as data with condensed data series
         
         data_short = {}
-        for s in self.data:
-            df = self.data[s].copy()
+        if mean:
+            dfs = self.meandata
+        else:
+            dfs = self.data
+        for s in dfs:
+            df = dfs[s].copy()
             df = df[df.index > self.dopage - pd.Timedelta(hours = 1)]
             df = df[df.index < self.dopage + pd.Timedelta(hours = 5)]
             zero_index = np.argmin(abs((self.dopage - df.index).total_seconds())) - 1
@@ -161,10 +181,6 @@ class csvDATA:
             df = df.set_index(np.array(index,dtype = int),drop = True)
             data_short.update({s:df})
         return data_short
-    
-    def get_meandfs(self,smoothing):
-        
-        return None
     
     def bSpline(self,i,col,order = 3,k = 10):
         """ Assume optimum knots 10 """
@@ -194,6 +210,43 @@ class speciesDATA():
     return None
 """
 
+class ToxPLOT:
+    
+    def __init__(self,data):
+        self.type = type(data)
+        self.data = data
+        
+    def plot16(self,species,with_mean = True,title = None,short = True,mark = True):
+        
+        if short:
+            df = self.data.data_short[species]
+            df_m = self.data.meandata_short[species]
+        else:
+            df = self.data.data[species]
+            df_m = self.data.meandata[species]
+        
+        fig,axes = plt.subplots(4,4,sharex = True,sharey = True,figsize = (20,8))
+        plt.suptitle(title)
+        for i in range(16):
+            col = i+1
+            if col in df.columns:
+                axes[i//4,i%4].plot(df.index,df[col],color = self.data.species_colors[species])
+                
+                if with_mean:
+                    axes[i//4,i%4].plot(df_m.index,df_m[col],color = 'black')
+                
+                if mark:
+                    self.mark_spike(axes,short)
+                    
+        return fig,axes   
+    
+    def mark_spike(self,axes,short = True):
+        
+        for i in range(16):
+            if short: 
+                axes[i//4,i%4].axvline(0,color = 'black')
+            else:
+                axes[i//4,i%4].axvline(self.data.dopage,color = 'black')
 
 
 if __name__ == '__main__':

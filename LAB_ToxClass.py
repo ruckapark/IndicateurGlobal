@@ -35,6 +35,7 @@ class csvDATA:
         self.data = self.get_dfs()
         self.dopage_entry = self.find_dopage_entry(dope_df)
         self.dopage = self.dopage_entry['Start']
+        self.date = str(self.dopage)[:10]
         self.data_short = self.condense_data()
         
             

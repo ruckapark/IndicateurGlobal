@@ -22,9 +22,74 @@ from dope_reg import dope_read_extend
 import dataread as d_
 os.chdir('..')
 
+class smoothing_PARAMETERS:
+    
+    def __init__(self,smoothing):
+        self.method = smoothing
+        self.params = self.get_parameters()
+        
+    def get_parameters(self):
+        
+        #all of these could of course be individual classes
+        if self.method == 'Mean':
+            timestep = 5
+            t = timestep * 3
+            return {'t':t}
+        
+        elif self.method == 'Gaussian':
+            timestep = 5
+            t = timestep * 3
+            alpha = t/8
+            stdev = (t-1)/(2*alpha)
+            return {'t':t,'std':stdev}
+        
+        elif self.method == 'Exponential':
+            timestep = 5
+            t = timestep * 3
+            tau = 3
+            return {'t':t,'tau':tau}
+        
+        elif self.method == 'Exponential single':
+            a = 0.15
+            return {'alpha':a}
+        
+        elif self.method == 'Exponential double':
+            a,b = 0.15,0.07
+            return {'alpha':a,'beta':b}
+        
+        else:
+            print('Smoothing method unknown')
+            return None
+            
+    def moving_mean(self,data):
+        """ data is series (pd or np) with index """
+        
+        if self.method == 'Mean':
+            print('Smoothing method unknown')
+            return None
+        
+        elif self.method == 'Gaussian':
+            return data.rolling(window = self.parameters['t'],win_type = self.method.lower(),center = True).mean(std = self.params['std']).dropna()
+            
+        elif self.method == 'Exponential':
+            print('Smoothing method unknown')
+            return None
+        
+        elif self.method == 'Exponential single':
+            print('Smoothing method unknown')
+            return None
+            
+        elif self.method == 'Exponential double':
+            print('Smoothing method unknown')
+            return None
+        
+        else:
+            print('Smoothing method unknown')
+            return None
+
 class csvDATA:
     
-    def __init__(self,root,dope_df):
+    def __init__(self,root,dope_df,smoothing = 'Gaussian'):
         self.root = root
         self.Tox = self.find_tox()
         self.rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
@@ -33,6 +98,7 @@ class csvDATA:
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
         self.morts = d_.read_dead(root)
         self.data = self.get_dfs()
+        self.meandata = self.get_meandfs(smoothing_PARAMETERS(smoothing))
         self.dopage_entry = self.find_dopage_entry(dope_df)
         self.dopage = self.dopage_entry['Start']
         self.date = str(self.dopage)[:10]
@@ -63,8 +129,7 @@ class csvDATA:
                     df = df.drop(columns = [m])
                     
             dfs.update({s:df})
-        return dfs
-            
+        return dfs            
             
     def preproc_csv(self,df):
         df.index = pd.to_datetime(df.index)
@@ -96,6 +161,10 @@ class csvDATA:
             df = df.set_index(np.array(index,dtype = int),drop = True)
             data_short.update({s:df})
         return data_short
+    
+    def get_meandfs(self,smoothing):
+        
+        return None
     
     def bSpline(self,i,col,order = 3,k = 10):
         """ Assume optimum knots 10 """

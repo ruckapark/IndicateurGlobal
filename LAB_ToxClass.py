@@ -96,36 +96,70 @@ class csvDATA:
         self.colors = ['red','purple','brown','pink','grey','olive','cyan','blue','orange','green']
         self.species_colors = {'E':'#de8e0d','G':'#057d25','R':'#1607e8'}
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
+        
+        #parameters for IGT calculation
+        self.method = smoothing
+        self.reference_distributions = {
+            'E':{'median':80,'std':20},
+            'G':{'median':90,'std':80}, #large std as this is false measure
+            'R':{'median':6.45,'std':3}
+            }
+        
+        self.igt_q0,self.igt_q1,self.igt_q2 = 0.05,0.129167,0.1909
+        self.low_quantiles = {'E':self.igt_q1,'G':self.igt_q1,'R':self.igt_q1}
+        self.high_quantiles = {'E':1-self.igt_q1,'G':1-self.igt_q0,'R':1-self.igt_q2}
+        
+        #read deads
         self.morts = d_.read_dead(root)
         
-        self.data = self.get_dfs()
-        self.meandata = self.get_meandfs(smoothing_PARAMETERS(smoothing))
+        # #remove species if dead (in morts)
+        # self.species = self.update_species()
         
+        #get info about dopage
         self.dopage_entry = self.find_dopage_entry(dope_df)
         self.dopage = self.dopage_entry['Start']
         self.date = str(self.dopage)[:10]
         
+        #get dfs from csv files
+        self.data = self.get_dfs()
+        self.meandata = self.get_meandfs(smoothing_PARAMETERS(self.method))
+        
+        #get condensed data
         self.data_short = self.condense_data()
         self.meandata_short = self.condense_data(mean = True)
         
-        self.low_quantiles = {'E':0.129167,'G':0.129167,'R':0.129167}
-        self.high_quantiles = {'E':0.87083,'G':0.95,'R':0.87083}
-        
+        #get unfiltered mean series
         self.mean_raw = self.get_mean_raw()
         self.mean_raw_short = self.get_mean_raw(short = True)
         
-        self.IGT_raw_low = self.get_quantile_raw()
-        self.IGT_raw_high = self.get_quantile_raw(high = True)
-        self.IGT_raw_low_short = self.get_quantile_raw(short = True)
-        self.IGT_raw_high_short = self.get_quantile_raw(high = True,short = True)
+        #get unfiltered IGT components
+        self.q_raw_low = self.get_quantile_raw()
+        self.q_raw_low_short = self.get_quantile_raw(short = True)
         
+        self.q_raw_high = self.get_quantile_raw(high = True)
+        self.q_raw_high_short = self.get_quantile_raw(high = True,short = True)
+        
+        #filter series' with moving averages
         self.mean = self.get_mean()
-        self.IGT_low = self.get_quantile()
-        self.IGT_high = self.get_quantile(high = True)
-        self.IGT = self.combine_IGT()
+        self.mean_short = self.get_mean(short = True)
         
-        #self.mean_short = self.get_mean(short = True)
-        #self.IGT_short = self.get_IGT(short = True)
+        self.q_low = self.get_quantile()
+        self.q_low_short = self.get_quantile(short = True)
+        
+        self.q_high = self.get_quantile(high = True)
+        self.q_high_short = self.get_quantile(high = True,short = True)
+        
+        #check if datasets are representative to calculate IGT
+        self.parameters = self.check_reference()
+        self.active_species = self.check_activespecies()
+        
+        #lower high quantile
+        self.q_high_adj = self.adjust_qhigh()
+        self.q_high_adj_short = self.adjust_qhigh(short = True)
+        
+        #calculate IGT
+        self.IGT = self.combine_IGT()
+        self.IGT_short = self.combine_IGT(short = True)
         
             
     def find_rootstem(self):
@@ -145,7 +179,8 @@ class csvDATA:
             df = pd.read_csv(r'{}{}.csv.zip'.format(self.rootfile_stem,self.species[s]),index_col = 0)
             df = self.preproc_csv(df)
             
-            if len(d_.check_dead(df,s)): print('Check mortality for: ',self.species[s],d_.check_dead(df,s))
+            if len(d_.check_dead(df,s)): 
+                print('Check mortality for: ',self.species[s],d_.check_dead(df,s))
             
             for m in self.morts[s]:
                 if m in df.columns: 
@@ -204,14 +239,48 @@ class csvDATA:
             data_short.update({s:df})
         return data_short
     
+    def check_reference(self):
+        
+        """
+        Check if the quantiles are in line with reference distributions
+        If so, return the parameters of the spike distribution
+        """
+        refs = {s:None for s in self.species}
+        
+        for s in self.species:
+            
+            q_pre = self.q_high_short[s].copy()
+            q_pre = q_pre[q_pre.index < 0]
+            q_params = {'median':q_pre.median(),'std':q_pre.std()}
+            
+            lower_bound = self.reference_distributions[s]['median'] - self.reference_distributions[s]['std']
+            upper_bound = self.reference_distributions[s]['median'] + self.reference_distributions[s]['std']
+            
+            if lower_bound < q_params['median'] < upper_bound:
+                refs[s] = q_params
+                
+        return refs
+    
+    def check_activespecies(self):
+        """ Return list of active species """
+        return [s for s in self.species if self.parameters[s]]
+                
+    
     def get_mean_raw(self,short = False):
+        """ 
+        return mean timeseires of df for all species
+        NO FILTERING
+        """
         if short:
             return {s:self.data_short[s].mean(axis = 1) for s in self.species}
         else:
             return {s:self.data[s].mean(axis = 1) for s in self.species}
         
     def get_quantile_raw(self,short = False,high = False):
-        
+        """ 
+        return quantile timeseires of df for all species
+        NO FILTERING
+        """
         if high:
             quantiles = self.high_quantiles
         else:
@@ -222,36 +291,88 @@ class csvDATA:
         else:
             return {s:self.data[s].quantile(quantiles[s],axis = 1) for s in self.species}
     
-    def get_mean(self, short=False, smoothing='Gaussian'):
+    def get_mean(self, short=False):
         """ Overall mean of all data """
         mean = {s:None for s in self.species}
         for s in mean:
             if short:
-                mean[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.mean_raw_short[s])
+                mean[s] = smoothing_PARAMETERS(self.method).moving_mean(self.mean_raw_short[s])
             else:
-                mean[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.mean_raw[s])
+                mean[s] = smoothing_PARAMETERS(self.method).moving_mean(self.mean_raw[s])
         return mean
     
     def get_quantile(self, short = False, high = False, smoothing='Gaussian'):
         """ Overall IGT data """
-        IGT = {s:None for s in self.species}
-        for s in IGT:
+        q = {s:None for s in self.species}
+        for s in q:
             if short:
                 if high:
-                    IGT[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.IGT_raw_high_short[s])
+                    q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_high_short[s])
                 else:
-                    IGT[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.IGT_raw_low_short[s])
+                    q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_low_short[s])
             else:
                 if high:
-                    IGT[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.IGT_raw_high[s])
+                    q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_high[s])
                 else:
-                    IGT[s] = smoothing_PARAMETERS(smoothing).moving_mean(self.IGT_raw_low[s])
-        return IGT
+                    q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_low[s])
+                    
+        return q
     
-    def combine_IGT(self):
+    def adjust_qhigh(self,short = False):
+        
+        q_high_adj = {s:None for s in self.species}
+        
+        for s in [s for s in self.species if s in self.active_species]:
+            if short:
+                quantile_high = self.q_high_short[s] - (self.parameters[s]['median']-2*self.parameters[s]['std'])
+            else:
+                quantile_high = self.q_high[s] - (self.parameters[s]['median']-2*self.parameters[s]['std'])
+            
+            quantile_high[quantile_high >= 0] = 0.0
+            q_high_adj[s] = quantile_high
+        
+        return q_high_adj
+    
+    def combine_IGT(self,short = False):
         """ Combine high and low IGT to one signal """
         
-        return None
+        IGTs = {s:None for s in self.species}
+        
+        for s in [s for s in self.species if s in self.active_species]:
+            
+            if short:
+                qlow,qhigh = self.q_low_short[s].copy(),self.q_high_adj_short[s].copy()
+            else:
+                qlow,qhigh = self.q_low[s].copy(),self.q_high_adj[s].copy()
+                
+                
+            qlow = qlow**2
+            qhigh = -(qhigh**2)
+            
+            qlow[qlow < 0.2] = 0.0
+            qhigh[qhigh > -0.2] = 0.0
+            
+            IGT = pd.DataFrame(index = qlow.index,columns = ['low','high','total'])
+            IGT['low'],IGT['high'] = qlow,qhigh
+            IGT['total'] = (1*(IGT['low'] > 0)) * (1*(IGT['high'] < 0))
+            
+            IGT_array = np.zeros(IGT.shape[0])
+            
+            for i in range(IGT.shape[0]):
+                
+                if IGT['total'].iloc[i] == 0:
+                    if IGT['low'].iloc[i] > 0:
+                        IGT_array[i] = IGT['low'].iloc[i]
+                    else:
+                        IGT_array[i] = IGT['high'].iloc[i]
+                else:
+                    if IGT['low'].iloc[i] > abs(IGT['high'].iloc[i]):
+                        IGT_array[i] = IGT['low'].iloc[i]
+                    else:
+                        IGT_array[i] = IGT['high'].iloc[i]
+            
+            IGTs[s] = pd.Series(IGT_array,index = IGT.index)
+        return IGTs
     
     def bSpline(self,i,col,order = 3,k = 10):
         """ Assume optimum knots 10 """
@@ -318,9 +439,27 @@ class ToxPLOT:
                 axes[i//4,i%4].axvline(0,color = 'black')
             else:
                 axes[i//4,i%4].axvline(self.data.dopage,color = 'black')
+                
+    def plotIGT(self,spec = None,short = True):
+        
+        if spec:
+            fig = plt.figure(figsize = (13,8))
+            axe = fig.add_axes([0.1,0.1,0.8,0.8])
+            axe.plot(series.index,series)
+            axe.set_title(self.data.species[spec])
+        else:
+            
+            fig,axes = plt.subplots(3,1,figsize = (15,15),sharex = True)
+            for i,s in enumerate(data.species):
+                if short:
+                    axes[i].plot(data.IGT_short[s].index,data.IGT_short[s].values,color = data.species_colors[s])
+                else:
+                    axes[i].plot(data.IGT[s].index,data.IGT[s].values,color = data.species_colors[s])
+                axes[i].set_title(self.data.species[s])
 
 
 if __name__ == '__main__':
     
     dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM768-PC\20220317-165322',dope_df)
+    data = csvDATA(r'I:\TXM760-PC\20210520-224501',dope_df)
+    ToxPLOT(data).plotIGT(short = False) #gammarus IGT needs verifying!

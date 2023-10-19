@@ -42,6 +42,33 @@ def preproc_csv(df):
     df.columns = [int(c) for c in df.columns]
     return df
 
+def get_IGT(qlow,qhigh):
+    
+    qlow,qhigh = qlow.copy(),qhigh.copy()
+    qlow[qlow < 0.2] = 0.0
+    qhigh[qhigh > -0.2] = 0.0
+    
+    IGT = pd.DataFrame(index = qlow.index,columns = ['low','high','total'])
+    IGT['low'],IGT['high'] = qlow,qhigh
+    IGT['total'] = (1*(IGT['low'] > 0)) * (1*(IGT['high'] < 0))
+    
+    IGT_array = np.zeros(IGT.shape[0])
+    
+    for i in range(IGT.shape[0]):
+        
+        if IGT['total'].iloc[i] == 0:
+            if IGT['low'].iloc[i] > 0:
+                IGT_array[i] = IGT['low'].iloc[i]
+            else:
+                IGT_array[i] = IGT['high'].iloc[i]
+        else:
+            if IGT['low'].iloc[i] > abs(IGT['high'].iloc[i]):
+                IGT_array[i] = IGT['low'].iloc[i]
+            else:
+                IGT_array[i] = IGT['high'].iloc[i]
+    
+    return pd.Series(IGT_array,index = IGT.index)
+
 methomyls = [
     r'I:\TXM760-PC\20210520-224501',
     r'I:\TXM760-PC\20210625-093621',
@@ -59,14 +86,14 @@ dics = [
 if __name__ == '__main__':
     
     reference_distributions = {
-        'E':{'median':80,'std':20/1.5},
+        'E':{'median':80,'std':20},
         'G':{'median':90,'std':40},
-        'R':{'median':6.45,'std':3/1.5}
+        'R':{'median':6.45,'std':3}
         }
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    root = methomyls[1]
+    root = methomyls[0]
     
     dope_df = dope_read_extend()
     
@@ -114,6 +141,8 @@ if __name__ == '__main__':
     dopage = dopage_entry['Start']    
     
     #%% IGT is the IGT of the filtered series (is this the best option?)
+    plt.close('all')
+    
     s = 'E'
     df = dfs[s]
     
@@ -142,16 +171,25 @@ if __name__ == '__main__':
     if range_low < pre_spike_parameters['median'] < range_high:
         print('ok')
         
-        #normalise to 2 stds from the mean
-        quantile_high = quantile_high - pre_spike_parameters['median']
+        axe.axhline(pre_spike_parameters['median'],color = 'blue')
+        axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
+        axe.axhspan(pre_spike_parameters['median'], pre_spike_parameters['median']-2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
+        
+        quantile_high = quantile_high - (pre_spike_parameters['median']-2*pre_spike_parameters['std'])
+        quantile_high[quantile_high > 0] = 0.0
+        
+        quantile_low = quantile_low**2
+        quantile_high = -(quantile_high**2)
+        
         fig = plt.figure(figsize = (13,7))
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
-        axe.plot(quantile_high.index,quantile_high,'red')
-        axe.axhline(0,color = 'blue')
-        axe.axhline(-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
-        axe.axhspan(0, -2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
         
+        axe.plot(quantile_low.index,quantile_low,color = 'blue')
+        axe.plot(quantile_high.index,quantile_high,color = 'red')
         axe.axvline(dopage,color = 'black')
+        
+        IGT = get_IGT(quantile_low,quantile_high)
+        axe.plot(IGT.index,IGT.values,color = 'black',alpha = 0.5)
         
     else:
         print('Not stable dataset')
@@ -185,16 +223,52 @@ if __name__ == '__main__':
     if range_low < pre_spike_parameters['median'] < range_high:
         print('ok')
         
-        #normalise to 2 stds from the mean
-        quantile_high = quantile_high - pre_spike_parameters['median']
+        axe.axhline(pre_spike_parameters['median'],color = 'blue')
+        axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
+        axe.axhspan(pre_spike_parameters['median'], pre_spike_parameters['median']-2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
+        
+        quantile_high = quantile_high - (pre_spike_parameters['median']-2*pre_spike_parameters['std'])
+        quantile_high[quantile_high >= 0] = 0.0
+        
+        quantile_low = quantile_low**2
+        quantile_high = -(quantile_high**2)
+        
         fig = plt.figure(figsize = (13,7))
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
-        axe.plot(quantile_high.index,quantile_high,'red')
-        axe.axhline(0,color = 'blue')
-        axe.axhline(-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
-        axe.axhspan(0, -2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
         
+        axe.plot(quantile_low.index,quantile_low,color = 'blue')
+        axe.plot(quantile_high.index,quantile_high,color = 'red')
         axe.axvline(dopage,color = 'black')
+        
+        IGT = get_IGT(quantile_low,quantile_high)
+        axe.plot(IGT.index,IGT.values,color = 'black',alpha = 0.5)
         
     else:
         print('Not stable dataset')
+        
+    """
+    #%%join datasets to form global IGT signal use methomyls[0]
+    quantile_low[quantile_low < 0.5] = 0.0
+    quantile_high[quantile_high > -0.5] = 0.0
+    
+    IGT = pd.DataFrame(index = quantile_low.index,columns = ['low','high','total'])
+    IGT['low'],IGT['high'] = quantile_low,quantile_high
+    IGT['total'] = (1*(IGT['low'] > 0)) * (1*(IGT['high'] < 0))
+    
+    IGT_array = np.zeros(IGT.shape[0])
+    
+    for i in range(IGT.shape[0]):
+        
+        if IGT['total'].iloc[i] == 0:
+            if IGT['low'].iloc[i] > 0:
+                IGT_array[i] = IGT['low'].iloc[i]
+            else:
+                IGT_array[i] = IGT['high'].iloc[i]
+        else:
+            if IGT['low'].iloc[i] > abs(IGT['high'].iloc[i]):
+                IGT_array[i] = IGT['low'].iloc[i]
+            else:
+                IGT_array[i] = IGT['high'].iloc[i]
+                
+    axe.plot(IGT.index,IGT_array,'black',alpha = 0.4)
+    """

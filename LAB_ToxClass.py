@@ -109,7 +109,7 @@ class csvDATA:
         self.meandata_short = self.condense_data(mean = True)
         
         self.low_quantiles = {'E':0.129167,'G':0.129167,'R':0.129167}
-        self.high_quantiles = {'E':0.95,'G':0.95,'R':0.95}
+        self.high_quantiles = {'E':0.87083,'G':0.95,'R':0.87083}
         
         self.mean_raw = self.get_mean_raw()
         self.mean_raw_short = self.get_mean_raw(short = True)
@@ -249,6 +249,8 @@ class csvDATA:
         return IGT
     
     def combine_IGT(self):
+        """ Combine high and low IGT to one signal """
+        
         return None
     
     def bSpline(self,i,col,order = 3,k = 10):

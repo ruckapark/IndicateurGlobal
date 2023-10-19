@@ -62,7 +62,7 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    roots = methomyls
+    roots = dics
     
     dope_df = dope_read_extend()
     
@@ -169,8 +169,8 @@ if __name__ == '__main__':
         maxvalue = 6
         scale_factor = maxvalue/low_cutoff
         
-        quantile_low_1 = df_mean.quantile(q = 1 - optimum, axis = 1)  #overestimate of quantile should use mean of raw values
-        quantile_low_2 = d_.rolling_mean(df.quantile(q = 1 - optimum, axis = 1),t_mins)
+        quantile_low_1 = df_mean.quantile(q = 1 - optimum2, axis = 1)  #overestimate of quantile should use mean of raw values
+        quantile_low_2 = d_.rolling_mean(df.quantile(q = 1 - optimum2, axis = 1),t_mins)
         
         """
         IGT_low = quantile_low - low_cutoff

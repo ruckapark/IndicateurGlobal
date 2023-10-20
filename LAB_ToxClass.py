@@ -128,6 +128,23 @@ class csvDATA:
         self.data_short = self.condense_data()
         self.meandata_short = self.condense_data(mean = True)
         
+        """
+        IF IT IS DESIRED TO USE RAWDATA AND FILTER QUANTILES AFTERWARDS
+        #get mean from meandata
+        self.mean = self.get_mean_raw(raw = False)
+        self.mean_short = self.get_mean_raw(raw = False,short = True)
+        
+        #get quantiles from meandata
+        self.q_low = self.get_quantile(raw = False,)
+        self.q_low_short = self.get_quantile(raw = False,short = True)
+        
+        self.q_high = self.get_quantile_raw(raw = False,high = True)
+        self.q_high_short = self.get_quantile_raw(raw = False,high = True,short = True)
+        
+        #combine to get I
+        
+        """
+        
         #get unfiltered mean series
         self.mean_raw = self.get_mean_raw()
         self.mean_raw_short = self.get_mean_raw(short = True)
@@ -264,19 +281,26 @@ class csvDATA:
     def check_activespecies(self):
         """ Return list of active species """
         return [s for s in self.species if self.parameters[s]]
-                
     
-    def get_mean_raw(self,short = False):
+    
+    def get_mean_raw(self,raw = True,short = False):
         """ 
         return mean timeseires of df for all species
         NO FILTERING
         """
-        if short:
-            return {s:self.data_short[s].mean(axis = 1) for s in self.species}
+        if raw:
+            if short:
+                return {s:self.data_short[s].mean(axis = 1) for s in self.species}
+            else:
+                return {s:self.data[s].mean(axis = 1) for s in self.species}
         else:
-            return {s:self.data[s].mean(axis = 1) for s in self.species}
+            if short:
+                return {s:self.meandata_short[s].mean(axis = 1) for s in self.species}
+            else:
+                return {s:self.meandata[s].mean(axis = 1) for s in self.species}
+    
         
-    def get_quantile_raw(self,short = False,high = False):
+    def get_quantile_raw(self,raw = True,short = False,high = False):
         """ 
         return quantile timeseires of df for all species
         NO FILTERING
@@ -286,10 +310,17 @@ class csvDATA:
         else:
             quantiles = self.low_quantiles
         
-        if short:
-            return {s:self.data_short[s].quantile(quantiles[s],axis = 1) for s in self.species}
+        if raw:        
+            if short:
+                return {s:self.data_short[s].quantile(quantiles[s],axis = 1) for s in self.species}
+            else:
+                return {s:self.data[s].quantile(quantiles[s],axis = 1) for s in self.species}
         else:
-            return {s:self.data[s].quantile(quantiles[s],axis = 1) for s in self.species}
+            if short:
+                return {s:self.meandata_short[s].quantile(quantiles[s],axis = 1) for s in self.species}
+            else:
+                return {s:self.meandata[s].quantile(quantiles[s],axis = 1) for s in self.species}
+    
     
     def get_mean(self, short=False):
         """ Overall mean of all data """
@@ -300,6 +331,7 @@ class csvDATA:
             else:
                 mean[s] = smoothing_PARAMETERS(self.method).moving_mean(self.mean_raw[s])
         return mean
+    
     
     def get_quantile(self, short = False, high = False, smoothing='Gaussian'):
         """ Overall IGT data """
@@ -314,9 +346,9 @@ class csvDATA:
                 if high:
                     q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_high[s])
                 else:
-                    q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_low[s])
-                    
+                    q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_low[s])  
         return q
+    
     
     def adjust_qhigh(self,short = False):
         
@@ -332,6 +364,7 @@ class csvDATA:
             q_high_adj[s] = quantile_high
         
         return q_high_adj
+    
     
     def combine_IGT(self,short = False):
         """ Combine high and low IGT to one signal """
@@ -373,6 +406,7 @@ class csvDATA:
             
             IGTs[s] = pd.Series(IGT_array,index = IGT.index)
         return IGTs
+    
     
     def bSpline(self,i,col,order = 3,k = 10):
         """ Assume optimum knots 10 """
@@ -460,6 +494,13 @@ class ToxPLOT:
 
 if __name__ == '__main__':
     
+    verapamils = [
+        r'I:\TXM762-PC\20220225-090938',
+        r'I:\TXM763-PC\20220225-090838',
+        r'I:\TXM764-PC\20220310-113652',
+        r'I:\TXM765-PC\20220310-113707',
+        r'I:\TXM765-PC\20220317-164730']
+    
     dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM760-PC\20210520-224501',dope_df)
+    data = csvDATA(r'I:\TXM762-PC\20220225-090938',dope_df)
     ToxPLOT(data).plotIGT(short = False) #gammarus IGT needs verifying!

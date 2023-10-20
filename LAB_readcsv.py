@@ -84,7 +84,7 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    root = r'I:\TXM768-PC\20220317-165322'
+    root = r'I:\TXM760-PC\20210520-224501'
     rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
     
     try:
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     dopage = dopage_entry['Start']    
     
     #%%
-    s = 'E'
+    s = 'G'
     df = dfs[s]
     
     #mean treatment of data
@@ -136,5 +136,6 @@ if __name__ == '__main__':
     quantile_distRAW = df.quantile(q = 0.10, axis = 1)**2
     quantile_dist = df_mean.quantile(q = 0.10, axis = 1)**2
     
-    fig,axe = d_.single_plot(quantile_dist)
+    fig,axe = d_.single_plot(d_.rolling_mean(quantile_distRAW,t_mins))
+    axe.plot(quantile_dist,'black',alpha = 0.6)
     axe.axvline(dopage,color = 'red')

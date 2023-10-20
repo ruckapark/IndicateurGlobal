@@ -87,7 +87,7 @@ if __name__ == '__main__':
     
     reference_distributions = {
         'E':{'median':80,'std':20},
-        'G':{'median':90,'std':40},
+        'G':{'median':90,'std':80},
         'R':{'median':6.45,'std':3}
         }
     
@@ -143,6 +143,7 @@ if __name__ == '__main__':
     #%% IGT is the IGT of the filtered series (is this the best option?)
     plt.close('all')
     
+    #1 Smoothed quantiles
     s = 'E'
     df = dfs[s]
     
@@ -246,6 +247,57 @@ if __name__ == '__main__':
     else:
         print('Not stable dataset')
         
+    s = 'G'
+    df = dfs[s]
+    
+    #mean treatment of data
+    t_mins = 5
+    
+    #lower quantile
+    quantile_distRAW = df.quantile(q = optimum, axis = 1)
+    quantile_low = d_.rolling_mean(df.quantile(q = qs_low[s], axis = 1),t_mins)
+    quantile_high = d_.rolling_mean(df.quantile(q = qs_high[s], axis = 1),t_mins)
+    
+    #visualise IGT
+    fig = plt.figure(figsize = (13,7))
+    axe = fig.add_axes([0.1,0.1,0.8,0.8])
+    axe.plot(quantile_low.index,quantile_low,'blue')
+    axe.plot(quantile_high.index,quantile_high,'red')
+    axe.axvline(dopage,color = 'black')
+    
+    #pre spike reference data
+    pre_spike = df[(df.index < dopage) & (df.index > dopage - pd.Timedelta(hours = 2))]
+    quantile_high_pre = d_.rolling_mean(pre_spike.quantile(q = qs_high[s], axis = 1),t_mins)
+    
+    pre_spike_parameters = {'median':quantile_high_pre.median(),'std':quantile_high_pre.std()}
+    range_low,range_high = reference_distributions[s]['median'] - reference_distributions[s]['std'],reference_distributions[s]['median'] + reference_distributions[s]['std']
+    
+    if range_low < pre_spike_parameters['median'] < range_high:
+        print('ok')
+        
+        axe.axhline(pre_spike_parameters['median'],color = 'blue')
+        axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
+        axe.axhspan(pre_spike_parameters['median'], pre_spike_parameters['median']-2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
+        
+        quantile_high = quantile_high - (pre_spike_parameters['median']-2*pre_spike_parameters['std'])
+        quantile_high[quantile_high >= 0] = 0.0
+        
+        quantile_low = quantile_low**2
+        quantile_high = -(quantile_high**2)
+        
+        fig = plt.figure(figsize = (13,7))
+        axe = fig.add_axes([0.1,0.1,0.8,0.8])
+        
+        axe.plot(quantile_low.index,quantile_low,color = 'blue')
+        axe.plot(quantile_high.index,quantile_high,color = 'red')
+        axe.axvline(dopage,color = 'black')
+        
+        IGT = get_IGT(quantile_low,quantile_high)
+        axe.plot(IGT.index,IGT.values,color = 'black',alpha = 0.5)
+        
+    else:
+        print('Not stable dataset')
+        
     """
     #%%join datasets to form global IGT signal use methomyls[0]
     quantile_low[quantile_low < 0.5] = 0.0
@@ -272,3 +324,106 @@ if __name__ == '__main__':
                 
     axe.plot(IGT.index,IGT_array,'black',alpha = 0.4)
     """
+    
+    # s = 'E'
+    # df = dfs[s].copy()
+    
+    # #mean treatment of data
+    # t_mins = 5
+    # df = d_.rolling_mean(df,t_mins)
+    
+    # #lower quantile
+    # quantile_low = df.quantile(q = qs_low[s], axis = 1)
+    # quantile_high = df.quantile(q = qs_high[s], axis = 1)
+    
+    # #visualise IGT
+    # fig = plt.figure(figsize = (13,7))
+    # axe = fig.add_axes([0.1,0.1,0.8,0.8])
+    # axe.plot(quantile_low.index,quantile_low,'blue')
+    # axe.plot(quantile_high.index,quantile_high,'red')
+    # axe.axvline(dopage,color = 'black')
+    
+    # #pre spike reference data
+    # pre_spike = df[(df.index < dopage) & (df.index > dopage - pd.Timedelta(hours = 2))]
+    # quantile_high_pre = d_.rolling_mean(pre_spike.quantile(q = qs_high[s], axis = 1),t_mins)
+    
+    # pre_spike_parameters = {'median':quantile_high_pre.median(),'std':quantile_high_pre.std()}
+    # range_low,range_high = reference_distributions[s]['median'] - reference_distributions[s]['std'],reference_distributions[s]['median'] + reference_distributions[s]['std']
+    
+    # if range_low < pre_spike_parameters['median'] < range_high:
+    #     print('ok')
+        
+    #     axe.axhline(pre_spike_parameters['median'],color = 'blue')
+    #     axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
+    #     axe.axhspan(pre_spike_parameters['median'], pre_spike_parameters['median']-2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
+        
+    #     quantile_high = quantile_high - (pre_spike_parameters['median']-2*pre_spike_parameters['std'])
+    #     quantile_high[quantile_high > 0] = 0.0
+        
+    #     quantile_low = quantile_low**2
+    #     quantile_high = -(quantile_high**2)
+        
+    #     fig = plt.figure(figsize = (13,7))
+    #     axe = fig.add_axes([0.1,0.1,0.8,0.8])
+        
+    #     axe.plot(quantile_low.index,quantile_low,color = 'blue')
+    #     axe.plot(quantile_high.index,quantile_high,color = 'red')
+    #     axe.axvline(dopage,color = 'black')
+        
+    #     IGT = get_IGT(quantile_low,quantile_high)
+    #     axe.plot(IGT.index,IGT.values,color = 'black',alpha = 0.5)
+        
+    # else:
+    #     print('Not stable dataset')
+    
+    # #2 Unsmoothed quantiles
+    # s = 'R'
+    # df = dfs[s].copy()
+    
+    # #mean treatment of data
+    # t_mins = 5
+    # df = d_.rolling_mean(df,t_mins)
+    
+    # #lower quantile
+    # quantile_low = df.quantile(q = qs_low[s], axis = 1)
+    # quantile_high = df.quantile(q = qs_high[s], axis = 1)
+    
+    # #visualise IGT
+    # fig = plt.figure(figsize = (13,7))
+    # axe = fig.add_axes([0.1,0.1,0.8,0.8])
+    # axe.plot(quantile_low.index,quantile_low,'blue')
+    # axe.plot(quantile_high.index,quantile_high,'red')
+    # axe.axvline(dopage,color = 'black')
+    
+    # #pre spike reference data
+    # pre_spike = df[(df.index < dopage) & (df.index > dopage - pd.Timedelta(hours = 2))]
+    # quantile_high_pre = d_.rolling_mean(pre_spike.quantile(q = qs_high[s], axis = 1),t_mins)
+    
+    # pre_spike_parameters = {'median':quantile_high_pre.median(),'std':quantile_high_pre.std()}
+    # range_low,range_high = reference_distributions[s]['median'] - reference_distributions[s]['std'],reference_distributions[s]['median'] + reference_distributions[s]['std']
+    
+    # if range_low < pre_spike_parameters['median'] < range_high:
+    #     print('ok')
+        
+    #     axe.axhline(pre_spike_parameters['median'],color = 'blue')
+    #     axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
+    #     axe.axhspan(pre_spike_parameters['median'], pre_spike_parameters['median']-2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
+        
+    #     quantile_high = quantile_high - (pre_spike_parameters['median']-2*pre_spike_parameters['std'])
+    #     quantile_high[quantile_high >= 0] = 0.0
+        
+    #     quantile_low = quantile_low**2
+    #     quantile_high = -(quantile_high**2)
+        
+    #     fig = plt.figure(figsize = (13,7))
+    #     axe = fig.add_axes([0.1,0.1,0.8,0.8])
+        
+    #     axe.plot(quantile_low.index,quantile_low,color = 'blue')
+    #     axe.plot(quantile_high.index,quantile_high,color = 'red')
+    #     axe.axvline(dopage,color = 'black')
+        
+    #     IGT = get_IGT(quantile_low,quantile_high)
+    #     axe.plot(IGT.index,IGT.values,color = 'black',alpha = 0.5)
+        
+    # else:
+    #     print('Not stable dataset')

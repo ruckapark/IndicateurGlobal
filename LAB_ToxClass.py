@@ -491,16 +491,8 @@ class ToxPLOT:
                     axes[i].plot(data.IGT[s].index,data.IGT[s].values,color = data.species_colors[s])
                 axes[i].set_title(self.data.species[s])
 
-
 if __name__ == '__main__':
     
-    verapamils = [
-        r'I:\TXM762-PC\20220225-090938',
-        r'I:\TXM763-PC\20220225-090838',
-        r'I:\TXM764-PC\20220310-113652',
-        r'I:\TXM765-PC\20220310-113707',
-        r'I:\TXM765-PC\20220317-164730']
-    
     dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM762-PC\20220225-090938',dope_df)
-    ToxPLOT(data).plotIGT(short = False) #gammarus IGT needs verifying!
+    data = csvDATA(r'I:\TXM761-PC\20211015-100516',dope_df)
+    ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!

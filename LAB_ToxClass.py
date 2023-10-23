@@ -494,5 +494,5 @@ class ToxPLOT:
 if __name__ == '__main__':
     
     dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM761-PC\20211015-100516',dope_df)
+    data = csvDATA(r'I:\TXM767-PC\20220225-091008',dope_df)
     ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!

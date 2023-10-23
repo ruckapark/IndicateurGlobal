@@ -562,6 +562,14 @@ def correct_index(df,start,correction = 0.997):
     df_.index = ind
     return df_
 
+def write_data(data,file,IGT = True):
+    if IGT:
+        filename = file + 'IGT.csv'
+    else:
+        filename = file + 'MEAN.csv'
+        
+    data.to_csv(filename,index = False)
+
 def correct_dates(file):   
     
 

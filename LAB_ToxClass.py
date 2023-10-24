@@ -22,6 +22,9 @@ from dope_reg import dope_read_extend
 import dataread as d_
 os.chdir('..')
 
+#read dopage df
+dope_df = dope_read_extend()
+
 class smoothing_PARAMETERS:
     
     def __init__(self,smoothing):
@@ -89,7 +92,7 @@ class smoothing_PARAMETERS:
 
 class csvDATA:
     
-    def __init__(self,root,dope_df,smoothing = 'Gaussian'):
+    def __init__(self,root,dope_df = dope_df,smoothing = 'Gaussian'):
         self.root = root
         self.Tox = self.find_tox()
         self.rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
@@ -407,6 +410,19 @@ class csvDATA:
             IGTs[s] = pd.Series(IGT_array,index = IGT.index)
         return IGTs
     
+    def write_data(self,directory,short = True):
+        
+        if short:
+            IGT,mean = pd.DataFrame(self.IGT_short),pd.DataFrame(self.mean_short)
+        else:
+            IGT,mean = pd.DataFrame(self.IGT),pd.DataFrame(self.mean)
+            
+        f_IGT = '{}_{}IGT_{}'.format(self.dopage_entry['Substance'],self.Tox,self.date)
+        f_mean = '{}_{}mean_{}'.format(self.dopage_entry['Substance'],self.Tox,self.date)
+        
+        IGT.to_csv(r'{}\{}'.format(directory,f_IGT))
+        mean.to_csv(r'{}\{}'.format(directory,f_mean))
+    
     
     def bSpline(self,i,col,order = 3,k = 10):
         """ Assume optimum knots 10 """
@@ -494,5 +510,6 @@ class ToxPLOT:
 if __name__ == '__main__':
     
     dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM767-PC\20220225-091008',dope_df)
+    data = csvDATA(r'I:\TXM765-PC\20210422-111620',dope_df)
     ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
+    #data.write_data(r'D:\VP\ARTICLE2\ArticleData')

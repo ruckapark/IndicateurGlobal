@@ -46,18 +46,17 @@ methomyls = [
     r'I:\TXM761-PC\20210625-093641'
     ]
 
-ofloxacins = [
-    r'I:\TXM764-PC\20220225-091550',
-    r'I:\TXM765-PC\20220225-090923',
-    r'I:\TXM767-PC\20220310-113737',
-    r'I:\TXM768-PC\20220310-113753',
-    r'I:\TXM767-PC\20220317-164814',
-    r'I:\TXM768-PC\20220317-165322'
-    ]
-
 tramadols = [
     r'I:\TXM767-PC\20220225-091008',
     r'I:\TXM768-PC\20220225-090953',
     r'I:\TXM769-PC\20220310-113807',
     r'I:\TXM769-PC\20220317-164759']
 
+#deal with class to only account for active species
+datasets = coppers + zincs + methomyls
+
+if __name__ == "__main__":
+    
+    for r in datasets:
+        data = TOX.csvDATA(r)
+        data.write_data(r'D:\VP\ARTICLE2\ArticleData')

@@ -420,30 +420,12 @@ class csvDATA:
         f_IGT = '{}_{}IGT_{}'.format(self.dopage_entry['Substance'],self.Tox,self.date)
         f_mean = '{}_{}mean_{}'.format(self.dopage_entry['Substance'],self.Tox,self.date)
         
-        IGT.to_csv(r'{}\{}'.format(directory,f_IGT))
-        mean.to_csv(r'{}\{}'.format(directory,f_mean))
-    
-    
-    def bSpline(self,i,col,order = 3,k = 10):
-        """ Assume optimum knots 10 """
-        x,y = self.x[col],self.y[col]
-        x = x[~np.isnan(x)]
-        y = y[~np.isnan(y)]
-        ticks = np.arange(0,len(x))
-        
-        k_t = np.linspace(0,len(x),k,dtype = np.int32)
-        
-        tx,cx,kx = interpolate.splrep(ticks,x,t = k_t[1:-1])
-        ty,cy,ky = interpolate.splrep(ticks,y,t = k_t[1:-1])
-        
-        #total_abs_error_x = np.sum(np.abs(x - interpolate.splev(ticks,(tx,cx,kx))))
-        #total_abs_error_y = np.sum(np.abs(x - interpolate.splev(ticks,(ty,cy,ky))))
-        
-        self.coefficients.iloc[i,:] = [tx,cx,kx,ty,cy,ky] 
-        
-        #make all smoothing cooefficients equal
-        self.x_smooth[col][:len(x)] = interpolate.splev(ticks,(tx,cx,kx))
-        self.y_smooth[col][:len(y)] = interpolate.splev(ticks,(ty,cy,ky))
+        if short:
+            IGT[IGT.index >= 0].to_csv(r'{}\{}.csv'.format(directory,f_IGT))
+            mean[mean.index >= 0].to_csv(r'{}\{}.csv'.format(directory,f_mean))
+        else:
+            IGT.to_csv(r'{}\{}.csv'.format(directory,f_IGT))
+            mean.to_csv(r'{}\{}.csv'.format(directory,f_mean))
 
 """        
 class speciesDATA():

@@ -251,8 +251,8 @@ class csvDATA:
             dfs = self.data
         for s in dfs:
             df = dfs[s].copy()
-            df = df[df.index > self.dopage - pd.Timedelta(hours = 1)]
-            df = df[df.index < self.dopage + pd.Timedelta(hours = 5)]
+            df = df[df.index > self.dopage - pd.Timedelta(hours = 1.1)] #some margin
+            df = df[df.index < self.dopage + pd.Timedelta(hours = 6.1)] #gives some margin
             zero_index = np.argmin(abs((self.dopage - df.index).total_seconds())) - 1
             index = (df.index - df.index[zero_index]).total_seconds()
             df = df.set_index(np.array(index,dtype = int),drop = True)

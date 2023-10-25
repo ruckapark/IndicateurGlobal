@@ -153,8 +153,14 @@ class csvDATA:
         self.mean_raw_short = self.get_mean_raw(short = True)
         
         #get unfiltered IGT components
-        self.q_raw_low = self.get_quantile_raw()
-        self.q_raw_low_short = self.get_quantile_raw(short = True)
+        #self.q_raw_low = self.get_quantile_raw()
+        #self.q_raw_low_short = self.get_quantile_raw(short = True)
+        
+        #self.q_low = self.get_quantile()
+        #self.q_low_short = self.get_quantile(short = True)
+        
+        self.q_low = self.get_quantile_raw(raw = False)
+        self.q_low_short = self.get_quantile_raw(raw = False,short = True)
         
         self.q_raw_high = self.get_quantile_raw(high = True)
         self.q_raw_high_short = self.get_quantile_raw(high = True,short = True)
@@ -162,9 +168,6 @@ class csvDATA:
         #filter series' with moving averages
         self.mean = self.get_mean()
         self.mean_short = self.get_mean(short = True)
-        
-        self.q_low = self.get_quantile()
-        self.q_low_short = self.get_quantile(short = True)
         
         self.q_high = self.get_quantile(high = True)
         self.q_high_short = self.get_quantile(high = True,short = True)
@@ -492,6 +495,6 @@ class ToxPLOT:
 if __name__ == '__main__':
     
     dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM765-PC\20210422-111620',dope_df)
+    data = csvDATA(r'I:\TXM760-PC\20210625-093621',dope_df)
     ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
     #data.write_data(r'D:\VP\ARTICLE2\ArticleData')

@@ -2,7 +2,7 @@
 """
 Created on Wed Sep 27 14:59:18 2023
 
-Use Article 2 dataset to improve data quality
+Use Article 2 dataset to check individual entries
 
 @author: George
 """

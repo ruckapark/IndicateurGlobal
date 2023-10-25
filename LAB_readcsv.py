@@ -84,7 +84,7 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    root = r'I:\TXM768-PC\20220225-090953'
+    root = r'I:\TXM760-PC\20210625-093621'
     rootfile_stem = root + r'\\' + root.split('\\')[-1].split('-')[0] + '_'
     
     try:
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     dopage = dopage_entry['Start']    
     
     #%%
-    s = 'G'
+    s = 'R'
     df = dfs[s]
     
     #mean treatment of data

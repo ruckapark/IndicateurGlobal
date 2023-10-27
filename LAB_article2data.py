@@ -34,7 +34,7 @@ verapamils = [
 # 1 no radix data,2, 3 quite odd, 4 good
 # morts treated
 tramadols = [
-    r'I:\TXM767-PC\20220225-091008',
+    r'I:\TXM767-PC\20220225-091008',#bad datafile
     r'I:\TXM768-PC\20220225-090953',
     r'I:\TXM769-PC\20220310-113807',
     r'I:\TXM769-PC\20220317-164759']

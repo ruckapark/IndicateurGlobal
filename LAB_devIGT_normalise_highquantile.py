@@ -93,7 +93,7 @@ if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     dfs = {}
-    root = methomyls[0]
+    root = dics[2]
     
     dope_df = dope_read_extend()
     
@@ -158,9 +158,15 @@ if __name__ == '__main__':
     #visualise IGT
     fig = plt.figure(figsize = (13,7))
     axe = fig.add_axes([0.1,0.1,0.8,0.8])
-    axe.plot(quantile_low.index,quantile_low,'blue')
-    axe.plot(quantile_high.index,quantile_high,'red')
+    axe.plot(quantile_low.index,quantile_low,'blue',label = 'Quantile low')
+    axe.plot(quantile_high.index,quantile_high,'red',label = 'Quantile high')
     axe.axvline(dopage,color = 'black')
+    
+    # if root in methomyls:
+    #     sub = 'Methomyl'
+    # else:
+    #     sub = '12-Dichl'
+    # fig.savefig(r'C:\Users\George\Documents\Figures\Methods\HighQ_Normalisation_Erpo_')
     
     #pre spike reference data
     pre_spike = df[(df.index < dopage) & (df.index > dopage - pd.Timedelta(hours = 2))]

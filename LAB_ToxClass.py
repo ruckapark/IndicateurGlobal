@@ -125,9 +125,11 @@ class csvDATA:
         
         #get dfs from csv files
         self.data = self.get_dfs()
-        self.meandata = self.get_meandfs(smoothing_PARAMETERS(self.method))
         
-        #get condensed data
+        self.active_species = self.check_activespecies()
+        
+        #get mean data and condense
+        self.meandata = self.get_meandfs(smoothing_PARAMETERS(self.method))
         self.data_short = self.condense_data()
         self.meandata_short = self.condense_data(mean = True)
         
@@ -165,24 +167,27 @@ class csvDATA:
         self.q_raw_high = self.get_quantile_raw(high = True)
         self.q_raw_high_short = self.get_quantile_raw(high = True,short = True)
         
-        #filter series' with moving averages
-        self.mean = self.get_mean()
-        self.mean_short = self.get_mean(short = True)
-        
         self.q_high = self.get_quantile(high = True)
         self.q_high_short = self.get_quantile(high = True,short = True)
         
         #check if datasets are representative to calculate IGT
-        self.parameters = self.check_reference()
-        self.active_species = self.check_activespecies()
+        self.parameters = self.check_reference(plot = False)
         
         #lower high quantile
         self.q_high_adj = self.adjust_qhigh()
         self.q_high_adj_short = self.adjust_qhigh(short = True)
         
+        #filter series' with moving averages
+        self.mean = self.get_mean()
+        self.mean_short = self.get_mean(short = True)
+        
         #calculate IGT
         self.IGT = self.combine_IGT()
         self.IGT_short = self.combine_IGT(short = True)
+        
+        # # # #normalise the two metrics
+        # # # self.IGT_ = self.normalize_IGT(short = True)
+        # # # self.mean_ = self.normalize_mean(short = True)
         
             
     def find_rootstem(self):
@@ -214,14 +219,8 @@ class csvDATA:
 
     def get_meandfs(self,smoothing):
         
-        #should this be mean of every column or just the mean series?
-        
         dfs = {s:None for s in self.species}
-        for s in dfs:
-            if len(self.morts[s]) > 8:
-                print('{} : Excessive mortality'.format(self.species[s]))
-                continue
-            
+        for s in self.active_species:
             df = self.data[s].copy()
             dfs.update({s:smoothing.moving_mean(df)})
             
@@ -247,33 +246,38 @@ class csvDATA:
     
     def condense_data(self,mean = False): #later should be data class with entry as data with condensed data series
         
-        data_short = {}
+        data_short = {s:None for s in self.species}
+        
         if mean:
             dfs = self.meandata
         else:
             dfs = self.data
-        for s in dfs:
+            
+        for s in self.active_species:
             df = dfs[s].copy()
             df = df[df.index > self.dopage - pd.Timedelta(hours = 1.1)] #some margin
             df = df[df.index < self.dopage + pd.Timedelta(hours = 6.1)] #gives some margin
             zero_index = np.argmin(abs((self.dopage - df.index).total_seconds())) - 1
             index = (df.index - df.index[zero_index]).total_seconds()
             df = df.set_index(np.array(index,dtype = int),drop = True)
-            data_short.update({s:df})
+            data_short[s] = df
+            
         return data_short
     
-    def check_reference(self):
+    def check_reference(self,plot = False):
         
         """
         Check if the quantiles are in line with reference distributions
         If so, return the parameters of the spike distribution
         """
         refs = {s:None for s in self.species}
+        non_conform_species = []
         
-        for s in self.species:
+        for s in self.active_species:
             
             q_pre = self.q_high_short[s].copy()
             q_pre = q_pre[q_pre.index < 0]
+            if plot: ToxPLOT(q_pre).plotHIST(title = self.species[s])
             q_params = {'median':q_pre.median(),'std':q_pre.std()}
             
             lower_bound = self.reference_distributions[s]['median'] - self.reference_distributions[s]['std']
@@ -281,12 +285,21 @@ class csvDATA:
             
             if lower_bound < q_params['median'] < upper_bound:
                 refs[s] = q_params
-                
+            else:
+                non_conform_species.append(s)
+            
+        #remove organisms of wrong distribution
+        for s in non_conform_species: self.active_species.remove(s)
+        
         return refs
     
     def check_activespecies(self):
         """ Return list of active species """
-        return [s for s in self.species if self.parameters[s]]
+        active_species = []
+        for s in self.species:
+            if type(self.data[s]) != type(None): active_species.append(s)
+            
+        return active_species
     
     
     def get_mean_raw(self,raw = True,short = False):
@@ -296,14 +309,14 @@ class csvDATA:
         """
         if raw:
             if short:
-                return {s:self.data_short[s].mean(axis = 1) for s in self.species}
+                return {s:self.data_short[s].mean(axis = 1) for s in self.active_species}
             else:
-                return {s:self.data[s].mean(axis = 1) for s in self.species}
+                return {s:self.data[s].mean(axis = 1) for s in self.active_species}
         else:
             if short:
-                return {s:self.meandata_short[s].mean(axis = 1) for s in self.species}
+                return {s:self.meandata_short[s].mean(axis = 1) for s in self.active_species}
             else:
-                return {s:self.meandata[s].mean(axis = 1) for s in self.species}
+                return {s:self.meandata[s].mean(axis = 1) for s in self.active_species}
     
         
     def get_quantile_raw(self,raw = True,short = False,high = False):
@@ -318,20 +331,20 @@ class csvDATA:
         
         if raw:        
             if short:
-                return {s:self.data_short[s].quantile(quantiles[s],axis = 1) for s in self.species}
+                return {s:self.data_short[s].quantile(quantiles[s],axis = 1) for s in self.active_species}
             else:
-                return {s:self.data[s].quantile(quantiles[s],axis = 1) for s in self.species}
+                return {s:self.data[s].quantile(quantiles[s],axis = 1) for s in self.active_species}
         else:
             if short:
-                return {s:self.meandata_short[s].quantile(quantiles[s],axis = 1) for s in self.species}
+                return {s:self.meandata_short[s].quantile(quantiles[s],axis = 1) for s in self.active_species}
             else:
-                return {s:self.meandata[s].quantile(quantiles[s],axis = 1) for s in self.species}
+                return {s:self.meandata[s].quantile(quantiles[s],axis = 1) for s in self.active_species}
     
     
     def get_mean(self, short=False):
         """ Overall mean of all data """
         mean = {s:None for s in self.species}
-        for s in mean:
+        for s in self.active_species:
             if short:
                 mean[s] = smoothing_PARAMETERS(self.method).moving_mean(self.mean_raw_short[s])
             else:
@@ -342,7 +355,7 @@ class csvDATA:
     def get_quantile(self, short = False, high = False, smoothing='Gaussian'):
         """ Overall IGT data """
         q = {s:None for s in self.species}
-        for s in q:
+        for s in self.active_species:
             if short:
                 if high:
                     q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_high_short[s])
@@ -360,7 +373,7 @@ class csvDATA:
         
         q_high_adj = {s:None for s in self.species}
         
-        for s in [s for s in self.species if s in self.active_species]:
+        for s in self.active_species:
             if short:
                 quantile_high = self.q_high_short[s] - (self.parameters[s]['median']-2*self.parameters[s]['std'])
             else:
@@ -377,14 +390,16 @@ class csvDATA:
         
         IGTs = {s:None for s in self.species}
         
-        for s in [s for s in self.species if s in self.active_species]:
+        for s in self.active_species:
             
             if short:
                 qlow,qhigh = self.q_low_short[s].copy(),self.q_high_adj_short[s].copy()
             else:
                 qlow,qhigh = self.q_low[s].copy(),self.q_high_adj[s].copy()
                 
-                
+            #different moving mean methods lead to nan appearance    
+            qlow = qlow.loc[qhigh.index]
+            
             qlow = qlow**2
             qhigh = -(qhigh**2)
             
@@ -395,23 +410,26 @@ class csvDATA:
             IGT['low'],IGT['high'] = qlow,qhigh
             IGT['total'] = (1*(IGT['low'] > 0)) * (1*(IGT['high'] < 0))
             
-            IGT_array = np.zeros(IGT.shape[0])
+            IGT_series = np.zeros(IGT.shape[0])
             
             for i in range(IGT.shape[0]):
                 
                 if IGT['total'].iloc[i] == 0:
                     if IGT['low'].iloc[i] > 0:
-                        IGT_array[i] = IGT['low'].iloc[i]
+                        IGT_series[i] = IGT['low'].iloc[i]
                     else:
-                        IGT_array[i] = IGT['high'].iloc[i]
+                        IGT_series[i] = IGT['high'].iloc[i]
                 else:
                     if IGT['low'].iloc[i] > abs(IGT['high'].iloc[i]):
-                        IGT_array[i] = IGT['low'].iloc[i]
+                        IGT_series[i] = IGT['low'].iloc[i]
                     else:
-                        IGT_array[i] = IGT['high'].iloc[i]
+                        IGT_series[i] = IGT['high'].iloc[i]
             
-            IGTs[s] = pd.Series(IGT_array,index = IGT.index)
+            IGTs[s] = pd.Series(IGT_series,index = IGT.index)
         return IGTs
+    
+    def normalize_IGT(self): return None
+    def normalize_mean(self): return None
     
     def write_data(self,directory,short = True):
         
@@ -424,8 +442,8 @@ class csvDATA:
         f_mean = '{}_{}mean_{}'.format(self.dopage_entry['Substance'],self.Tox,self.date)
         
         if short:
-            IGT[IGT.index >= 0].to_csv(r'{}\{}.csv'.format(directory,f_IGT))
-            mean[mean.index >= 0].to_csv(r'{}\{}.csv'.format(directory,f_mean))
+            IGT[(IGT.index >= 0) & (IGT.index <= 21600)].to_csv(r'{}\{}.csv'.format(directory,f_IGT))
+            mean[(mean.index >= 0) & (mean.index <= 21600)].to_csv(r'{}\{}.csv'.format(directory,f_mean))
         else:
             IGT.to_csv(r'{}\{}.csv'.format(directory,f_IGT))
             mean.to_csv(r'{}\{}.csv'.format(directory,f_mean))
@@ -485,16 +503,27 @@ class ToxPLOT:
         else:
             
             fig,axes = plt.subplots(3,1,figsize = (15,15),sharex = True)
-            for i,s in enumerate(data.species):
+            for i,s in enumerate(self.data.species):
+                if s not in self.data.active_species: continue
                 if short:
                     axes[i].plot(data.IGT_short[s].index,data.IGT_short[s].values,color = data.species_colors[s])
                 else:
                     axes[i].plot(data.IGT[s].index,data.IGT[s].values,color = data.species_colors[s])
                 axes[i].set_title(self.data.species[s])
+                
+    def plotHIST(self,title = 'histogram'):
+        
+        histdata = np.array(self.data)
+        histdata = histdata.flatten()
+        
+        fig = plt.figure(figsize = (13,7))
+        axe = fig.add_axes([0.1,0.1,0.8,0.8])
+        axe.set_title(title)
+        sns.histplot(histdata,ax=axe)
 
 if __name__ == '__main__':
     
     dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM760-PC\20210625-093621',dope_df)
+    data = csvDATA(r'I:\TXM767-PC\20220225-091008',dope_df)
     ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
     #data.write_data(r'D:\VP\ARTICLE2\ArticleData')

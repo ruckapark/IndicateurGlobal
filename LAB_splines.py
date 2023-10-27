@@ -147,11 +147,11 @@ if __name__ == "__main__":
         IGT_s.plot_raw()
         mean_s.plot_raw()
         
-    #write dataframes to csv files
-    root = r'D:\VP\ARTICLE2\ArticleData'
-    dfs_IGT['E'].to_csv('{}\{}_X_i_data.csv'.format(root,'E'),header = False,index = False)
-    dfs_IGT['G'].to_csv('{}\{}_Y_i_data.csv'.format(root,'G'),header = False,index = False)
-    dfs_IGT['R'].to_csv('{}\{}_Z_i_data.csv'.format(root,'R'),header = False,index = False)
-    dfs_mean['E'].to_csv('{}\{}_X_m_data.csv'.format(root,'E'),header = False,index = False)
-    dfs_mean['G'].to_csv('{}\{}_Y_m_data.csv'.format(root,'G'),header = False,index = False)
-    dfs_mean['R'].to_csv('{}\{}_Z_m_data.csv'.format(root,'R'),header = False,index = False)
+    # #write dataframes to csv files
+    # root = r'D:\VP\ARTICLE2\ArticleData'
+    # dfs_IGT['E'].to_csv('{}\{}_X_i_data.csv'.format(root,'E'),header = False,index = False)
+    # dfs_IGT['G'].to_csv('{}\{}_Y_i_data.csv'.format(root,'G'),header = False,index = False)
+    # dfs_IGT['R'].to_csv('{}\{}_Z_i_data.csv'.format(root,'R'),header = False,index = False)
+    # dfs_mean['E'].to_csv('{}\{}_X_m_data.csv'.format(root,'E'),header = False,index = False)
+    # dfs_mean['G'].to_csv('{}\{}_Y_m_data.csv'.format(root,'G'),header = False,index = False)
+    # dfs_mean['R'].to_csv('{}\{}_Z_m_data.csv'.format(root,'R'),header = False,index = False)

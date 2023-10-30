@@ -108,6 +108,37 @@ class csvDATA:
             'R':{'median':6.45,'std':3}
             }
         
+        self.mean_distributions = {
+            'E':{'mean':39.7,'std':17.8,'qhigh':48.6,'skew':0.206},
+            'G':{'mean':28.9,'std':17.3,'qhigh':37.5,'skew':0.516},
+            'R':{'mean':3.43,'std':1.37,'qhigh':4.31,'skew':0.313}
+            }
+        
+        #absolute values
+        self.qlow_distributions = {
+            'E':{'qhigh':65.0},
+            'G':{'qhigh':71.8},
+            'R':{'qhigh':4.65}
+            }
+        
+        self.qlow_squaredistributions = {
+            'E':{'qhigh':65.0**2},
+            'G':{'qhigh':71.8**2},
+            'R':{'qhigh':4.65**2}
+            }
+        
+        self.qhigh_distributions = {
+            'E':{'qhigh':47.9},
+            'G':{'qhigh':38.0},
+            'R':{'qhigh':3.23}
+            }
+        
+        self.qhigh_squaredistributions = {
+            'E':{'qhigh':47.9**2},
+            'G':{'qhigh':38.0**2},
+            'R':{'qhigh':3.23**2}
+            }
+        
         self.igt_q0,self.igt_q1,self.igt_q2 = 0.05,0.129167,0.1909
         self.low_quantiles = {'E':self.igt_q1,'G':self.igt_q1,'R':self.igt_q1}
         self.high_quantiles = {'E':1-self.igt_q1,'G':1-self.igt_q0,'R':1-self.igt_q2}
@@ -185,9 +216,9 @@ class csvDATA:
         self.IGT = self.combine_IGT()
         self.IGT_short = self.combine_IGT(short = True)
         
-        # # # #normalise the two metrics
-        # # # self.IGT_ = self.normalize_IGT(short = True)
-        # # # self.mean_ = self.normalize_mean(short = True)
+        # #normalise the two metrics
+        # self.IGT_ = self.normalize_IGT(short = True)
+        # self.mean_ = self.normalize_mean(short = True)
         
             
     def find_rootstem(self):
@@ -400,8 +431,8 @@ class csvDATA:
             #different moving mean methods lead to nan appearance    
             qlow = qlow.loc[qhigh.index]
             
-            qlow = qlow**2
-            qhigh = -(qhigh**2)
+            # qlow = qlow**2
+            # qhigh = -(qhigh**2)
             
             qlow[qlow < 0.2] = 0.0
             qhigh[qhigh > -0.2] = 0.0
@@ -459,6 +490,7 @@ class ToxPLOT:
     
     def __init__(self,data):
         self.type = type(data)
+        self.plotsize = {1:(13,7),2:(15,7),3:(17,7),16:(20,9)}
         self.data = data
         
     def plot16(self,species,with_mean = True,title = None,short = True,mark = True):
@@ -470,7 +502,7 @@ class ToxPLOT:
             df = self.data.data[species]
             df_m = self.data.meandata[species]
         
-        fig,axes = plt.subplots(4,4,sharex = True,sharey = True,figsize = (20,8))
+        fig,axes = plt.subplots(4,4,sharex = True,sharey = True,figsize = self.figsize[16])
         plt.suptitle(title)
         for i in range(16):
             col = i+1
@@ -511,7 +543,7 @@ class ToxPLOT:
                     axes[i].plot(data.IGT[s].index,data.IGT[s].values,color = data.species_colors[s])
                 axes[i].set_title(self.data.species[s])
                 
-    def plotHIST(self,title = 'histogram'):
+    def plotHIST(self,title = 'histogram',params = None):
         
         histdata = np.array(self.data)
         histdata = histdata.flatten()
@@ -520,6 +552,18 @@ class ToxPLOT:
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
         axe.set_title(title)
         sns.histplot(histdata,ax=axe)
+        
+        if params: self.add_parameters(axe,params)
+        
+        return fig,axe
+        
+    def add_parameters(self,axe,**params):
+        
+        axe.set_title(params['title'])
+        if params['axvline']: 
+            axe.axvline(params['axvline'],color = 'black',label = params['axvline_label'])
+        axe.set_xlabel[params['xlabel']]
+        axe.set_ylabel[params['ylabel']]
 
 if __name__ == '__main__':
     

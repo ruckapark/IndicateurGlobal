@@ -22,12 +22,24 @@ os.chdir('..')
 
 import LAB_ToxClass as TOX
 
+def mode(dataset):
+    
+    """ of a normal distribution """
+    
+    x = np.array(dataset,dtype = int)
+    x = x.flatten()
+    vals,counts = np.unique(x, return_counts=True)
+    index = np.argmax(counts)
+    return vals[index]
+
 #%% main code
 if __name__ == '__main__':
     
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     directories = {s:[] for s in specie}
     
+    data_pre = {s:np.array([],dtype = float) for s in specie}
+    data_post = {s:np.array([],dtype = float) for s in specie}
     data_mean = {s:np.array([],dtype = float) for s in specie}
     data_qlow = {s:np.array([],dtype = float) for s in specie}
     data_qhigh = {s:np.array([],dtype = float) for s in specie}
@@ -55,17 +67,65 @@ if __name__ == '__main__':
             continue
         
         for s in data.active_species:
+            d = data.meandata_short[s]
+            d_pre,d_post = d[d.index <= 0],d[(d.index > 0)&(d.index < 7200)]
+            d_pre,d_post = d_pre.values.flatten(),d_post.values.flatten()
             mean = data.mean_short[s]
             IGT = data.IGT_short[s]
             IGT_minus = IGT[IGT < 0]
             IGT_plus = IGT[IGT > 0]
             
+            data_pre[s] = np.hstack((data_pre[s],d_pre))
+            if data.Tox == 766:
+                pass
+            else:
+                data_post[s] = np.hstack((data_post[s],d_post))
             data_mean[s] = np.hstack((data_mean[s],mean.values))
             data_qlow[s] = np.hstack((data_qlow[s],IGT_minus.values))
             data_qhigh[s] = np.hstack((data_qhigh[s],IGT_plus.values))
     
     #%% Plots
     plt.close('all')
+    
+    fig,axe = plt.subplots(1,3,figsize = (20,7))
+    fig.suptitle('Activity Distribution',fontsize = 18)
+    fig.text(0.5, 0.04, 'Distance', ha='center',fontsize = 16)
+    for i,s in enumerate(specie):
+        
+        histdata = np.random.choice(np.array(data_pre[s]),size = 500000)
+        histdata = histdata.flatten()
+        
+        sns.histplot(histdata,ax=axe[i],color = data.species_colors[s],kde = True,label = data.species[s])
+        axe[i].set_title(data.species[s],fontsize = 16)
+        
+    axe[0].set_xlim((-5,160))
+    axe[0].set_ylim((0,35000))
+    axe[1].set_xlim((-5,150))
+    axe[1].set_ylim((0,35000))
+    axe[2].set_xlim((-2,15))
+    axe[2].set_ylim((0,35000))
+    
+    fig.legend(fontsize = 17)
+    
+    fig,axe = plt.subplots(1,3,figsize = (20,7))
+    fig.suptitle('Post-spike Activity Distribution',fontsize = 18)
+    fig.text(0.5, 0.04, 'Distance', ha='center',fontsize = 16)
+    for i,s in enumerate(specie):
+        
+        histdata = np.random.choice(np.array(data_post[s]),size = 500000)
+        histdata = histdata.flatten()
+        
+        sns.histplot(histdata,ax=axe[i],color = data.species_colors[s],kde = True,label = data.species[s])
+        axe[i].set_title(data.species[s],fontsize = 16)
+        
+    axe[0].set_xlim((-5,160))
+    axe[0].set_ylim((0,25000))
+    axe[1].set_xlim((-5,150))
+    axe[1].set_ylim((0,25000))
+    axe[2].set_xlim((-2,15))
+    axe[2].set_ylim((0,25000))
+    
+    fig.legend(fontsize = 17)
     
     fig,axe = plt.subplots(1,3,figsize = (20,7))
     fig.suptitle('Mean Activity Distribution',fontsize = 18)

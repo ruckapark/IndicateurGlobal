@@ -217,8 +217,8 @@ class csvDATA:
         self.IGT_short = self.combine_IGT(short = True)
         
         # #normalise the two metrics
-        # self.IGT_ = self.normalize_IGT(short = True)
-        # self.mean_ = self.normalize_mean(short = True)
+        self.IGT_ = self.scale_IGT(short = True)
+        self.mean_ = self.scale_mean(short = True)
         
             
     def find_rootstem(self):
@@ -459,8 +459,43 @@ class csvDATA:
             IGTs[s] = pd.Series(IGT_series,index = IGT.index)
         return IGTs
     
-    def normalize_IGT(self): return None
-    def normalize_mean(self): return None
+    def scale_mean(self,short = True):
+        
+        mean_ = {s:None for s in self.species}
+        
+        if short:
+            mean = self.mean_short.copy()
+        else:
+            mean = self.mean.copy()
+            
+        for s in self.active_species:
+            mean_[s] = mean[s]/self.mean_distributions[s]['qhigh']
+            
+        return mean_
+            
+    def scale_IGT(self,short = True):
+        
+        """ Split to qhigh (negative values based on higher quantile) and qlow to nomalize and rejoin """
+        
+        IGT_ = {s:None for s in self.species}
+        
+        if short:
+            IGT = self.IGT_short.copy()
+        else:
+            IGT = self.IGT.copy()
+            
+        for s in self.active_species:
+            qhigh = IGT[s][IGT[s] < 0]/np.abs(self.qhigh_distributions[s]['qhigh'])
+            qlow = IGT[s][IGT[s] >= 0]/np.abs(self.qlow_distributions[s]['qhigh'])
+            q_ = pd.Series(index = IGT[s].index)
+            
+            #add qhigh and qlow values (if qhigh exists)
+            if qhigh.shape[0]: q_.loc[qhigh.index] = qhigh
+            q_.loc[qlow.index] = qlow
+            
+            IGT_[s] = q_
+            
+        return IGT_
     
     def write_data(self,directory,short = True):
         

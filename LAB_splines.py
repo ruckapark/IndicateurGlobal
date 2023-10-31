@@ -51,12 +51,15 @@ class ToxSplines:
         self.t,self.c,self.k = ({s:None for s in self.active_species} for i in range(3))
         for s in self.active_species:
             self.get_bSpline(s)
-            self.data_smooth = self.eval_spline(s)      
+            self.eval_spline(s)      
 
     def read_input(self,filepath):
         
-        """ Read dataframe from filepath """
-        data = pd.read_csv(filepath,index_col = 0)
+        """ Read dataframe from filepath of simply input df"""
+        if type(filepath) == str:
+            data = pd.read_csv(filepath,index_col = 0)
+        else:
+            data = filepath
         data.index = data.index / 60
         return data
     
@@ -114,8 +117,6 @@ class Rbasis():
         s = data.active_species[0]
         knots = np.unique(data.t[s])
         return knots[1:-1]
-    
-    
 
 
 if __name__ == "__main__":
@@ -123,35 +124,7 @@ if __name__ == "__main__":
     plt.close('all')
     
     input_directory = r'D:\VP\ARTICLE2\ArticleData'  #find data means or IGTs
-    IGTs = [f for f in os.listdir(input_directory) if 'IGT' in f]
-    means = [f for f in os.listdir(input_directory) if 'mean' in f]
+    IGT = [f for f in os.listdir(input_directory) if 'IGT' in f][0]
     
-    dfs_IGT,dfs_mean = ({s:None for s in ['E','G','R']} for i in range(2))
-     
-    for i in range(len(IGTs)):
-        IGT,mean = IGTs[i],means[i]
-    
-        IGT_s = ToxSplines(r'{}\{}'.format(input_directory,IGT))
-        mean_s = ToxSplines(r'{}\{}'.format(input_directory,mean))
-        
-        if not i: 
-            for s in dfs_IGT:
-                dfs_IGT[s] = pd.DataFrame(index = IGT_s.data.index,columns = np.arange(len(IGTs)))
-                dfs_mean[s] = pd.DataFrame(index = mean_s.data.index,columns = np.arange(len(means)))
-        
-        #write data to dataframes
-        for s in IGT_s.active_species:
-            dfs_IGT[s][i] = IGT_s.data[s].values[:len(dfs_IGT[s].index)]
-            dfs_mean[s][i] = mean_s.data[s].values[:len(dfs_IGT[s].index)]
-        
-        IGT_s.plot_raw()
-        mean_s.plot_raw()
-        
-    # #write dataframes to csv files
-    # root = r'D:\VP\ARTICLE2\ArticleData'
-    # dfs_IGT['E'].to_csv('{}\{}_X_i_data.csv'.format(root,'E'),header = False,index = False)
-    # dfs_IGT['G'].to_csv('{}\{}_Y_i_data.csv'.format(root,'G'),header = False,index = False)
-    # dfs_IGT['R'].to_csv('{}\{}_Z_i_data.csv'.format(root,'R'),header = False,index = False)
-    # dfs_mean['E'].to_csv('{}\{}_X_m_data.csv'.format(root,'E'),header = False,index = False)
-    # dfs_mean['G'].to_csv('{}\{}_Y_m_data.csv'.format(root,'G'),header = False,index = False)
-    # dfs_mean['R'].to_csv('{}\{}_Z_m_data.csv'.format(root,'R'),header = False,index = False)
+    IGT_s = ToxSplines(r'{}\{}'.format(input_directory,IGT))
+    IGT_s.plot_raw()

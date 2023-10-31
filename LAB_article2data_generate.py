@@ -17,6 +17,7 @@ from datetime import timedelta
 
 #%% IMPORT personal mods
 import LAB_ToxClass as TOX
+import LAB_splines as SPL
 
 os.chdir('MODS')
 from data_merge import merge_dfs
@@ -57,6 +58,68 @@ datasets = coppers + zincs + methomyls
 
 if __name__ == "__main__":
     
-    for r in datasets:
-        data = TOX.csvDATA(r)
-        data.write_data(r'D:\VP\ARTICLE2\ArticleData')
+    input_directory = r'D:\VP\ARTICLE2\ArticleData'  #find data means or IGTs
+    
+    written = True
+    
+    if not written:
+        for r in datasets:
+            data = TOX.csvDATA(r)
+            data.write_data(r'D:\VP\ARTICLE2\ArticleData')
+    
+    IGTs = [f for f in os.listdir(input_directory) if 'IGT' in f]
+    means = [f for f in os.listdir(input_directory) if 'mean' in f]
+    
+    dfs_IGT,dfs_mean = ({s:None for s in ['E','G','R']} for i in range(2))
+    dfs_IGT_s,dfs_mean_s = ({s:None for s in ['E','G','R']} for i in range(2))
+     
+    for i in range(len(IGTs)):
+        IGT,mean = IGTs[i],means[i]
+    
+        IGT_s = SPL.ToxSplines(r'{}\{}'.format(input_directory,IGT))
+        mean_s = SPL.ToxSplines(r'{}\{}'.format(input_directory,mean))
+        
+        if not i: 
+            for s in dfs_IGT:
+                #raw
+                dfs_IGT[s] = pd.DataFrame(index = IGT_s.data.index,columns = np.arange(len(IGTs)))
+                dfs_mean[s] = pd.DataFrame(index = mean_s.data.index,columns = np.arange(len(means)))
+                #smooth
+                dfs_IGT_s[s] = pd.DataFrame(index = IGT_s.data.index,columns = np.arange(len(IGTs)))
+                dfs_mean_s[s] = pd.DataFrame(index = mean_s.data.index,columns = np.arange(len(means)))
+        
+        #write data to dataframes
+        for s in IGT_s.active_species:
+            dfs_IGT[s][i] = IGT_s.data[s].values[:len(dfs_IGT[s].index)]
+            dfs_mean[s][i] = mean_s.data[s].values[:len(dfs_IGT[s].index)]
+            
+            dfs_IGT_s[s][i] = IGT_s.data['{}smooth'.format(s)].values[:len(dfs_IGT_s[s].index)]
+            dfs_mean_s[s][i] = mean_s.data['{}smooth'.format(s)].values[:len(dfs_mean_s[s].index)]
+        
+        IGT_s.plot_raw()
+        mean_s.plot_raw()
+        
+    #write dataframes to csv files - no IGT in titles to avoid clash
+    if not written:
+        root = r'D:\VP\ARTICLE2\ArticleData'
+        dfs_IGT['E'].to_csv('{}\{}_X_i_data.csv'.format(root,'E'),header = False,index = False)
+        dfs_IGT['G'].to_csv('{}\{}_Y_i_data.csv'.format(root,'G'),header = False,index = False)
+        dfs_IGT['R'].to_csv('{}\{}_Z_i_data.csv'.format(root,'R'),header = False,index = False)
+        dfs_mean['E'].to_csv('{}\{}_X_m_data.csv'.format(root,'E'),header = False,index = False)
+        dfs_mean['G'].to_csv('{}\{}_Y_m_data.csv'.format(root,'G'),header = False,index = False)
+        dfs_mean['R'].to_csv('{}\{}_Z_m_data.csv'.format(root,'R'),header = False,index = False)
+        
+    #%% data analysis
+    plt.close('all')
+    
+    substances = ['a','b','c']
+    fig,axe = plt.subplots(nrows = 3,ncols = 3,figsize = (20,15),sharex = True,sharey = True)
+    
+    for i,s in enumerate(IGT_s.species):
+        
+        df = dfs_IGT_s[s].copy()
+        df.columns = ['{}{}'.format(c,i) for c in substances for i in range(4)]
+        
+        for x,c in enumerate(substances):
+            for r in range(4):
+                axe[i,x].plot(df.index,df['{}{}'.format(c,r)],color = IGT_s.species_colors[s])

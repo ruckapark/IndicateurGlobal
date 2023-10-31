@@ -497,9 +497,11 @@ class csvDATA:
             
         return IGT_
     
-    def write_data(self,directory,short = True):
+    def write_data(self,directory,short = True,scaled = True):
         
-        if short:
+        if scaled:
+            IGT,mean = pd.DataFrame(self.IGT_),pd.DataFrame(self.mean_)
+        elif short:
             IGT,mean = pd.DataFrame(self.IGT_short),pd.DataFrame(self.mean_short)
         else:
             IGT,mean = pd.DataFrame(self.IGT),pd.DataFrame(self.mean)

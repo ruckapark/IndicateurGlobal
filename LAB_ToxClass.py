@@ -497,7 +497,7 @@ class csvDATA:
             
         return IGT_
     
-    def write_data(self,directory,short = True,scaled = True):
+    def write_data(self,directory,short = True,scaled = True,hours = 4):
         
         if scaled:
             IGT,mean = pd.DataFrame(self.IGT_),pd.DataFrame(self.mean_)
@@ -510,8 +510,8 @@ class csvDATA:
         f_mean = '{}_{}mean_{}'.format(self.dopage_entry['Substance'],self.Tox,self.date)
         
         if short:
-            IGT[(IGT.index >= 0) & (IGT.index <= 21600)].to_csv(r'{}\{}.csv'.format(directory,f_IGT))
-            mean[(mean.index >= 0) & (mean.index <= 21600)].to_csv(r'{}\{}.csv'.format(directory,f_mean))
+            IGT[(IGT.index >= 0) & (IGT.index <= hours*3600)].to_csv(r'{}\{}.csv'.format(directory,f_IGT))
+            mean[(mean.index >= 0) & (mean.index <= hours*3600)].to_csv(r'{}\{}.csv'.format(directory,f_mean))
         else:
             IGT.to_csv(r'{}\{}.csv'.format(directory,f_IGT))
             mean.to_csv(r'{}\{}.csv'.format(directory,f_mean))

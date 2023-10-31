@@ -112,8 +112,14 @@ if __name__ == "__main__":
     #%% data analysis
     plt.close('all')
     
-    substances = ['a','b','c']
+    substances = ['Copper','Methomyl','Zinc']
     fig,axe = plt.subplots(nrows = 3,ncols = 3,figsize = (20,15),sharex = True,sharey = True)
+    
+    for x,c in enumerate(substances):
+        axe[0,x].set_title(c,fontsize = 18)
+        
+    for i,s in enumerate(IGT_s.species):
+        axe[i,0].set_ylabel(IGT_s.species[s],fontsize = 16)
     
     for i,s in enumerate(IGT_s.species):
         

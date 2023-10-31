@@ -120,6 +120,9 @@ if __name__ == "__main__":
         
     for i,s in enumerate(IGT_s.species):
         axe[i,0].set_ylabel(IGT_s.species[s],fontsize = 16)
+        
+    #xlabel
+    fig.text(0.5, 0.04, 'Time (mins)', ha='center',fontsize = 18)
     
     for i,s in enumerate(IGT_s.species):
         

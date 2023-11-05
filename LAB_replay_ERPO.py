@@ -46,7 +46,7 @@ roots = ['765_20211022',
          '768_20220708',
          '769_20220708']
 """
-roots = ['764_20210514']
+roots = ['762_20210430','762_20210506','762_20210513','761_20210506','760_20210430','760_20210506','760_20210513']
     
 
 def plot_distribution(val1,val2,species = 'E',figname = None):
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     time_correction = 0.997
     values_old,values_new = np.array([]),np.array([])
     
-    for r in roots[0:1]:
+    for r in roots:
         
         Tox = int(r.split('_')[0])
         
@@ -184,112 +184,224 @@ if __name__ == '__main__':
         
         #locate original and copy
         file_og = r'{}\{}.xls.zip'.format(root,stem[0])
+        if not os.path.isfile(file_og): file_og = None
         file_copy = r'{}\{}.replay.xls.zip'.format(root,stem[0])
         mapping = d_.read_mapping(Tox,int(r.split('_')[-1]))
         
         #read file
-        df_og,df_copy = d_.read_merge([file_og]),d_.read_merge([file_copy])
-        dfs_og,dfs_copy = d_.preproc(df_og),d_.preproc(df_copy)
-        dfs_og,dfs_copy = d_.calibrate(dfs_og,Tox,starttime),d_.calibrate(dfs_copy,Tox,starttime)
+        if file_og:
+            df_og = d_.read_merge([file_og])
+            dfs_og = d_.preproc(df_og)
+            dfs_og = d_.calibrate(dfs_og,Tox,starttime)
         
-        #check mapping
-        dfs_og = d_.check_mapping(dfs_og,mapping)
-        
-        #read dead values
-        morts = read_dead(root)
-        dfs_og,dfs_copy = d_.remove_dead_known(dfs_og,morts),d_.remove_dead_known(dfs_copy,morts)
-        
-        for s in specie:
-            dfs_copy[s] = correct_index(dfs_copy[s], starttime, time_correction)
-        
-        species = 'E'
-        df1,df2 = dfs_og[species],dfs_copy[species]
-        df1_m,df2_m = d_.rolling_mean(df1,5),d_.rolling_mean(df2,5)
-        
-        #read in quantization and check for count of mid bursts
-        df_quant_mid = d_.read_quant([file_og])
-        df_q = d_.preproc(df_quant_mid,quant = True)[species]
-        
-        #check mapping
-        df_q = d_.check_mapping(df_q,mapping[species])
-        
-        #%%
-        t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
-        tm_ind1,tm_ind2 = np.array((df1_m.index - df1_m.index[0]).total_seconds()),np.array((df2_m.index - df2_m.index[0]).total_seconds())
-        t_indq = np.array((df_q.index - df_q.index[0]).total_seconds())
-        
-        fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-        axe_q = np.empty(axe.shape,dtype = object)
-        for i in range(16):
-            axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
-            if i+1 not in df1.columns: continue
-            axe[i//4,i%4].plot(t_ind1,df1[i+1])
-            axe[i//4,i%4].plot(t_ind2,df2[i+1])
-            axe_q[i//4,i%4].plot(t_indq,df_q[i+1],color = 'r',alpha = 0.3)
-        fig.tight_layout()
+        df_copy = d_.read_merge([file_copy])
+        dfs_copy = d_.preproc(df_copy)
+        dfs_copy = d_.calibrate(dfs_copy,Tox,starttime)
         
         
-        #%% Start threshold treatments
-        thresh_high = 250
-        thresh_mid = 150
-        thresh_low = 100
-        thresh_q = 0.8
-        for i in df2.columns:
-            replay = df2[i]
-            old = df1[i]
-            outliers_high = replay[replay > thresh_high]
+        
+        
+        
+        ##  IF THERE IS ORIGINAL FILE
+        
+        
+        
+        
+        if file_og:
+            #check mapping
+            dfs_og = d_.check_mapping(dfs_og,mapping)
             
-            ## loop high outliers
-            for t in outliers_high.index:
+            #read dead values
+            morts = read_dead(root)
+            dfs_og,dfs_copy = d_.remove_dead_known(dfs_og,morts),d_.remove_dead_known(dfs_copy,morts)
+            
+            for s in specie:
+                dfs_copy[s] = correct_index(dfs_copy[s], starttime, time_correction)
+            
+            species = 'E'
+            df1,df2 = dfs_og[species],dfs_copy[species]
+            df1_m,df2_m = d_.rolling_mean(df1,5),d_.rolling_mean(df2,5)
+            
+            #read in quantization and check for count of mid bursts
+            df_quant_mid = d_.read_quant([file_og])
+            df_q = d_.preproc(df_quant_mid,quant = True)[species]
+            
+            #check mapping
+            df_q = d_.check_mapping(df_q,mapping[species])
+            
+            #%%
+            t_ind1,t_ind2 = np.array((df1.index - df1.index[0]).total_seconds()),np.array((df2.index - df2.index[0]).total_seconds())
+            tm_ind1,tm_ind2 = np.array((df1_m.index - df1_m.index[0]).total_seconds()),np.array((df2_m.index - df2_m.index[0]).total_seconds())
+            t_indq = np.array((df_q.index - df_q.index[0]).total_seconds())
+            
+            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+            axe_q = np.empty(axe.shape,dtype = object)
+            for i in range(16):
+                axe_q[i//4,i%4] = axe[i//4,i%4].twinx()
+                if i+1 not in df1.columns: continue
+                axe[i//4,i%4].plot(t_ind1,df1[i+1])
+                axe[i//4,i%4].plot(t_ind2,df2[i+1])
+                axe_q[i//4,i%4].plot(t_indq,df_q[i+1],color = 'r',alpha = 0.3)
+            fig.tight_layout()
+            
+            
+            #%% Start threshold treatments
+            thresh_high = 250
+            thresh_mid = 150
+            thresh_low = 100
+            thresh_q = 0.8
+            for i in df2.columns:
+                replay = df2[i]
+                old = df1[i]
+                outliers_high = replay[replay > thresh_high]
                 
-                #surrounding timestamps from old df +- 30 seconds
-                qs = df_q[(df_q.index > t - pd.Timedelta(30,'s')) & (df_q.index < t + pd.Timedelta(30,'s'))][i]
-                
-                #get timestamp of highest value in quantization
-                ind_old = qs.idxmax()
-                
-                #if max quant around outliers below threshold
-                if qs[ind_old] < thresh_q:
+                ## loop high outliers
+                for t in outliers_high.index:
                     
-                    #if old value is low use this
-                    if old.loc[ind_old] < thresh_low:
-                        df2.loc[t][i] = old.loc[ind_old]
-                    #otherwise add 0.0
+                    #surrounding timestamps from old df +- 30 seconds
+                    qs = df_q[(df_q.index > t - pd.Timedelta(30,'s')) & (df_q.index < t + pd.Timedelta(30,'s'))][i]
+                    
+                    #get timestamp of highest value in quantization
+                    ind_old = qs.idxmax()
+                    
+                    #if max quant around outliers below threshold
+                    if qs[ind_old] < thresh_q:
+                        
+                        #if old value is low use this
+                        if old.loc[ind_old] < thresh_low:
+                            df2.loc[t][i] = old.loc[ind_old]
+                        #otherwise add 0.0
+                        else:
+                            df2.loc[t][i] = 0.0
+                            
+                    #if high quantization value
                     else:
-                        df2.loc[t][i] = 0.0
-                        
-                #if high quantization value
-                else:
-                    if old.loc[ind_old] < replay[t]:
-                        df2.loc[t][i] = old.loc[ind_old]
-                        
-            print('{} high values filtered in column: {}'.format(outliers_high.shape[0],i))
-            
-            replay = df2[i]
-            old = df1[i]
-            outliers_mid = replay[replay > thresh_mid]
-            
-            ## loop mid outliers
-            for t in outliers_mid.index:
+                        if old.loc[ind_old] < replay[t]:
+                            df2.loc[t][i] = old.loc[ind_old]
+                            
+                print('{} high values filtered in column: {}'.format(outliers_high.shape[0],i))
                 
-                #surrounding values from old df +- 20 seconds
-                old_close = old[(df1.index > t - pd.Timedelta(20,'s')) & (df1.index < t + pd.Timedelta(20,'s'))]
+                replay = df2[i]
+                old = df1[i]
+                outliers_mid = replay[replay > thresh_mid]
                 
-                #if corresponding value less than low thresh
-                if old_close.values.max() < df2.loc[t][i]:
-                    df2.loc[t][i] = old_close.values.max()
+                ## loop mid outliers
+                for t in outliers_mid.index:
+                    
+                    #surrounding values from old df +- 20 seconds
+                    old_close = old[(df1.index > t - pd.Timedelta(20,'s')) & (df1.index < t + pd.Timedelta(20,'s'))]
+                    
+                    #if corresponding value less than low thresh
+                    if old_close.values.max() < df2.loc[t][i]:
+                        df2.loc[t][i] = old_close.values.max()
+                    
+                print('{} mid values filtered in column: {}'.format(outliers_mid.shape[0],i))
                 
-            print('{} mid values filtered in column: {}'.format(outliers_mid.shape[0],i))
+                
+            # low outliers - check surrounding values for high quantile 95, if so replace with old value
             
+            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+            for i in range(16):
+                if i+1 not in df1.columns: continue
+                axe[i//4,i%4].plot(t_ind1,df1[i+1])
+                axe[i//4,i%4].plot(t_ind2,df2[i+1],color = 'red',alpha = 0.75)
+            fig.tight_layout()
             
-        # low outliers - check surrounding values for high quantile 95, if so replace with old value
+            #%%
+            filter_erpo(df2,df1,df_q)
+            
+
+
+
+
+
+        ##  IF THERE IS ORIGINAL FILE
         
-        fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
-        for i in range(16):
-            if i+1 not in df1.columns: continue
-            axe[i//4,i%4].plot(t_ind1,df1[i+1])
-            axe[i//4,i%4].plot(t_ind2,df2[i+1],color = 'red',alpha = 0.75)
-        fig.tight_layout()
         
-        #%%
-        filter_erpo(df2,df1,df_q)
+        else:
+            
+            #read dead values
+            morts = read_dead(root)
+            dfs_copy = d_.remove_dead_known(dfs_copy,morts)
+            
+            for s in specie:
+                dfs_copy[s] = correct_index(dfs_copy[s], starttime, time_correction)
+            
+            species = 'E'
+            df2 = dfs_copy[species]
+            df2_m = d_.rolling_mean(df2,5)
+            
+            #%%
+            t_ind2 = np.array((df2.index - df2.index[0]).total_seconds())
+            tm_ind2 = np.array((df2_m.index - df2_m.index[0]).total_seconds())
+            
+            
+            fig,axe = plt.subplots(4,4,figsize = (12,20),sharex = True)
+            for i in range(16):
+                if i+1 not in df2.columns: continue
+                axe[i//4,i%4].plot(t_ind2,df2[i+1])
+            fig.tight_layout()
+            
+            
+            #%% Start threshold treatments
+            
+            thresh_high = 250
+            thresh_mid = 150
+            thresh_low = 100
+            for i in df2.columns:
+                replay = df2[i]
+                outliers_high = replay[replay > thresh_high]
+                
+                ## loop high outliers
+                for t in outliers_high.index:
+
+                    #surrounding timestamps from old df +- 120 seconds - Are more than 2 zero?
+                    ds = df2[(df2.index > t - pd.Timedelta(120,'s')) & (df2.index < t + pd.Timedelta(120,'s'))][i]
+                    
+                    vals = ds.values
+                    vals.sort()
+                    
+                    if vals.shape[0]:
+                        #if half values v low, remove
+                        if np.mean(vals[:vals.shape[0]//2]) < 10:
+                            df2.loc[t][i] = 0.0
+                    
+                        #if most values much lower, replace
+                        elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
+                            df2.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                    
+                    else: 
+                        continue
+                
+                replay = df2[i]
+                outliers_mid = replay[replay > thresh_mid]
+                
+                ## loop mid outliers
+                for t in outliers_mid.index:
+                    
+                    #surrounding values from old df +- 20 seconds
+                    ds = df2[(df2.index > t - pd.Timedelta(120,'s')) & (df2.index < t + pd.Timedelta(120,'s'))][i]
+                    
+                    vals = ds.values
+                    vals.sort()
+                    
+                    if vals.shape[0]:
+                        #if half values v low, remove
+                        if np.mean(vals[:3*(vals.shape[0]//4)]) < 10:
+                            df2.loc[t][i] = 0.0
+                    
+                        #if most values much lower, replace
+                        elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
+                            df2.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                    
+                    else: 
+                        continue
+                
+            
+            for i in range(16):
+                if i+1 not in df2.columns: continue
+                axe[i//4,i%4].plot(t_ind2,df2[i+1],color = 'red',alpha = 0.75)
+            fig.tight_layout()
+            
+            #%%
+            #filter_erpo(df2,df1,df_q)

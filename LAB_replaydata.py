@@ -54,8 +54,8 @@ if __name__ == "__main__":
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     #debug
-    #for r in [r'I:\TXM764-PC\20210514-084510']:
-    for r in roots:
+    for r in [r'I:\TXM762-PC\20210430-175513']:
+    #for r in roots:
         
         plt.close('all')
     
@@ -81,10 +81,8 @@ if __name__ == "__main__":
             continue
         
         #read old and new xls file - what if the old file no longer exists? simplify functions
-        try:
-            file_og = r'{}\{}.xls.zip'.format(root,stem)
-        except:
-            file_og = None
+        file_og = r'{}\{}.xls.zip'.format(root,stem)
+        if not os.path.isfile(file_og): file_og = None
         file_copy = r'{}\{}.replay.xls.zip'.format(root,stem)
         
         #read file, wrangle and calibrate
@@ -95,6 +93,7 @@ if __name__ == "__main__":
                 dfs_og = d_.calibrate(dfs_og,Tox,starttime)
                 dfs_og = d_.check_mapping(dfs_og,mapping)
             except:
+                #swap retreat algorithm to new when only recent exists
                 preprocessfailure.append(r)
                 continue
             

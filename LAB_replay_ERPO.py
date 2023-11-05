@@ -46,6 +46,8 @@ roots = ['765_20211022',
          '768_20220708',
          '769_20220708']
 """
+
+# no original
 roots = ['762_20210430','762_20210506','762_20210513','761_20210506','760_20210430','760_20210506','760_20210513']
     
 
@@ -93,7 +95,7 @@ def read_dead(directory):
                 continue
     return morts
 
-def filter_erpo(df_r,df,df_q):
+def filter_erpo(df_r,df=None,df_q=None):
     
     """
     df_ is the replayed version with corrected index
@@ -110,54 +112,113 @@ def filter_erpo(df_r,df,df_q):
         'q':0.8
         }
     
-    for col in df_r.columns:
-        replay = df_r[col]
-        old = df[col]
-        
-        """
-        high outliers 
-        check quantization to decided if noise or real high value
-        """
-        outliers_high = replay[replay > thresh_erpo['high']]
-        for t in outliers_high.index:
+    if df:
+        for col in df_r.columns:
+            replay = df_r[col]
+            old = df[col]
             
-            #surrounding quantizations from surrounding df
-            qs = df_q[(df_q.index > t - pd.Timedelta(30,'s')) & (df_q.index < t + pd.Timedelta(30,'s'))][col]
-            #get timestamp of highest value in quantization
-            ind_old = qs.idxmax()
-            
-            #if max quantif around outliers below 0.8 or quantization threshold
-            if qs[ind_old] < thresh_erpo['q']:
+            """
+            high outliers 
+            check quantization to decided if noise or real high value
+            """
+            outliers_high = replay[replay > thresh_erpo['high']]
+            for t in outliers_high.index:
                 
-                #if old value is low use this
-                if old.loc[ind_old] < thresh_erpo['low']:
-                    df_r.loc[t][col] = old.loc[ind_old]
-                #otherwise add 0.0
+                #surrounding quantizations from surrounding df
+                qs = df_q[(df_q.index > t - pd.Timedelta(30,'s')) & (df_q.index < t + pd.Timedelta(30,'s'))][col]
+                #get timestamp of highest value in quantization
+                ind_old = qs.idxmax()
+                
+                #if max quantif around outliers below 0.8 or quantization threshold
+                if qs[ind_old] < thresh_erpo['q']:
+                    
+                    #if old value is low use this
+                    if old.loc[ind_old] < thresh_erpo['low']:
+                        df_r.loc[t][col] = old.loc[ind_old]
+                    #otherwise add 0.0
+                    else:
+                        df_r.loc[t][col] = 0.0
+                        
+                #if high quantization value
                 else:
-                    df_r.loc[t][col] = 0.0
-                    
-            #if high quantization value
-            else:
-                if old.loc[ind_old] < replay[t]:
-                    df_r.loc[t][col] = old.loc[ind_old]
-        
-        replay = df_r[col]
-        old = df[col]
-                    
-        """
-        mid outliers 
-        check for more reasonable values in original df
-        """
-        outliers_mid = replay[replay > thresh_erpo['mid']]
-        for t in outliers_mid.index:
+                    if old.loc[ind_old] < replay[t]:
+                        df_r.loc[t][col] = old.loc[ind_old]
             
-            #surrounding values from old df +- 20 seconds
-            old_close = old[(df.index > t - pd.Timedelta(20,'s')) & (df.index < t + pd.Timedelta(20,'s'))]
+            replay = df_r[col]
+            old = df[col]
+                        
+            """
+            mid outliers 
+            check for more reasonable values in original df
+            """
+            outliers_mid = replay[replay > thresh_erpo['mid']]
+            for t in outliers_mid.index:
+                
+                #surrounding values from old df +- 20 seconds
+                old_close = old[(df.index > t - pd.Timedelta(20,'s')) & (df.index < t + pd.Timedelta(20,'s'))]
+                
+                #if corresponding value less than low thresh
+                if old_close.values.max() < df_r.loc[t][col]:
+                    df_r.loc[t][col] = old_close.values.max()
+    
+    #no original file
+    else:
+        for col in df_r.columns:
+            replay = df_r[col]
             
-            #if corresponding value less than low thresh
-            if old_close.values.max() < df_r.loc[t][col]:
-                df_r.loc[t][col] = old_close.values.max()
-                    
+            """
+            high outliers 
+            check quantization to decided if noise or real high value
+            """
+            outliers_high = replay[replay > thresh_erpo['high']]
+            for t in outliers_high.index:
+                
+                #surrounding timestamps from old df +- 120 seconds - Are more than 2 zero?
+                ds = df_r[(df_r.index > t - pd.Timedelta(120,'s')) & (df_r.index < t + pd.Timedelta(120,'s'))][i]
+                
+                vals = ds.values
+                vals.sort()
+                
+                if vals.shape[0]:
+                    #if half values v low, remove
+                    if np.mean(vals[:vals.shape[0]//2]) < 10:
+                        df_r.loc[t][i] = 0.0
+                
+                    #if most values much lower, replace
+                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
+                        df_r.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                
+                else: 
+                    continue
+            
+            replay = df_r[col]
+                        
+            """
+            mid outliers 
+            check for more reasonable values in original df
+            """
+            outliers_mid = replay[replay > thresh_mid]
+            
+            ## loop mid outliers
+            for t in outliers_mid.index:
+                
+                #surrounding values from old df +- 20 seconds
+                ds = df_r[(df_r.index > t - pd.Timedelta(120,'s')) & (df_r.index < t + pd.Timedelta(120,'s'))][i]
+                
+                vals = ds.values
+                vals.sort()
+                
+                if vals.shape[0]:
+                    #if half values v low, remove
+                    if np.mean(vals[:3*(vals.shape[0]//4)]) < 10:
+                        df_r.loc[t][i] = 0.0
+                
+                    #if most values much lower, replace
+                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
+                        df_r.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                
+                else: 
+                    continue
     
     return df_r
 
@@ -174,7 +235,7 @@ if __name__ == '__main__':
     time_correction = 0.997
     values_old,values_new = np.array([]),np.array([])
     
-    for r in roots:
+    for r in roots[:1]:
         
         Tox = int(r.split('_')[0])
         
@@ -403,5 +464,5 @@ if __name__ == '__main__':
                 axe[i//4,i%4].plot(t_ind2,df2[i+1],color = 'red',alpha = 0.75)
             fig.tight_layout()
             
-            #%%
-            #filter_erpo(df2,df1,df_q)
+            #%% see if it works
+            temp = filter_erpo(df2)

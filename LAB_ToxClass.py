@@ -572,6 +572,11 @@ class ToxPLOT:
         else:
             
             fig,axes = plt.subplots(3,1,figsize = (15,15),sharex = True)
+            try:
+                fig.suptitle('Tox{}  {}  {}'.format(self.data.Tox,self.data.dopage_entry['Substance'],self.data.date))
+            except:
+                pass
+            
             for i,s in enumerate(self.data.species):
                 if s not in self.data.active_species: continue
                 if short:

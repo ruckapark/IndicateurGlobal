@@ -205,6 +205,9 @@ def rolling_mean(df,timestep):
     timestep = (timestep * 60)//20
     return df.rolling(timestep).mean().dropna()
 
+def find_closest_timestamp(timestamp,series):
+    return series.iloc[np.argmin([np.abs((t - timestamp).total_seconds()) for t in series])]
+
 def read_mapping(Tox,rootdate = 20220225,remapping = False):
     
     #configroot i.e. r'I:\Shared\Configs\Mappings\769'

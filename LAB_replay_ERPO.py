@@ -112,7 +112,7 @@ def filter_erpo(df_r,df=None,df_q=None):
         'q':0.8
         }
     
-    if df:
+    if type(df) == pd.core.frame.DataFrame:
         for col in df_r.columns:
             replay = df_r[col]
             old = df[col]
@@ -258,14 +258,6 @@ if __name__ == '__main__':
         df_copy = d_.read_merge([file_copy])
         dfs_copy = d_.preproc(df_copy)
         dfs_copy = d_.calibrate(dfs_copy,Tox,starttime)
-        
-        
-        
-        
-        
-        ##  IF THERE IS ORIGINAL FILE
-        
-        
         
         
         if file_og:

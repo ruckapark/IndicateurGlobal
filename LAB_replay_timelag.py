@@ -147,7 +147,7 @@ def plot_logit():
     plt.axvline((0.5 - clf.intercept_[0])/clf.coef_[0])
 """
 
-def filter_gammarus(df_r,df):
+def filter_gammarus(df_r,df=None):
     
     """
     df_ is the replayed version with corrected index
@@ -158,20 +158,74 @@ def filter_gammarus(df_r,df):
     
     thresh_gammarus = {
         'high':220,
-        'mid':200
+        'mid':200,
+        'low':50
         }
     
-    for col in df_r.columns:
-        replay = df_r[col]
-        old = df[col]
-        outliers = replay[replay > thresh_gammarus['high']]
+    if type(df) == pd.core.frame.DataFrame:
+        for col in df_r.columns:
+            replay = df_r[col]
+            old = df[col]
+            outliers = replay[replay > thresh_gammarus['high']]
+            
+            for t in outliers.index:
+                ind_old = old[(old.index > t - pd.Timedelta(11,'s')) & (old.index < t + pd.Timedelta(11,'s'))].index[0]
+                if old.loc[ind_old] < thresh_gammarus['mid']:
+                    df_r.loc[t][col] = old.loc[ind_old]
+                else:
+                    df_r.loc[t][col] = 0.0
+                    
+    else:
         
-        for t in outliers.index:
-            ind_old = old[(old.index > t - pd.Timedelta(11,'s')) & (old.index < t + pd.Timedelta(11,'s'))].index[0]
-            if old.loc[ind_old] < thresh_gammarus['mid']:
-                df_r.loc[t][col] = old.loc[ind_old]
-            else:
-                df_r.loc[t][col] = 0.0
+        #high outliers
+        for col in df_r.columns:
+            replay = df_r[col]
+            outliers = replay[replay > thresh_gammarus['high']]
+            
+            for t in outliers.index:
+                
+                #surrounding values
+                ds = replay[(replay.index > t - pd.Timedelta(120,'s')) & (replay.index < t + pd.Timedelta(120,'s'))]
+                
+                vals = ds.values
+                vals.sort()
+                
+                if vals.shape[0]:
+                    #if half values v low, remove
+                    if np.mean(vals[:vals.shape[0]//2]) < 10:
+                        df_r.loc[t][col] = 0.0
+                
+                    #if most values much lower, replace
+                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_gammarus['low']:
+                        df_r.loc[t][col] = np.mean(vals[:3*(vals.shape[0]//4)])
+                
+                else: 
+                    continue
+            
+        
+            #mid outliers
+            replay = df_r[col]
+            outliers_mid = replay[replay > thresh_gammarus['mid']]
+            
+            for t in outliers_mid.index:
+                
+                #surrounding values from old df +- 20 seconds
+                ds = replay[(replay.index > t - pd.Timedelta(120,'s')) & (replay.index < t + pd.Timedelta(120,'s'))]
+                
+                vals = ds.values
+                vals.sort()
+                
+                if vals.shape[0]:
+                    #if half values v low, remove
+                    if np.mean(vals[:3*(vals.shape[0]//4)]) < 1:
+                        df_r.loc[t][col] = 0.0
+                
+                    #if most values much lower, replace
+                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_gammarus['low']:
+                        df_r.loc[t][col] = np.mean(vals[:3*(vals.shape[0]//4)])
+                
+                else: 
+                    continue
     
     return df_r
 

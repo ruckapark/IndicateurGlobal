@@ -30,14 +30,10 @@ if __name__ == '__main__':
                 directory = r'{}\{}'.format(basedir,d)
                 
                 #Check if already treated
-                if len([f for f in files if 'Gammarus.csv.zip' in f]):
+                if len([f for f in files if '.csv.zip' in f]):
                     continue
                 
-                if len(xls) == 2:
-                    #add to list
-                    addfiles.append(directory)
-                else:
-                    print('Check dir: ',directory)
+                addfiles.append(directory)
                     
     #add all files
     addfile = r'D:\VP\Viewpoint_data\replaydata.txt'

@@ -174,7 +174,7 @@ def filter_erpo(df_r,df=None,df_q=None):
             for t in outliers_high.index:
                 
                 #surrounding timestamps from old df +- 120 seconds - Are more than 2 zero?
-                ds = df_r[(df_r.index > t - pd.Timedelta(120,'s')) & (df_r.index < t + pd.Timedelta(120,'s'))][i]
+                ds = replay[(replay.index > t - pd.Timedelta(120,'s')) & (replay.index < t + pd.Timedelta(120,'s'))]
                 
                 vals = ds.values
                 vals.sort()
@@ -182,11 +182,11 @@ def filter_erpo(df_r,df=None,df_q=None):
                 if vals.shape[0]:
                     #if half values v low, remove
                     if np.mean(vals[:vals.shape[0]//2]) < 10:
-                        df_r.loc[t][i] = 0.0
+                        df_r.loc[t][col] = 0.0
                 
                     #if most values much lower, replace
-                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
-                        df_r.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_erpo['low']:
+                        df_r.loc[t][col] = np.mean(vals[:3*(vals.shape[0]//4)])
                 
                 else: 
                     continue
@@ -197,13 +197,13 @@ def filter_erpo(df_r,df=None,df_q=None):
             mid outliers 
             check for more reasonable values in original df
             """
-            outliers_mid = replay[replay > thresh_mid]
+            outliers_mid = replay[replay > thresh_erpo['mid']]
             
             ## loop mid outliers
             for t in outliers_mid.index:
                 
                 #surrounding values from old df +- 20 seconds
-                ds = df_r[(df_r.index > t - pd.Timedelta(120,'s')) & (df_r.index < t + pd.Timedelta(120,'s'))][i]
+                ds = replay[(replay.index > t - pd.Timedelta(120,'s')) & (replay.index < t + pd.Timedelta(120,'s'))]
                 
                 vals = ds.values
                 vals.sort()
@@ -211,11 +211,11 @@ def filter_erpo(df_r,df=None,df_q=None):
                 if vals.shape[0]:
                     #if half values v low, remove
                     if np.mean(vals[:3*(vals.shape[0]//4)]) < 10:
-                        df_r.loc[t][i] = 0.0
+                        df_r.loc[t][col] = 0.0
                 
                     #if most values much lower, replace
-                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
-                        df_r.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_erpo['low']:
+                        df_r.loc[t][col] = np.mean(vals[:3*(vals.shape[0]//4)])
                 
                 else: 
                     continue
@@ -401,15 +401,15 @@ if __name__ == '__main__':
             thresh_high = 250
             thresh_mid = 150
             thresh_low = 100
-            for i in df2.columns:
-                replay = df2[i]
+            for col in df2.columns:
+                replay = df2[col]
                 outliers_high = replay[replay > thresh_high]
                 
                 ## loop high outliers
                 for t in outliers_high.index:
 
                     #surrounding timestamps from old df +- 120 seconds - Are more than 2 zero?
-                    ds = df2[(df2.index > t - pd.Timedelta(120,'s')) & (df2.index < t + pd.Timedelta(120,'s'))][i]
+                    ds = replay[(df2.index > t - pd.Timedelta(120,'s')) & (df2.index < t + pd.Timedelta(120,'s'))]
                     
                     vals = ds.values
                     vals.sort()
@@ -417,11 +417,11 @@ if __name__ == '__main__':
                     if vals.shape[0]:
                         #if half values v low, remove
                         if np.mean(vals[:vals.shape[0]//2]) < 10:
-                            df2.loc[t][i] = 0.0
+                            df2.loc[t][col] = 0.0
                     
                         #if most values much lower, replace
                         elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
-                            df2.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                            df2.loc[t][col] = np.mean(vals[:3*(vals.shape[0]//4)])
                     
                     else: 
                         continue
@@ -433,7 +433,7 @@ if __name__ == '__main__':
                 for t in outliers_mid.index:
                     
                     #surrounding values from old df +- 20 seconds
-                    ds = df2[(df2.index > t - pd.Timedelta(120,'s')) & (df2.index < t + pd.Timedelta(120,'s'))][i]
+                    ds = replay[(replay.index > t - pd.Timedelta(120,'s')) & (replay.index < t + pd.Timedelta(120,'s'))]
                     
                     vals = ds.values
                     vals.sort()
@@ -441,11 +441,11 @@ if __name__ == '__main__':
                     if vals.shape[0]:
                         #if half values v low, remove
                         if np.mean(vals[:3*(vals.shape[0]//4)]) < 10:
-                            df2.loc[t][i] = 0.0
+                            df2.loc[t][col] = 0.0
                     
                         #if most values much lower, replace
                         elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
-                            df2.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                            df2.loc[t][col] = np.mean(vals[:3*(vals.shape[0]//4)])
                     
                     else: 
                         continue

@@ -124,11 +124,11 @@ def filter_radix(df_r,df = None):
                 if vals.shape[0]:
                     #if half values v low, remove
                     if np.mean(vals[:vals.shape[0]//2]) < 2:
-                        df_r.loc[t][i] = 0.0
+                        df_r.loc[t][col] = 0.0
                 
                     #if most values much lower, replace
                     elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_radix['low']:
-                        df_r.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                        df_r.loc[t][col] = np.mean(vals[:3*(vals.shape[0]//4)])
                 
                 else: 
                     continue
@@ -149,11 +149,11 @@ def filter_radix(df_r,df = None):
                 if vals.shape[0]:
                     #if half values v low, remove
                     if np.mean(vals[:3*(vals.shape[0]//4)]) < 1:
-                        df_r.loc[t][i] = 0.0
+                        df_r.loc[t][col] = 0.0
                 
                     #if most values much lower, replace
-                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_low:
-                        df_r.loc[t][i] = np.mean(vals[:3*(vals.shape[0]//4)])
+                    elif np.mean(vals[:3*(vals.shape[0]//4)]) < thresh_radix['low']:
+                        df_r.loc[t][col] = np.mean(vals[:3*(vals.shape[0]//4)])
                 
                 else: 
                     continue

@@ -34,6 +34,12 @@ from LAB_replay_ERPO import filter_erpo
 from LAB_replay_timelag import filter_gammarus
 from LAB_replay_RADIX import filter_radix
 
+#time corrections
+exceptions = {
+    r'E_I:\TXM761-PC\20210506-230122':2.493,
+    r'E_I:\TXM760-PC\20210513-230436':2.493
+    }
+
 #%% Function to write to directory (and zip)
 
 def read_roots():
@@ -54,8 +60,8 @@ if __name__ == "__main__":
     specie = {'E': 'Erpobdella','G':'Gammarus','R':'Radix'}
     
     #debug
-    #for r in [r'I:\TXM762-PC\20210430-175513']:
-    for r in roots:
+    for r in [r'I:\TXM760-PC\20210513-230436']:
+    #for r in roots:
         
         plt.close('all')
     
@@ -123,8 +129,15 @@ if __name__ == "__main__":
                     reset_original = True
                     
             for s in specie:
-                dfs_copy[s] = d_.correct_index(dfs_copy[s], starttime, time_correction)
-                if reset_original: d_.correct_index(dfs_og[s], starttime, correction = 1)    
+                if r'{}_{}'.format(s,root) in exceptions:
+                    #Note that there will be a different number of data points
+                    print('Time Warp Exception found')
+                    dfs_copy[s] = d_.correct_index(dfs_copy[s], starttime, correction = exceptions[r'{}_{}'.format(s,root)])
+                    dfs_copy[s] = dfs_copy[s]/exceptions[r'{}_{}'.format(s,root)]
+                else:
+                    dfs_copy[s] = d_.correct_index(dfs_copy[s], starttime)
+                if reset_original: d_.correct_index(dfs_og[s], starttime, correction = 1)
+            
         except:
             preprocessfailure.append(r)
             continue
@@ -264,8 +277,6 @@ if __name__ == "__main__":
                 
                 df_r = filter_gammarus(df2)
                 replay_data.update({species:df_r.copy()})
-                
-                print('ALL GOOD\n\n\n\n')
                 
                 #plot amended time series
                 for i in range(16):

@@ -25,52 +25,99 @@ from dope_reg import dope_read_extend
 import dataread as d_
 os.chdir('..')
 
-#%% data registers
-coppers = [
-    r'I:\TXM765-PC\20210422-111620',
-    r'I:\TXM767-PC\20210430-124553',
-    r'I:\TXM767-PC\20210513-231929',
-    r'I:\TXM763-PC\20210528-113951',
-    r'I:\TXM764-PC\20210409-135918',
-    r'I:\TXM767-PC\20210416-113551',
-    r'I:\TXM765-PC\20210430-124646',
-    r'I:\TXM765-PC\20210506-231620',
-    r'I:\TXM767-PC\20210513-231929'
-    ]
+#%% data registers - composite registers to join datasets from different dates
+coppers = {
+    0:{'E':r'I:\TXM764-PC\20210409-135918','G':r'I:\TXM764-PC\20210409-135918','R':r'I:\TXM764-PC\20210409-135918'},
+    1:{'E':r'I:\TXM767-PC\20210416-113551','G':r'I:\TXM767-PC\20210416-113551','R':r'I:\TXM767-PC\20210416-113551'},
+    2:{'E':r'I:\TXM765-PC\20210422-111620','G':r'I:\TXM765-PC\20210422-111620','R':r'I:\TXM765-PC\20210422-111620'},
+    3:{'E':r'I:\TXM765-PC\20210430-124646','G':r'I:\TXM765-PC\20210430-124646','R':r'I:\TXM765-PC\20210430-124646'},
+    4:{'E':r'I:\TXM767-PC\20210430-124553','G':r'I:\TXM767-PC\20210430-124553','R':r'I:\TXM767-PC\20210430-124553'},
+    5:{'E':r'I:\TXM765-PC\20210506-231620','G':r'I:\TXM765-PC\20210506-231620','R':r'I:\TXM765-PC\20210506-231620'},
+    6:{'E':r'I:\TXM767-PC\20210513-231929','G':r'I:\TXM767-PC\20210513-231929','R':r'I:\TXM767-PC\20210513-231929'},
+    7:{'E':r'I:\TXM763-PC\20210528-113951','G':r'I:\TXM763-PC\20210528-113951','R':r'I:\TXM763-PC\20210528-113951'}
+    }
 
-zincs = [
-    r'I:\TXM763-PC\20210416-113757',
-    r'I:\TXM763-PC\20210506-230746',
-    r'I:\TXM763-PC\20210513-230658',
-    r'I:\TXM763-PC\20210520-224858'
-    ]
+# coppers_50 = {
+#     0:{'E':r'I:\TXM767-PC\20210409-141207','G':r'I:\TXM767-PC\20210409-141207','R':[1,2,3]},
+#     1:{'E':r'I:\TXM767-PC\20210422-095227','G':r'I:\TXM767-PC\20210422-095227','R':r'I:\TXM767-PC\20210422-095227'},
+#     2:{'E':r'I:\TXM765-PC\20210513-231744','G':r'I:\TXM765-PC\20210513-231744','R':r'I:\TXM765-PC\20210513-231744'},
+#     3:{'E':r'I:\TXM765-PC\20210520-225816','G':r'I:\TXM765-PC\20210520-225816','R':r'I:\TXM765-PC\20210520-225816'}
+#     }
 
-methomyls = [
-    r'I:\TXM760-PC\20210520-224501',
-    r'I:\TXM760-PC\20210625-093621',
-    r'I:\TXM761-PC\20210520-224549',
-    r'I:\TXM761-PC\20210625-093641'
-    ]
+# coppers = [
+#     r'I:\TXM765-PC\20210422-111620',
+#     r'I:\TXM767-PC\20210430-124553',
+#     r'I:\TXM767-PC\20210513-231929',
+#     r'I:\TXM763-PC\20210528-113951',
+#     r'I:\TXM764-PC\20210409-135918',
+#     r'I:\TXM767-PC\20210416-113551',
+#     r'I:\TXM765-PC\20210430-124646',
+#     r'I:\TXM765-PC\20210506-231620',
+#     ]
 
-tramadols = [
-    r'I:\TXM767-PC\20220225-091008',
-    r'I:\TXM768-PC\20220225-090953',
-    r'I:\TXM769-PC\20220310-113807',
-    r'I:\TXM769-PC\20220317-164759']
+zincs = {
+    0:{'E':r'I:\TXM763-PC\20210416-113757','G':r'I:\TXM763-PC\20210416-113757','R':r'I:\TXM763-PC\20210416-113757'},
+    1:{'E':r'I:\TXM763-PC\20210422-111813','G':r'I:\TXM763-PC\20210422-111813','R':r'I:\TXM763-PC\20210422-111813'},
+    2:{'E':r'I:\TXM763-PC\20210513-230658','G':r'I:\TXM763-PC\20210513-230658','R':r'I:\TXM763-PC\20210513-230658'},
+    3:{'E':r'I:\TXM763-PC\20210520-224858','G':r'I:\TXM763-PC\20210520-224858','R':r'I:\TXM763-PC\20210520-224858'}
+    }
+
+# zincs = [
+#     r'I:\TXM763-PC\20210416-113757',
+#     r'I:\TXM763-PC\20210422-111813',
+#     r'I:\TXM763-PC\20210513-230658',
+#     r'I:\TXM763-PC\20210520-224858'
+#     ]
+
+methomyls = {
+    0:{'E':r'I:\TXM762-PC\20210430-175513','G':r'I:\TXM762-PC\20210430-175513','R':r'I:\TXM762-PC\20210430-175513'},
+    1:{'E':r'I:\TXM760-PC\20210506-230001','G':r'I:\TXM760-PC\20210506-230001','R':r'I:\TXM762-PC\20210513-232418'},
+    2:{'E':r'I:\TXM761-PC\20210506-230122','G':r'I:\TXM761-PC\20210506-230122','R':r'I:\TXM761-PC\20210506-230122'},
+    3:{'E':r'I:\TXM760-PC\20210513-230436','G':r'I:\TXM760-PC\20210513-230436','R':r'I:\TXM760-PC\20210513-230436'},
+    4:{'E':r'I:\TXM760-PC\20210520-224501','G':r'I:\TXM760-PC\20210520-224501','R':r'I:\TXM760-PC\20210520-224501'},
+    5:{'E':r'I:\TXM760-PC\20210625-093621','G':r'I:\TXM760-PC\20210625-093621','R':r'I:\TXM760-PC\20210625-093621'},
+    6:{'E':r'I:\TXM761-PC\20210625-093641','G':r'I:\TXM761-PC\20210625-093641','R':r'I:\TXM761-PC\20210625-093641'},
+    #7:{'E':r'I:\TXM761-PC\20210520-224549','G':r'I:\TXM761-PC\20210520-224549','R':[0,3,5]}
+    }
+
+# methomyls = [
+#     r'I:\TXM760-PC\20210520-224501',
+#     r'I:\TXM760-PC\20210625-093621',
+#     r'I:\TXM761-PC\20210520-224549',
+#     r'I:\TXM761-PC\20210625-093641'
+#     ]
+
+verapamils = {
+    0:{'E':r'','G':r'','R':r''},
+    0:{'E':r'','G':r'','R':r''},
+    0:{'E':r'','G':r'','R':r''},
+    0:{'E':r'','G':r'','R':r''},
+    0:{'E':r'','G':r'','R':r''},
+    0:{'E':r'','G':r'','R':r''},
+    0:{'E':r'','G':r'','R':r''},
+    0:{'E':r'','G':r'','R':r''}
+    }
+
+# tramadols = [
+#     r'I:\TXM767-PC\20220225-091008',
+#     r'I:\TXM768-PC\20220225-090953',
+#     r'I:\TXM769-PC\20220310-113807',
+#     r'I:\TXM769-PC\20220317-164759']
 
 #deal with class to only account for active species
-datasets = coppers + zincs + methomyls
+#datasets = coppers + zincs + methomyls
 
 if __name__ == "__main__":
     
     input_directory = r'D:\VP\ARTICLE2\ArticleData'  #find data means or IGTs
     
-    written = True
+    written = False
     
     if not written:
-        for r in datasets:
-            data = TOX.csvDATA(r)
-            data.write_data(r'D:\VP\ARTICLE2\ArticleData')
+        for datasets in [coppers,zincs,methomyls]:
+            for r in datasets:
+                data = TOX.csvDATA_comp(datasets[r])
+                data.write_data(r'D:\VP\ARTICLE2\ArticleData')
     
     IGTs = [f for f in os.listdir(input_directory) if 'IGT' in f]
     means = [f for f in os.listdir(input_directory) if 'mean' in f]

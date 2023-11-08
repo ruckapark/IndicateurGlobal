@@ -102,6 +102,8 @@ class csvDATA:
         
         #parameters for IGT calculation
         self.method = smoothing
+        
+        #for the high quantile in the raw data
         self.reference_distributions = {
             'E':{'median':80,'std':20},
             'G':{'median':90,'std':80}, #large std as this is false measure
@@ -311,8 +313,10 @@ class csvDATA:
             if plot: ToxPLOT(q_pre).plotHIST(title = self.species[s])
             q_params = {'median':q_pre.median(),'std':q_pre.std()}
             
-            lower_bound = self.reference_distributions[s]['median'] - self.reference_distributions[s]['std']
-            upper_bound = self.reference_distributions[s]['median'] + self.reference_distributions[s]['std']
+            lower_bound = self.reference_distributions[s]['median'] - 2*self.reference_distributions[s]['std']
+            upper_bound = self.reference_distributions[s]['median'] + 2*self.reference_distributions[s]['std']
+            
+            #print(s,q_params)
             
             if lower_bound < q_params['median'] < upper_bound:
                 refs[s] = q_params
@@ -402,16 +406,22 @@ class csvDATA:
     
     def adjust_qhigh(self,short = False):
         
+        """ Shift down IGT high, but also take into account high median value for scaling """
+        
         q_high_adj = {s:None for s in self.species}
         
         for s in self.active_species:
+            
+            #scale factor - if median 45 down to 0, IGT low you be same as 80 down to zero - maybe not for radix
+            scale_factor = self.reference_distributions[s]['median']/self.parameters[s]['median']
+            
             if short:
                 quantile_high = self.q_high_short[s] - (self.parameters[s]['median']-2*self.parameters[s]['std'])
             else:
                 quantile_high = self.q_high[s] - (self.parameters[s]['median']-2*self.parameters[s]['std'])
             
             quantile_high[quantile_high >= 0] = 0.0
-            q_high_adj[s] = quantile_high
+            q_high_adj[s] = quantile_high*scale_factor
         
         return q_high_adj
     
@@ -516,12 +526,75 @@ class csvDATA:
             IGT.to_csv(r'{}\{}.csv'.format(directory,f_IGT))
             mean.to_csv(r'{}\{}.csv'.format(directory,f_mean))
 
-"""        
-class speciesDATA():
+class csvDATA_comp:
     
-    #child class from csv Data, one for each species
-    return None
-"""
+    #not yet coded for generated data, only composite data
+    def __init__(self,roots):
+        
+        self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
+        self.colors = ['red','purple','brown','pink','grey','olive','cyan','blue','orange','green']
+        self.species_colors = {'E':'#de8e0d','G':'#057d25','R':'#1607e8'}
+        
+        self.roots = {s:roots[s] for s in self.species}
+        self.data = self.get_data()
+        
+        self.Tox = self.data[[*self.species][1]].Tox
+        self.date = self.data[[*self.species][1]].date
+        self.substance,self.molecule,self.concentration = self.get_info()
+        
+        #needed are IGT short and mean
+        self.IGT,self.mean = self.compile_data()
+        
+        
+    def get_data(self):
+        
+        datas = {s:None for s in self.species}
+        roots_old = []
+        
+        for s in self.species:
+            
+            root = self.roots[s]
+            if root in roots_old: 
+                if root == roots_old[0]:
+                    datas[s] = datas[[*self.species][0]]
+                else:
+                    datas[s] = datas[[*self.species][1]]
+            else:
+                datas[s] = csvDATA(root)
+            
+            roots_old.append(root)
+            
+        return datas
+    
+    def get_info(self):
+        
+        info = self.data[[*self.species][1]].dopage_entry
+        return info['Substance'],info['Molecule'],info['Concentration']
+    
+    def compile_data(self):
+        
+        IGTs,means = ({s:None for s in self.species} for i in range(2))
+        
+        factor = 0.997
+        index = np.array(np.arange(-3960,21980,20)*factor,dtype = int) #-1.1 to 6.1 hours with correction
+        index = index[(index >= -3600) & (index <= 21600)] #interpolate all indexes to this
+        
+        for s in self.species:
+            IGT,mean = self.data[s].IGT_[s],self.data[s].mean_[s]
+            IGT,mean = d_.interp_series(IGT,index),d_.interp_series(mean,index)
+            IGTs[s],means[s] = IGT,mean
+            
+        return IGTs,means
+    
+    def write_data(self,directory,hours = 4):
+        
+        IGT,mean = pd.DataFrame(self.IGT),pd.DataFrame(self.mean)
+            
+        f_IGT = '{}_{}IGT_{}'.format(self.substance,self.Tox,self.date)
+        f_mean = '{}_{}mean_{}'.format(self.substance,self.Tox,self.date)
+        
+        IGT[(IGT.index >= 0) & (IGT.index <= hours*3600)].to_csv(r'{}\{}.csv'.format(directory,f_IGT))
+        mean[(mean.index >= 0) & (mean.index <= hours*3600)].to_csv(r'{}\{}.csv'.format(directory,f_mean))
 
 class ToxPLOT:
     
@@ -529,6 +602,10 @@ class ToxPLOT:
         self.type = type(data)
         self.plotsize = {1:(13,7),2:(15,7),3:(17,7),16:(20,9)}
         self.data = data
+        if type(self.data.data) == dict: 
+            self.composite = True
+        else:
+            self.composite = False
         
     def plot16(self,species,with_mean = True,title = None,short = True,mark = True):
         
@@ -564,26 +641,38 @@ class ToxPLOT:
                 
     def plotIGT(self,spec = None,short = True):
         
-        if spec:
-            fig = plt.figure(figsize = (13,8))
-            axe = fig.add_axes([0.1,0.1,0.8,0.8])
-            axe.plot(self.data.IGT_short[spec].index,self.data.IGT_short[spec].values)
-            axe.set_title(self.data.species[spec])
-        else:
-            
+        if self.composite:
             fig,axes = plt.subplots(3,1,figsize = (15,15),sharex = True)
             try:
-                fig.suptitle('Tox{}  {}  {}'.format(self.data.Tox,self.data.dopage_entry['Substance'],self.data.date))
+                fig.suptitle('{}  {}'.format(self.data.substance,self.data.concentration))
             except:
                 pass
             
             for i,s in enumerate(self.data.species):
-                if s not in self.data.active_species: continue
-                if short:
-                    axes[i].plot(self.data.IGT_short[s].index,self.data.IGT_short[s].values,color = self.data.species_colors[s])
-                else:
-                    axes[i].plot(self.data.IGT[s].index,self.data.IGT[s].values,color = self.data.species_colors[s])
+                axes[i].plot(self.data.IGT[s].index,self.data.IGT[s].values,color = self.data.species_colors[s])
                 axes[i].set_title(self.data.species[s])
+                
+        else:
+            if spec:
+                fig = plt.figure(figsize = (13,8))
+                axe = fig.add_axes([0.1,0.1,0.8,0.8])
+                axe.plot(self.data.IGT_short[spec].index,self.data.IGT_short[spec].values)
+                axe.set_title(self.data.species[spec])
+            else:
+                
+                fig,axes = plt.subplots(3,1,figsize = (15,15),sharex = True)
+                try:
+                    fig.suptitle('Tox{}  {}  {}'.format(self.data.Tox,self.data.dopage_entry['Substance'],self.data.date))
+                except:
+                    pass
+                
+                for i,s in enumerate(self.data.species):
+                    if s not in self.data.active_species: continue
+                    if short:
+                        axes[i].plot(self.data.IGT_short[s].index,self.data.IGT_short[s].values,color = self.data.species_colors[s])
+                    else:
+                        axes[i].plot(self.data.IGT[s].index,self.data.IGT[s].values,color = self.data.species_colors[s])
+                    axes[i].set_title(self.data.species[s])
                 
     def plotHIST(self,title = 'histogram',params = None):
         
@@ -610,6 +699,7 @@ class ToxPLOT:
 if __name__ == '__main__':
     
     dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM765-PC\20220317-164730',dope_df)
+    #data = csvDATA(r'I:\TXM760-PC\20210513-230436',dope_df)
+    data = csvDATA_comp({'E':r'I:\TXM760-PC\20210506-230001','G':r'I:\TXM760-PC\20210506-230001','R':r'I:\TXM762-PC\20210513-232418'})
     ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
     #data.write_data(r'D:\VP\ARTICLE2\ArticleData')

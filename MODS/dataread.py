@@ -559,11 +559,29 @@ def read_dead(directory):
 
 def correct_index(df,start,correction = 0.997):
     """ Account for time warp error in video generation """
+    
+    
+    
     ind = np.array((df.index - df.index[0]).total_seconds() * correction)
     ind = pd.to_datetime(ind*pd.Timedelta(1,unit = 's') + pd.to_datetime(start))
     df_ = df.copy()
     df_.index = ind
     return df_
+
+def interp(df, new_index):
+    """Return a new DataFrame with all columns values interpolated
+    to the new_index values."""
+    df_out = pd.DataFrame(index=new_index,columns = df.columns)
+
+    for colname, col in df.items():
+        df_out[colname] = np.interp(new_index, df.index, col)
+
+    return df_out
+
+def interp_series(series,new_index):
+    """ return new pd Series style according to new index """
+    return pd.Series(index = new_index, data = np.interp(new_index, series.index, series.values))
+
 
 def write_data(data,file,IGT = True):
     if IGT:

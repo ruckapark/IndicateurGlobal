@@ -235,7 +235,7 @@ if __name__ == '__main__':
     time_correction = 0.997
     values_old,values_new = np.array([]),np.array([])
     
-    for r in roots[:1]:
+    for r in roots[-3:-2]:
         
         Tox = int(r.split('_')[0])
         

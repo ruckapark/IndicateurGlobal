@@ -25,6 +25,20 @@ from dope_reg import dope_read_extend
 import dataread as d_
 os.chdir('..')
 
+#%% Functions
+
+def read_custom_reg(sub,reg = r'D:\VP\Viewpoint_data\REGS\Molecules'):
+    specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
+    
+    f = r'{}\{}_custom.csv'.format(reg,sub)
+    reg = pd.read_csv(f,index_col = 'Repetition',header = 0)
+    
+    repetitions = {}
+    for r in reg.index.values:
+        repetitions.update({r:{s:reg[specie[s]].loc[r] for s in specie}})
+        
+    return repetitions
+
 #%% data registers - composite registers to join datasets from different dates
 coppers = {
     0:{'E':r'I:\TXM764-PC\20210409-135918','G':r'I:\TXM764-PC\20210409-135918','R':r'I:\TXM764-PC\20210409-135918'},
@@ -36,6 +50,9 @@ coppers = {
     6:{'E':r'I:\TXM767-PC\20210513-231929','G':r'I:\TXM767-PC\20210513-231929','R':r'I:\TXM767-PC\20210513-231929'},
     7:{'E':r'I:\TXM763-PC\20210528-113951','G':r'I:\TXM763-PC\20210528-113951','R':r'I:\TXM763-PC\20210528-113951'}
     }
+
+#the same as above
+coppers = read_custom_reg('Copper')
 
 # coppers_50 = {
 #     0:{'E':r'I:\TXM767-PC\20210409-141207','G':r'I:\TXM767-PC\20210409-141207','R':[1,2,3]},
@@ -61,6 +78,7 @@ zincs = {
     2:{'E':r'I:\TXM763-PC\20210513-230658','G':r'I:\TXM763-PC\20210513-230658','R':r'I:\TXM763-PC\20210513-230658'},
     3:{'E':r'I:\TXM763-PC\20210520-224858','G':r'I:\TXM763-PC\20210520-224858','R':r'I:\TXM763-PC\20210520-224858'}
     }
+coppers = read_custom_reg('Zinc')
 
 # zincs = [
 #     r'I:\TXM763-PC\20210416-113757',
@@ -79,6 +97,7 @@ methomyls = {
     6:{'E':r'I:\TXM761-PC\20210625-093641','G':r'I:\TXM761-PC\20210625-093641','R':r'I:\TXM761-PC\20210625-093641'},
     #7:{'E':r'I:\TXM761-PC\20210520-224549','G':r'I:\TXM761-PC\20210520-224549','R':[0,3,5]}
     }
+coppers = read_custom_reg('Methomyl')
 
 # methomyls = [
 #     r'I:\TXM760-PC\20210520-224501',
@@ -94,6 +113,7 @@ verapamils = {
     #3:{'E':r'','G':r'','R':r''},
     #4:{'E':r'','G':r'','R':r''},
     }
+coppers = read_custom_reg('Verapamil')
 
 # tramadols = [
 #     r'I:\TXM767-PC\20220225-091008',
@@ -101,7 +121,7 @@ verapamils = {
 #     r'I:\TXM769-PC\20220310-113807',
 #     r'I:\TXM769-PC\20220317-164759']
 
-#deal with class to only account for active species
+#%%deal with class to only account for active species
 #datasets = coppers + zincs + methomyls
 
 if __name__ == "__main__":

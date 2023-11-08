@@ -582,6 +582,18 @@ def interp_series(series,new_index):
     """ return new pd Series style according to new index """
     return pd.Series(index = new_index, data = np.interp(new_index, series.index, series.values))
 
+def read_custom_reg(sub,reg = r'D:\VP\Viewpoint_data\REGS\Molecules'):
+    specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
+    
+    f = r'{}\{}_custom.csv'.format(reg,sub)
+    reg = pd.read_csv(f,index_col = 'Repetition',header = 0)
+    
+    repetitions = {}
+    for r in reg.index.values:
+        repetitions.update({r:{s:reg[specie[s]].loc[r] for s in specie}})
+        
+    return repetitions
+
 
 def write_data(data,file,IGT = True):
     if IGT:

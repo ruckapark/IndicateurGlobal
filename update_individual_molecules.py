@@ -33,6 +33,8 @@ def find_filename(Tox,root,species):
     part3 = root.split('-')[0] + '_' + species
     return r'I:\TXM{}-PC\{}\{}.csv.zip'.format(part1,part2,part3)
 
+specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
+
 dope_df = dope_read_extend()
 molecules = dope_df['Substance'].unique()
 
@@ -59,6 +61,7 @@ for m in molecules:
     
     #create df with molecule
     df = pd.DataFrame(index = np.arange(tests.shape[0]),columns = cols)
+    df.index.name = 'Repetition'
     
     for i in range(df.shape[0]):
         
@@ -67,11 +70,17 @@ for m in molecules:
         tem = temoins[temoins['End'] == tem_timestamp].iloc[0]
         
         df.loc[i]['Concentration'] = tests.iloc[i]['Concentration']
-        df.loc[i]['Erpobdella'] = find_filename(tests.iloc[i]['TxM'],tests.iloc[i]['root'][-1],'Erpobdella')
-        df.loc[i]['Erpobdella_TEM'] = find_filename(tem['TxM'],tem['root'][-1],'Erpobdella')
-        df.loc[i]['Gammarus'] = find_filename(tests.iloc[i]['TxM'],tests.iloc[i]['root'][-1],'Gammarus')
-        df.loc[i]['Gammarus_TEM'] = find_filename(tem['TxM'],tem['root'][-1],'Gammarus')
-        df.loc[i]['Radix'] = find_filename(tests.iloc[i]['TxM'],tests.iloc[i]['root'][-1],'Radix')
-        df.loc[i]['Radix_TEM'] = find_filename(tem['TxM'],tem['root'][-1],'Radix')
+        
+        # #Commented are names for individual files
+        # df.loc[i]['Erpobdella'] = find_filename(tests.iloc[i]['TxM'],tests.iloc[i]['root'][-1],'Erpobdella')
+        # df.loc[i]['Erpobdella_TEM'] = find_filename(tem['TxM'],tem['root'][-1],'Erpobdella')
+        # df.loc[i]['Gammarus'] = find_filename(tests.iloc[i]['TxM'],tests.iloc[i]['root'][-1],'Gammarus')
+        # df.loc[i]['Gammarus_TEM'] = find_filename(tem['TxM'],tem['root'][-1],'Gammarus')
+        # df.loc[i]['Radix'] = find_filename(tests.iloc[i]['TxM'],tests.iloc[i]['root'][-1],'Radix')
+        # df.loc[i]['Radix_TEM'] = find_filename(tem['TxM'],tem['root'][-1],'Radix')
+        
+        for s in specie:
+            df.loc[i][specie[s]] = r'I:\TXM{}-PC\{}'.format(tests.iloc[i]['TxM'],tests.iloc[i]['root'][-1])
+            df.loc[i]['{}_TEM'.format(specie[s])] = r'I:\TXM{}-PC\{}'.format(tem['TxM'],tem['root'][-1])
     
-    df.to_csv('{}\{}.csv'.format(root,m),index = False)
+    df.to_csv('{}\{}.csv'.format(root,m))

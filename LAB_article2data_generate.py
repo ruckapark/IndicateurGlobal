@@ -88,14 +88,11 @@ methomyls = {
 #     ]
 
 verapamils = {
-    0:{'E':r'','G':r'','R':r''},
-    0:{'E':r'','G':r'','R':r''},
-    0:{'E':r'','G':r'','R':r''},
-    0:{'E':r'','G':r'','R':r''},
-    0:{'E':r'','G':r'','R':r''},
-    0:{'E':r'','G':r'','R':r''},
-    0:{'E':r'','G':r'','R':r''},
-    0:{'E':r'','G':r'','R':r''}
+    0:{'E':r'I:\TXM765-PC\20220310-113707','G':r'I:\TXM765-PC\20220310-113707','R':r'I:\TXM764-PC\20220310-113652'},
+    1:{'E':r'I:\TXM763-PC\20220225-090838','G':r'I:\TXM763-PC\20220225-090838','R':r'I:\TXM763-PC\20220225-090838'},
+    2:{'E':r'I:\TXM765-PC\20220317-164730','G':r'I:\TXM764-PC\20220310-113652','R':r'I:\TXM765-PC\20220317-164730'},
+    #3:{'E':r'','G':r'','R':r''},
+    #4:{'E':r'','G':r'','R':r''},
     }
 
 # tramadols = [
@@ -114,7 +111,7 @@ if __name__ == "__main__":
     written = False
     
     if not written:
-        for datasets in [coppers,zincs,methomyls]:
+        for datasets in [coppers,zincs,methomyls,verapamils]:
             for r in datasets:
                 data = TOX.csvDATA_comp(datasets[r])
                 data.write_data(r'D:\VP\ARTICLE2\ArticleData')
@@ -164,14 +161,14 @@ if __name__ == "__main__":
     #%% data analysis
     plt.close('all')
     
-    substances = ['Copper','Methomyl','Zinc']
-    fig,axe = plt.subplots(nrows = 3,ncols = 3,figsize = (20,15),sharex = True,sharey = True)
+    substances = {'Copper':coppers,'Methomyl':methomyls,'Zinc':zincs,'Verapamil':verapamils}
+    fig,axe = plt.subplots(nrows = len(substances),ncols = 3,figsize = (20,20),sharex = True,sharey = True)
     
     for x,c in enumerate(substances):
-        axe[0,x].set_title(c,fontsize = 18)
+        axe[x,0].set_ylabel(c,fontsize = 18)
         
-    for i,s in enumerate(IGT_s.species):
-        axe[i,0].set_ylabel(IGT_s.species[s],fontsize = 16)
+    for x,s in enumerate(IGT_s.species):
+        axe[0,x].set_title(IGT_s.species[s],fontsize = 16)
         
     #xlabel
     fig.text(0.5, 0.04, 'Time (mins)', ha='center',fontsize = 18)
@@ -179,8 +176,12 @@ if __name__ == "__main__":
     for i,s in enumerate(IGT_s.species):
         
         df = dfs_IGT_s[s].copy()
-        df.columns = ['{}{}'.format(c,i) for c in substances for i in range(4)]
+        df.columns = ['Copper0','Copper1','Copper2','Copper3','Copper4','Copper5','Copper6','Copper7',
+                      'Methomyl0','Methomyl1','Methomyl2','Methomyl3','Methomyl4','Methomyl5','Methomyl6',
+                      'Zinc0','Zinc1','Zinc2','Zinc3',
+                      'Verapamil0','Verapamil1','Verapamil2']
+        #df.columns = ['{}{}'.format(c,i) for c in substances for i in range(4)]
         
-        for x,c in enumerate(substances):
-            for r in range(4):
-                axe[i,x].plot(df.index,df['{}{}'.format(c,r)],color = IGT_s.species_colors[s])
+        for x,sub in enumerate(substances):
+            for r in range(len(substances[sub])):
+                axe[x,i].plot(df.index,df['{}{}'.format(sub,r)],color = IGT_s.species_colors[s])

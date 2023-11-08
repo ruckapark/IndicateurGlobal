@@ -529,13 +529,13 @@ class csvDATA:
 class csvDATA_comp:
     
     #not yet coded for generated data, only composite data
-    def __init__(self,roots):
+    def __init__(self,root):
         
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
         self.colors = ['red','purple','brown','pink','grey','olive','cyan','blue','orange','green']
         self.species_colors = {'E':'#de8e0d','G':'#057d25','R':'#1607e8'}
         
-        self.roots = {s:roots[s] for s in self.species}
+        self.root = {s:root[s] for s in self.species}
         self.data = self.get_data()
         
         self.Tox = self.data[[*self.species][1]].Tox
@@ -553,7 +553,7 @@ class csvDATA_comp:
         
         for s in self.species:
             
-            root = self.roots[s]
+            root = self.root[s]
             if root in roots_old: 
                 if root == roots_old[0]:
                     datas[s] = datas[[*self.species][0]]
@@ -602,7 +602,7 @@ class ToxPLOT:
         self.type = type(data)
         self.plotsize = {1:(13,7),2:(15,7),3:(17,7),16:(20,9)}
         self.data = data
-        if type(self.data.data) == dict: 
+        if type(self.data.root) == dict: 
             self.composite = True
         else:
             self.composite = False
@@ -699,7 +699,7 @@ class ToxPLOT:
 if __name__ == '__main__':
     
     dope_df = dope_read_extend()
-    #data = csvDATA(r'I:\TXM760-PC\20210513-230436',dope_df)
-    data = csvDATA_comp({'E':r'I:\TXM760-PC\20210506-230001','G':r'I:\TXM760-PC\20210506-230001','R':r'I:\TXM762-PC\20210513-232418'})
+    data = csvDATA(r'I:\TXM760-PC\20210513-230436',dope_df)
+    #data = csvDATA_comp({'E':r'I:\TXM760-PC\20210506-230001','G':r'I:\TXM760-PC\20210506-230001','R':r'I:\TXM762-PC\20210513-232418'})
     ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
     #data.write_data(r'D:\VP\ARTICLE2\ArticleData')

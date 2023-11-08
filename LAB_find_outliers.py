@@ -33,13 +33,13 @@ if __name__ == '__main__':
     
     specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
     
-    m = 'Tramadol'
+    m = 'Verapamil'
     df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}.csv'.format(m),index_col=None)
     concentrations = df['Concentration'].unique()
     print(concentrations)
     
     #conc = input('What concentration?')
-    conc = '3mg'
+    conc = '0.6mg'
     df_ = df[df['Concentration'] == conc]
     
     for i in range(df_.shape[0]):

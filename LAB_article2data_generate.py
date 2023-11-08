@@ -108,7 +108,7 @@ if __name__ == "__main__":
     
     input_directory = r'D:\VP\ARTICLE2\ArticleData'  #find data means or IGTs
     
-    written = False
+    written = True
     
     if not written:
         for datasets in [coppers,zincs,methomyls,verapamils]:
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     #%% data analysis
     plt.close('all')
     
-    substances = {'Copper':coppers,'Methomyl':methomyls,'Zinc':zincs,'Verapamil':verapamils}
+    substances = {'Copper':coppers,'Methomyl':methomyls,'Verapamil':verapamils,'Zinc':zincs}
     fig,axe = plt.subplots(nrows = len(substances),ncols = 3,figsize = (20,20),sharex = True,sharey = True)
     
     for x,c in enumerate(substances):
@@ -178,8 +178,8 @@ if __name__ == "__main__":
         df = dfs_IGT_s[s].copy()
         df.columns = ['Copper0','Copper1','Copper2','Copper3','Copper4','Copper5','Copper6','Copper7',
                       'Methomyl0','Methomyl1','Methomyl2','Methomyl3','Methomyl4','Methomyl5','Methomyl6',
-                      'Zinc0','Zinc1','Zinc2','Zinc3',
-                      'Verapamil0','Verapamil1','Verapamil2']
+                      'Verapamil0','Verapamil1','Verapamil2',
+                      'Zinc0','Zinc1','Zinc2','Zinc3',]
         #df.columns = ['{}{}'.format(c,i) for c in substances for i in range(4)]
         
         for x,sub in enumerate(substances):

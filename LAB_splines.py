@@ -124,7 +124,7 @@ if __name__ == "__main__":
     plt.close('all')
     
     input_directory = r'D:\VP\ARTICLE2\ArticleData'  #find data means or IGTs
-    IGT = [f for f in os.listdir(input_directory) if 'IGT' in f][0]
-    
-    IGT_s = ToxSplines(r'{}\{}'.format(input_directory,IGT))
-    IGT_s.plot_raw()
+    IGT = [f for f in os.listdir(input_directory) if 'IGT' in f]
+    for i in IGT:
+        IGT_s = ToxSplines(r'{}\{}'.format(input_directory,i))
+        IGT_s.plot_raw()

@@ -673,6 +673,8 @@ class ToxPLOT:
                     else:
                         axes[i].plot(self.data.IGT[s].index,self.data.IGT[s].values,color = self.data.species_colors[s])
                     axes[i].set_title(self.data.species[s])
+                    
+        return fig,axes
                 
     def plotHIST(self,title = 'histogram',params = None):
         
@@ -701,5 +703,5 @@ if __name__ == '__main__':
     dope_df = dope_read_extend()
     data = csvDATA(r'I:\TXM760-PC\20210513-230436',dope_df)
     #data = csvDATA_comp({'E':r'I:\TXM760-PC\20210506-230001','G':r'I:\TXM760-PC\20210506-230001','R':r'I:\TXM762-PC\20210513-232418'})
-    ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
+    fig,axes = ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
     #data.write_data(r'D:\VP\ARTICLE2\ArticleData')

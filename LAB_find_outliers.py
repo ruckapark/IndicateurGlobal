@@ -31,25 +31,33 @@ molecules = ['Copper','Zinc','Aluminium','Cobalt','Manganese','Chloroacetic','Me
 
 if __name__ == '__main__':
     
+    plt.close('all')
+    
     specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
+    root_dir = r'D:\VP\Viewpoint_data\REGS\Molecules\Figures'
     
-    m = 'Verapamil'
-    df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}.csv'.format(m),index_col=None)
-    concentrations = df['Concentration'].unique()
-    print(concentrations)
-    
-    #conc = input('What concentration?')
-    conc = '0.6mg'
-    df_ = df[df['Concentration'] == conc]
-    
-    for i in range(df_.shape[0]):
-        root = df_.iloc[i]['Erpobdella']
-        root = r'I:\{}\{}'.format(root.split('\\')[1],root.split('\\')[2])
+    #for m in molecules:
+    for m in ['1-2Dichloroethane']:
+    #m = 'Ibuprofen'
+        df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}.csv'.format(m),index_col=None)
+        concentrations = df['Concentration'].unique()
         
-        try:
-            data = TOX.csvDATA(root)
-            TOX.ToxPLOT(data).plotIGT()
+        figure_dir = r'{}\{}'.format(root_dir,m)
+        
+        #conc = input('What concentration?')
+        #conc = '4ug'
+        for conc in concentrations:
+            df_ = df[df['Concentration'] == conc]
             
-        except:
-            print('No data yet for ',root)
-            continue
+            for i in range(df_.shape[0]):
+                root = df_.iloc[i]['Erpobdella']
+                root = r'I:\{}\{}'.format(root.split('\\')[1],root.split('\\')[2])
+                
+                try:
+                    data = TOX.csvDATA(root)
+                    fig,axe = TOX.ToxPLOT(data).plotIGT()
+                    fig.savefig(r'{}\{}{}_{}.jpg'.format(figure_dir,m,i,conc))
+                    
+                except:
+                    print('No data yet for ',root)
+                    continue

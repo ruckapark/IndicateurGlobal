@@ -37,7 +37,7 @@ if __name__ == '__main__':
     root_dir = r'D:\VP\Viewpoint_data\REGS\Molecules\Figures'
     
     #for m in molecules:
-    for m in ['1-2Dichloroethane']:
+    for m in ['Mercury']:
     #m = 'Ibuprofen'
         df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}.csv'.format(m),index_col=None)
         concentrations = df['Concentration'].unique()
@@ -46,18 +46,19 @@ if __name__ == '__main__':
         
         #conc = input('What concentration?')
         #conc = '4ug'
-        for conc in concentrations:
-            df_ = df[df['Concentration'] == conc]
+        #df_ = df[df['Concentration'] == conc]
+        
+        for i in range(df.shape[0]):
+            root = df.iloc[i]['Erpobdella']
+            root = r'I:\{}\{}'.format(root.split('\\')[1],root.split('\\')[2])
+            conc = df.iloc[i]['Concentration']
             
-            for i in range(df_.shape[0]):
-                root = df_.iloc[i]['Erpobdella']
-                root = r'I:\{}\{}'.format(root.split('\\')[1],root.split('\\')[2])
+            try:
+                data = TOX.csvDATA(root)
+                fig,axe = TOX.ToxPLOT(data).plotIGT()
+                fig.savefig(r'{}\{}{}_{}.jpg'.format(figure_dir,m,i,conc))
+                print('Data for: ',root)
                 
-                try:
-                    data = TOX.csvDATA(root)
-                    fig,axe = TOX.ToxPLOT(data).plotIGT()
-                    fig.savefig(r'{}\{}{}_{}.jpg'.format(figure_dir,m,i,conc))
-                    
-                except:
-                    print('No data yet for ',root)
-                    continue
+            except:
+                print('No data yet for: ',root)
+                continue

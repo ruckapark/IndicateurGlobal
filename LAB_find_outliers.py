@@ -37,17 +37,20 @@ if __name__ == '__main__':
     root_dir = r'D:\VP\Viewpoint_data\REGS\Molecules\Figures'
     
     #for m in molecules:
-    for m in ['Mercury']:
-    #m = 'Ibuprofen'
+    for m in ['Zinc']:
+        
+        #Read register for all dopage of molecule m
         df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}.csv'.format(m),index_col=None)
         concentrations = df['Concentration'].unique()
         
+        #create figure to save results
         figure_dir = r'{}\{}'.format(root_dir,m)
         
         #conc = input('What concentration?')
         #conc = '4ug'
         #df_ = df[df['Concentration'] == conc]
         
+        #save figues
         for i in range(df.shape[0]):
             root = df.iloc[i]['Erpobdella']
             root = r'I:\{}\{}'.format(root.split('\\')[1],root.split('\\')[2])

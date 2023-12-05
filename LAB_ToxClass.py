@@ -161,7 +161,7 @@ class csvDATA:
         
         self.active_species = self.check_activespecies()
         
-        #get mean data and condense
+        #get meaned data for all (16) organisms and condense
         self.meandata = self.get_meandfs(smoothing_PARAMETERS(self.method))
         self.data_short = self.condense_data()
         self.meandata_short = self.condense_data(mean = True)
@@ -179,8 +179,7 @@ class csvDATA:
         self.q_high = self.get_quantile_raw(raw = False,high = True)
         self.q_high_short = self.get_quantile_raw(raw = False,high = True,short = True)
         
-        #combine to get I
-        
+        #combine to get IGT
         """
         
         #get unfiltered mean series

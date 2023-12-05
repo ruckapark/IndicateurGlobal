@@ -9,7 +9,7 @@ copper.csv
 repetition date - concentration - root/file gammarus - root/file temoin g - root/file erpobdella - root/file temoin e - root/file radix - root/file temoin r
 repetition date - concent...
 
-The idea is then to create a custom folder with NaNs where there is no data available
+The idea is then to create a custom folder which should be used for dataset generation
 
 @author: George
 """

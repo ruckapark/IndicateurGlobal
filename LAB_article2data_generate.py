@@ -53,7 +53,7 @@ if __name__ == "__main__":
     
     input_directory = r'D:\VP\ARTICLE2\ArticleData'  #find data means or IGTs
     
-    written = True
+    written = False
     cols = []
     
     if not written:

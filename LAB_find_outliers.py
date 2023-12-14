@@ -37,7 +37,7 @@ if __name__ == '__main__':
     root_dir = r'D:\VP\Viewpoint_data\REGS\Molecules\Figures'
     
     #for m in molecules:
-    for m in ['Zinc']:
+    for m in ['Verapamil']:
         
         #Read register for all dopage of molecule m
         df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}.csv'.format(m),index_col=None)

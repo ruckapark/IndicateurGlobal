@@ -35,7 +35,7 @@ if __name__ == '__main__':
     
     #Define required molecule
     #m = input('Which moleucle?')
-    m = 'Copper'
+    m = 'Methomyl'
     
     #read selected directories
     df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}_custom.csv'.format(m),index_col = 'Repetition')

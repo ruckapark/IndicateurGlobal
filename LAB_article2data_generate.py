@@ -39,21 +39,21 @@ def read_custom_reg(sub,reg = r'D:\VP\Viewpoint_data\REGS\Molecules'):
         
     return repetitions
 
-#%% data registers - composite registers to join datasets from different dates
-substances = ['Copper','Methomyl','Verapamil','Zinc'] #alphabetical
-
-#the same as above
-datasets = {}
-for s in substances: datasets.update({s:read_custom_reg(s)})
-
 #%%deal with class to only account for active species
 #datasets = coppers + zincs + methomyls
 
 if __name__ == "__main__":
     
+    #data registers - composite registers to join datasets from different dates
+    substances = ['Copper','Methomyl','Verapamil','Zinc'] #alphabetical
+
+    #the same as above
+    datasets = {}
+    for s in substances: datasets.update({s:read_custom_reg(s)})
+    
     input_directory = r'D:\VP\ARTICLE2\ArticleData'  #find data means or IGTs
     
-    written = True
+    written = False
     cols = []
     
     if not written:

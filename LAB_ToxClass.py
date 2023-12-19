@@ -117,25 +117,25 @@ class csvDATA:
             }
         
         #absolute values
-        self.qlow_distributions = {
+        self.qhigh_distributions = {
             'E':{'qhigh':65.0},
             'G':{'qhigh':71.8},
             'R':{'qhigh':4.65}
             }
         
-        self.qlow_squaredistributions = {
+        self.qhigh_squaredistributions = {
             'E':{'qhigh':65.0**2},
             'G':{'qhigh':71.8**2},
             'R':{'qhigh':4.65**2}
             }
         
-        self.qhigh_distributions = {
+        self.qlow_distributions = {
             'E':{'qhigh':47.9},
             'G':{'qhigh':38.0},
             'R':{'qhigh':3.23}
             }
         
-        self.qhigh_squaredistributions = {
+        self.qlow_squaredistributions = {
             'E':{'qhigh':47.9**2},
             'G':{'qhigh':38.0**2},
             'R':{'qhigh':3.23**2}

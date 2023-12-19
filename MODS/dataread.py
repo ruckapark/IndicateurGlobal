@@ -14,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import csv
+import re
 from datetime import timedelta,datetime
 from data_merge import merge_dfs,merge_dfs_nodatechange
 
@@ -602,6 +603,21 @@ def write_data(data,file,IGT = True):
         filename = file + 'MEAN.csv'
         
     data.to_csv(filename,index = False)
+    
+def str_remove_num(input_string):
+    """
+    Remove numbers from the end of a string.
+
+    Parameters:
+    - input_string: The input string.
+
+    Returns:
+    - String with numbers removed from the end.
+    """
+    # Use regular expression to remove numbers from the end
+    result = re.sub(r'\d+$', '', input_string)
+    
+    return result
     
     
 def powerlimit_scale(X, y=0.85, p=0.5):

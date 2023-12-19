@@ -14,6 +14,53 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 import LAB_ToxClass as TOX
+from mpl_toolkits.mplot3d import Axes3D
+
+def plot_3d_time_series_matplotlib(time_series_list):
+    """
+    Plot N time series on a 3D axis using Matplotlib with customization.
+
+    Parameters:
+    - time_series_list: List of pandas Series or numpy arrays representing time series data.
+
+    Returns:
+    - 3D plot using Matplotlib with specified customization.
+    """
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot(111, projection='3d')
+
+    for i, series in enumerate(time_series_list):
+        offset = np.ones_like(series) * i
+        ax.plot(offset, range(len(series)), series, color='b', label=f'Time Series {i + 1}')
+
+        # Fill between the curve and z=0
+        ax.plot_surface(np.array([offset, offset]),
+                        np.array([range(len(series)), range(len(series))]),
+                        np.array([series, np.zeros_like(series)]),
+                        color='b', alpha=0.5)
+        
+    tmp_planes = ax.zaxis._PLANES 
+    ax.zaxis._PLANES = ( tmp_planes[2], tmp_planes[3], 
+                         tmp_planes[0], tmp_planes[1], 
+                         tmp_planes[4], tmp_planes[5])
+    ax.set_xlabel('Offset')
+    ax.set_ylabel('Time')
+    ax.zaxis.set_rotate_label(False)
+    ax.set_zlabel('Measured Quantity', rotation=90)
+    
+    #plot line at z=0
+    ax.plot([0, 0], [-1, 11], [0, 0],color = 'black')   # extend in y direction
+    
+    ax.set_ylim(0,10)
+
+    ax.grid(color='white', linestyle='-', linewidth=0.5, alpha=0.5)
+    ax.xaxis.pane.fill = False
+    ax.yaxis.pane.fill = False
+    ax.zaxis.pane.fill = False
+    
+    ax.grid(False)
+
+    plt.show()
 
 def powerlimit_scale(X, y=0.85, p=0.5):
     """

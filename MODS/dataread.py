@@ -602,6 +602,38 @@ def write_data(data,file,IGT = True):
         filename = file + 'MEAN.csv'
         
     data.to_csv(filename,index = False)
+    
+    
+def powerlimit_scale(X, y=0.85, p=0.5):
+    """
+    Perform power scaling for values above the limit 'y'.
+    
+    Data should already be scaled
+
+    Parameters:
+    - X: numpy array or pandas series
+    - y: threshold value
+    - p: power scaling factor
+
+    Returns:
+    - Power-scaled array or series
+    """
+    # Convert to numpy array if input is pandas series
+    series = False
+    if isinstance(X, pd.Series):
+        series = True
+        index = pd.Index(X.index, name=X.index.name)
+        X = X.values
+
+    # Apply power scaling only to values above the threshold 'y'
+    X_scaled = np.where(X > y, y + (X + 1 - y)**p - 1, X)
+
+    # If the input was a pandas series, return the result as a series
+    if series:
+        X_scaled = pd.Series(X_scaled, index=index)
+    
+    return X_scaled
+
 
 def correct_dates(file):   
     

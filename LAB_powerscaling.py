@@ -12,11 +12,27 @@ Illustrate results using copper repetitions for all species
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
-import LAB_ToxClass as TOX
+import re
+#import LAB_ToxClass as TOX
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.animation as animation
 
-def plot_3d_time_series_matplotlib(time_series_list):
+def str_remove_num(input_string):
+    """
+    Remove numbers from the end of a string.
+
+    Parameters:
+    - input_string: The input string.
+
+    Returns:
+    - String with numbers removed from the end.
+    """
+    # Use regular expression to remove numbers from the end
+    result = re.sub(r'\d+$', '', input_string)
+    
+    return result
+
+def plot_3d_time_series_matplotlib(time_series_list,colors = None):
     """
     Plot N time series on a 3D axis using Matplotlib with customization.
 
@@ -26,18 +42,24 @@ def plot_3d_time_series_matplotlib(time_series_list):
     Returns:
     - 3D plot using Matplotlib with specified customization.
     """
-    fig = plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(18,11))
     ax = fig.add_subplot(111, projection='3d')
 
     for i, series in enumerate(time_series_list):
+        
+        if colors:
+            color = colors[i]
+        else:
+            color = 'b'
+        
         offset = np.ones_like(series) * i
-        ax.plot(offset, range(len(series)), series, color='b', label=f'Time Series {i + 1}')
+        ax.plot(offset, range(len(series)), series, color='black', label=f'Time Series {i + 1}')
 
         # Fill between the curve and z=0
         ax.plot_surface(np.array([offset, offset]),
                         np.array([range(len(series)), range(len(series))]),
                         np.array([series, np.zeros_like(series)]),
-                        color='b', alpha=0.5)
+                        color=color, alpha=0.5)
         
     tmp_planes = ax.zaxis._PLANES 
     ax.zaxis._PLANES = ( tmp_planes[2], tmp_planes[3], 
@@ -49,11 +71,14 @@ def plot_3d_time_series_matplotlib(time_series_list):
     ax.set_zlabel('Measured Quantity', rotation=90)
     
     #plot line at z=0
-    ax.plot([0, 0], [-1, 11], [0, 0],color = 'black')   # extend in y direction
+    ylim = len(series)
+    ax.plot([0, 0], [-1, ylim+1], [0, 0],color = 'black')   # extend in y direction
+    ax.set_ylim(0,ylim)
     
-    ax.set_ylim(0,10)
-
-    ax.grid(color='white', linestyle='-', linewidth=0.5, alpha=0.5)
+    fig.set_facecolor('white')
+    ax.set_facecolor('white') 
+    ax.grid(color='white', linestyle='-', linewidth=0.5, alpha=0.9)
+    
     ax.xaxis.pane.fill = False
     ax.yaxis.pane.fill = False
     ax.zaxis.pane.fill = False
@@ -90,7 +115,37 @@ def powerlimit_scale(X, y=0.85, p=0.5):
     
     return X_scaled
 
+def plot_3d_series(df,colors = None):
+    
+    #create figure and axes
+    fig = plt.figure(figsize=(12, 12))
+    ax = plt.subplot(111, frameon=False)
+    
+    data = np.transpose(df.values)
+    X = np.linspace(-1, 1, data.shape[-1])
+    #G = 1.5 * np.exp(-4 * X ** 2)
+    
+    lines = []
+    for i in range(data.shape[0]):
+        # Reduction of the X extents to get a cheap perspective effect
+        xscale = 1 - i /100.
+        # Same for linewidth (thicker strokes on bottom)
+        lw = 1.5 - i / 100.0
+        line, = ax.plot(xscale * X, i + data[i], color=colors[i], lw=lw)
+        
+
 if __name__ == '__main__':
+    
+    plt.close('all')
+    
+    subs = ['Copper','Methomyl','Verapamil','Zinc']
+    sub_colors = {
+        'Copper':'#d62728',
+        'Methomyl':'#9467bd',
+        'Verapamil':'#8c564b',
+        'Zinc':'#e377c2'
+            }
+    colors = []
     
     values = np.linspace(0,2.5,60)
     plt.figure()
@@ -98,36 +153,25 @@ if __name__ == '__main__':
     plt.plot(powerlimit_scale(values),color = 'orange')
     
     specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
-    root_dir = r'D:\VP\Viewpoint_data\REGS\Molecules'
-    m = 'Copper'
+    root_dir = r'D:\VP\ARTICLE2\ArticleData'
     
     #read selected directories
-    df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}_custom.csv'.format(m),index_col = 'Repetition')
+    dfs = {
+        'E':pd.read_csv(r'{}\E_X_i_data.csv'.format(root_dir)),
+        'G':pd.read_csv(r'{}\G_Y_i_data.csv'.format(root_dir)),
+        'R':pd.read_csv(r'{}\R_Z_i_data.csv'.format(root_dir))
+        }
     
-    #for 3 species plot each IGT curve and label the associated repetition
-    fig,axe = plt.subplots(1,3,figsize = (18,8),sharex = True)
-    for i,s in enumerate(specie): 
-        axe[i].set_title(specie[s])
-        axe[i].set_ylim((-2,2))
-    
-    for i in range(df.shape[0]):
-        entry = {s:df[specie[s]] for s in specie}
-        data = TOX.csvDATA_comp({s:df[specie[s]].iloc[i] for s in specie})
-        for x,s in enumerate(data.species):
-            axe[x].plot(data.IGT[s],label = i)
-    
-    axe[x].legend()
-    
-    #for 3 species plot each IGT curve and label the associated repetition
-    fig,axe = plt.subplots(1,3,figsize = (18,8),sharex = True)
-    for i,s in enumerate(specie): 
-        axe[i].set_title(specie[s])
-        axe[i].set_ylim((-2,2))
-    
-    for i in range(df.shape[0]):
-        entry = {s:df[specie[s]] for s in specie}
-        data = TOX.csvDATA_comp({s:df[specie[s]].iloc[i] for s in specie})
-        for x,s in enumerate(data.species):
-            axe[x].plot(powerlimit_scale(data.IGT[s]),label = i)
-    
-    axe[x].legend()
+    #In branch powerscaling - scaling is not yet true
+    scaled = False
+    for s in dfs:
+        df = dfs[s]
+        for col in df.columns:
+            df[col] = powerlimit_scale(df[col])
+            color = sub_colors[str_remove_num(col)]
+            colors.append(color)
+            
+        #plot_3d_time_series_matplotlib([df[col] for col in df.columns],colors)
+        plot_3d_series(df,colors)
+        
+    #repeat with bspline approximation...

@@ -643,6 +643,7 @@ def powerlimit_scale(X, y=0.85, p=0.5):
 
     # Apply power scaling only to values above the threshold 'y'
     X_scaled = np.where(X > y, y + (X + 1 - y)**p - 1, X)
+    X_scaled = np.where(X < -y, -y - abs(X - 1 + y)**p + 1, X)
 
     # If the input was a pandas series, return the result as a series
     if series:

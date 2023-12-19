@@ -481,6 +481,37 @@ class csvDATA:
             mean_[s] = mean[s]/self.mean_distributions[s]['qhigh']
             
         return mean_
+    
+    def powerlimit_scale(self,X, y=0.85, p=0.5):
+        """
+        Perform power scaling for values above the limit 'y'.
+        
+        Data should already be scaled
+
+        Parameters:
+        - X: numpy array or pandas series
+        - y: threshold value
+        - p: power scaling factor
+
+        Returns:
+        - Power-scaled array or series
+        """
+        # Convert to numpy array if input is pandas series
+        series = False
+        if isinstance(X, pd.Series):
+            series = True
+            index = pd.Index(X.index, name=X.index.name)
+            X = X.values
+
+        # Apply power scaling only to values above the threshold 'y'
+        X_scaled = np.where(X > y, y + (X + 1 - y)**p - 1, X)
+        X_scaled = np.where(X < -y, -y - abs(X - 1 + y)**p + 1, X)
+
+        # If the input was a pandas series, return the result as a series
+        if series:
+            X_scaled = pd.Series(X_scaled, index=index)
+        
+        return X_scaled
             
     def scale_IGT(self,short = True):
         
@@ -501,6 +532,9 @@ class csvDATA:
             #add qhigh and qlow values (if qhigh exists)
             if qhigh.shape[0]: q_.loc[qhigh.index] = qhigh
             q_.loc[qlow.index] = qlow
+            
+            #power scaling
+            q_ = self.powerlimit_scale(q_)
             
             IGT_[s] = q_
             

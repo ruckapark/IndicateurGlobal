@@ -21,28 +21,85 @@ def vertical_PC_plot():
     
     return None
 
+def plot_functional_components(grid_points,data_points,variances):
+    """
+    Parameters
+    ----------
+    grid_points : np.array
+        xvalues - time domain
+    data_points : list of np.arrays
+        yvalues - eigenvalues forming principal functions
+    variances : np.array
+        explained variance by each mode of variation
+
+    Returns
+    -------
+    plot figure and ax
+    """
+    
+    fig,ax = plt.subplots(figsize = (11,7))
+    ax.plot(grid_points,data_points[0],color = 'black')
+    ax.plot(grid_points,data_points[1],color = 'black',linestyle = '--')
+    ax.legend(labels=['Component 1 - {:.2f}'.format(variances[0]),
+                      'Component 2 - {:.2f}'.format(variances[1])],
+             fontsize = 17)
+    ax.set_xlabel('Time (minutes)',fontsize = 16)
+    ax.set_ylabel('FPC Score',fontsize = 16)
+    ax.set_title('Functional Principal Component plot',fontsize = 18)
+    
+    return fig,ax
+    
+def plot_FPscore_projection(scores,y,fpc = 0):
+    
+    fig,ax = plt.subplots(figsize=(8, 5))
+    sns.scatterplot(x=np.zeros(scores.shape[0]), y=scores[:, fpc],hue = y,ax = ax)
+    ax.set_title("FPC1 scores")
+    ax.tick_params(labelsize = 15)
+    
+    return fig,ax
+    
+
 if __name__ == "__main__":
+    
+    plt.close('all')
     
     #simulate data
     substances = ['Copper','Methomyl','Verapamil','Zinc']
     colors = ['#8c564b','#e377c2','#bcbd22','#17becf']
-    counts = {s:3 for s in substances}
+    counts = {'Copper':8,'Methomyl':7,'Verapamil':3,'Zinc':4}
     plot_colors = dict(zip(substances,colors))
     custom_palette = [plot_colors[s] for s in plot_colors]
     sns.set_palette(custom_palette)
     
-    y = ['Copper','Copper','Copper','Methomyl','Methomyl','Methomyl','Verapamil','Verapamil','Verapamil','Zinc','Zinc','Zinc',]
-    scores = np.array([
-        [0.5,0.5],[0.55,0.62],[0.49,0.57],
-        [0.1,-0.6],[0.04,-0.43],[0.0,-0.71],
-        [-0.2,0.4],[-0.5,0.3],[-0.32,0.37],
-        [0.4,-0.2],[0.45,-0.17],[0.41,-0.21]])
+    y = ['Copper','Copper','Copper','Copper','Copper','Copper','Copper','Copper','Methomyl','Methomyl','Methomyl','Methomyl','Methomyl','Methomyl','Methomyl','Verapamil','Verapamil','Verapamil','Zinc','Zinc','Zinc','Zinc']
+    scores = np.array([[ 11.37119376,   0.15997426],
+       [ 15.08089024,  -0.95947348],
+       [  9.53604394,  -0.08294543],
+       [ 19.93950124,   2.49498265],
+       [ 19.90819481,   1.77314143],
+       [ 10.47929036,  -0.56761362],
+       [ 10.52591876,   0.1539535 ],
+       [ 19.24454656,   0.36279863],
+       [-15.91122718,  -0.79483587],
+       [-13.81208783,  -1.53797418],
+       [-13.17572315,   4.89341634],
+       [-12.9234747 ,   5.25953403],
+       [-14.83382371,   0.52309198],
+       [-12.13166241,   2.3186874 ],
+       [-15.67174559,  -1.12041467],
+       [ -3.39789276,  -2.90115001],
+       [ -4.02755272,  -2.59719589],
+       [ -1.19270985,  -2.70957585],
+       [ -5.09301745,  -1.71847185],
+       [ -4.32591445,  -2.44412597],
+       [ -0.03749463,   0.04755896],
+       [  0.44874673,  -0.55336237]])
     
     sub_scores = {}
     for i,s in enumerate(counts):
         sub_scores.update({s:scores[3*i:3*(i+1)]})
     
-    fig,ax = plt.subplots(figsize=(6, 4))
+    fig,ax = plt.subplots(figsize=(8, 6))
     sns.scatterplot(x=scores[:, 0], y=scores[:, 1],hue = y,ax = ax)
     ax.set_xlabel("fPC 1 score")
     ax.set_ylabel("fPC 2 score")
@@ -50,15 +107,25 @@ if __name__ == "__main__":
     
     ax.tick_params(labelsize = 13)
     
-    fig,ax = plt.subplots(figsize=(6, 4))
-    sns.scatterplot(x=np.zeros(scores.shape[0]), y=scores[:, 0],hue = y,ax = ax)
+    fig,ax = plt.subplots(figsize=(8, 6))
+    ax.set_xlim(-1,1)
+    sns.scatterplot(x=np.zeros(scores.shape[0]), y=scores[:, 0],hue = y,ax = ax,zorder = 2)
     ax.set_title("FPC1 scores")
     ax.tick_params(labelsize = 13)
+    locs = ax.get_yticks()[::2]
+    ax.axvline(0,color = 'black',zorder = 1)
+    for y_tick in locs:
+        ax.plot([-0.03, 0], [y_tick, y_tick], color='black', linewidth=1, zorder=1)
     
-    fig,ax = plt.subplots(figsize=(6, 4))
-    sns.scatterplot(x=np.zeros(scores.shape[0]), y=scores[:, 1],hue = y,ax = ax)
+    fig,ax = plt.subplots(figsize=(8, 6))
+    ax.set_xlim(-1,1)
+    sns.scatterplot(x=np.zeros(scores.shape[0]), y=scores[:, 1],hue = y,ax = ax,zorder = 2)
     ax.set_title("FPC2 scores")
     ax.tick_params(labelsize = 13)
+    locs = ax.get_yticks()[::2]
+    ax.axvline(0,color = 'black',zorder = 1)
+    for y_tick in locs:
+        ax.plot([0, 0.03], [y_tick, y_tick], color='black', linewidth=1, zorder=1)
     
     #example of PC1 and PC2
     #Convert fpc1 and fpc2 to np.arrays
@@ -95,9 +162,9 @@ if __name__ == "__main__":
     variances = np.array([0.96,0.02])
     
     #plot each component
-    fig,ax = plt.subplots(figsize = (11,7))
+    fig,ax = plt.subplots(figsize = (8,6))
     ax.plot(grid_points,data_points[0],color = 'black')
-    ax.plot(grid_points,data_points[1],color = 'red')
+    ax.plot(grid_points,data_points[1],color = 'black',linestyle = '--')
     ax.legend(labels=['Component 1 - {:.2f}'.format(variances[0]),
                       'Component 2 - {:.2f}'.format(variances[1])],
              fontsize = 17)

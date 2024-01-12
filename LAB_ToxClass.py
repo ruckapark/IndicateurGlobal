@@ -103,8 +103,8 @@ class xlsDATA:
         self.mapping = d_.read_mapping(self.Tox)
         self.data = self.get_data()
         
-        self.write_data()
-        self.csvdata = csvDATA(root,dope_df,)
+        #self.write_data()
+        #self.csvdata = csvDATA(root,dope_df,)
 
     def find_tox(self):
         return int(self.root.split('\\')[1].split('-')[0][-3:])
@@ -796,5 +796,5 @@ if __name__ == '__main__':
     
     #exmple for bioessai with other reg
     dope_df = dope_read_extend('bioessai_reg')
-    data = xlsDATA(r'I:\TXM760-PC\20231216-082344',dope_df)
+    data = xlsDATA(r'I:\TXM762-PC\20231216-082510',dope_df)
     fig,axes = ToxPLOT(data.csvdata).plotIGT() #gammarus IGT needs verifying!    

@@ -139,4 +139,6 @@ Example of dope_write
 
 dope_write(763,Zinc,Zn(SO4)_7(H20),'10ug,'17/12/2020 09:55:00','17/12/2020 09:55:00')
 
+dope_write_extend(reg_type = 'bioessai_reg')
+
 """

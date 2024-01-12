@@ -332,7 +332,7 @@ if __name__ == "__main__":
                 #%% write files and zip
                 for s in replay_data:
                     filename = '{}_{}'.format(stem.split('-')[0],specie[s])
-                    if os.path.isfile(r'{}\{}.zip'.format(root,filename)):
+                    if os.path.isfile(r'{}\{}.csv.zip'.format(root,filename)):
                         print('Files already exist')
                         break
                     compression_options = dict(method='zip', archive_name='{}.csv'.format(filename))

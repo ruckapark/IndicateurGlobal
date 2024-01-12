@@ -555,6 +555,7 @@ def read_dead(directory):
                 int(row[1])
                 morts[row[0][0]] = [int(x) for x in row[1:]]
             except ValueError:
+                print('Check dead')
                 continue
     return morts
 

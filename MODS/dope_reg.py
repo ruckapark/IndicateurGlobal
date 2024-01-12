@@ -46,7 +46,7 @@ def dope_write(arg1,arg2,arg3,arg4,arg5,arg6):
 
     """
 
-    f = r'D:\VP\Viewpoint_data\code\REGS\dope_reg.csv'
+    f = r'D:\VP\Viewpoint_data\REGS\dope_reg.csv'
     fields = [arg1,arg2,arg3,arg4,arg5,arg6]
     
     with open(f,'a',newline = '') as reg:
@@ -62,9 +62,9 @@ def dope_write(arg1,arg2,arg3,arg4,arg5,arg6):
 def dope_read(reg = None):
     
     if reg: 
-        df = pd.read_csv(r'D:\VP\Viewpoint_data\code\REGS\{}.csv'.format(reg),delimiter = ',',header = None)
+        df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\{}.csv'.format(reg),delimiter = ',',header = None)
     else:
-        df = pd.read_csv(r'D:\VP\Viewpoint_data\code\REGS\dope_reg.csv',delimiter = ',',header = None)
+        df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\dope_reg.csv',delimiter = ',',header = None)
     cols = ['TxM','Substance','Molecule','Concentration','Start','End']
     df.columns = cols
     df['Start'] = pd.to_datetime(df['Start'],format = '%d/%m/%Y %H:%M:%S')
@@ -81,9 +81,12 @@ def str_tolist(series):
     series = series.str.replace("'","")
     return series.str[1:-1].str.split(' ')
 
-def dope_write_extend(root = r'D:\VP\Viewpoint_data\code\REGS'):
+def dope_write_extend(root = r'D:\VP\Viewpoint_data\REGS',reg_type = None):
     
-    reg = dope_read()
+    if reg_type:
+        reg = dope_read(reg_type)
+    else:
+        reg = dope_read()
     allfiles = pd.read_csv(r'{}\allfiles.txt'.format(root),delimiter = ',',names = ['root','Tox'])
     allfiles['datetime'] = pd.to_datetime(allfiles['root'],format = '%Y%m%d-%H%M%S')
     
@@ -107,16 +110,23 @@ def dope_write_extend(root = r'D:\VP\Viewpoint_data\code\REGS'):
         else:
             reg['shortfile'].iloc[i] = 0
             reg['root'].iloc[i] = files['root'].values
-            
-    reg.to_csv(r'{}\extended_reg.csv'.format(root),index = False)
+    
+    if reg_type:
+        reg.to_csv(r'{}\extended_{}.csv'.format(root,reg_type),index = False)
+    else:
+        print('What?')
+        reg.to_csv(r'{}\extended_reg.csv'.format(root),index = False)
 
 
 
-def dope_read_extend():
+def dope_read_extend(reg_type = None):
     
     """ Currently extended reg has alternate format """
+    if reg_type:
+        reg = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\extended_{}.csv'.format(reg_type))
+    else:
+        reg = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\extended_reg.csv')
     
-    reg = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\extended_reg.csv')
     reg['root'] = str_tolist(reg['root'])
     reg['Start'] = pd.to_datetime(reg['Start'],format = '%Y-%m-%d %H:%M:%S')
     reg['End'] = pd.to_datetime(reg['End'],format = '%Y-%m-%d %H:%M:%S')

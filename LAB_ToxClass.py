@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import csv
 from sklearn import preprocessing
 from datetime import timedelta
 
@@ -89,6 +90,60 @@ class smoothing_PARAMETERS:
         else:
             print('Smoothing method unknown')
             return None
+        
+class xlsDATA:
+    """ reads unprocessed data file for minimal visualisation  - based on csvData"""
+    
+    def __init__(self,root,dope_df = dope_df):
+        self.root = root
+        self.Tox = self.find_tox()
+        self.rootfile_stem = root + r'\\' + root.split('\\')[-1]
+        self.rootfile = self.rootfile_stem + '.xls.zip'
+        self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
+        self.mapping = d_.read_mapping(self.Tox)
+        self.data = self.get_data()
+        
+        self.write_data()
+        self.csvdata = csvDATA(root,dope_df,)
+
+    def find_tox(self):
+        return int(self.root.split('\\')[1].split('-')[0][-3:])
+    
+    def get_data(self):
+        df = d_.read_merge([self.rootfile])
+        dfs = d_.preproc(df)
+        try:
+            starttime = d_.read_starttime(self.root)
+        except:
+            starttime = dfs['E'].index[0]
+        dfs = d_.calibrate(dfs,self.Tox,starttime)
+        dfs = d_.check_mapping(dfs,self.mapping)
+        return dfs
+    
+    def find_dopage_entry(self,dope_df):
+        row = None
+        for i in range(dope_df.shape[0]):
+            if self.root.split('\\')[-1] in dope_df.iloc[i]['root']: 
+                row = i
+                break
+        if row:
+            return dope_df.iloc[row]
+        else:
+            print('No dopage found')
+            return row
+        
+    def write_data(self):
+        
+        """ Taken from LAB_replaydata """
+        filestem = self.root + r'\\' + self.root.split('\\')[-1].split('-')[0]
+        for s in self.species:
+            filename = '{}_{}'.format(filestem,self.species[s])
+            if os.path.isfile(r'{}.csv.zip'.format(filename)):
+                print('Files already exist')
+                break
+            compression_options = dict(method='zip', archive_name='{}.csv'.format(filename))
+            self.data[s].to_csv(r'{}.csv.zip'.format(filename))
+        
 
 class csvDATA:
     
@@ -153,7 +208,7 @@ class csvDATA:
         
         #get info about dopage
         self.dopage_entry = self.find_dopage_entry(dope_df)
-        self.dopage = self.dopage_entry['Start']
+        self.dopage = self.dopage_entry['End']
         self.date = str(self.dopage)[:10]
         
         #get dfs from csv files
@@ -733,8 +788,13 @@ class ToxPLOT:
 
 if __name__ == '__main__':
     
-    dope_df = dope_read_extend()
-    data = csvDATA(r'I:\TXM760-PC\20210513-230436',dope_df)
+    #dope_df = dope_read_extend()
+    #data = csvDATA(r'I:\TXM760-PC\20210513-230436',dope_df)
     #data = csvDATA_comp({'E':r'I:\TXM760-PC\20210506-230001','G':r'I:\TXM760-PC\20210506-230001','R':r'I:\TXM762-PC\20210513-232418'})
-    fig,axes = ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
+    #fig,axes = ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
     #data.write_data(r'D:\VP\ARTICLE2\ArticleData')
+    
+    #exmple for bioessai with other reg
+    dope_df = dope_read_extend('bioessai_reg')
+    data = xlsDATA(r'I:\TXM760-PC\20231216-082344',dope_df)
+    fig,axes = ToxPLOT(data.csvdata).plotIGT() #gammarus IGT needs verifying!    

@@ -18,6 +18,13 @@ from datetime import timedelta
 
 #%% IMPORT personal mods
 import LAB_ToxClass as TOX
+os.chdir('MODS')
+from data_merge import merge_dfs
+from dope_reg import dope_read_extend
+import dataread as d_
+os.chdir('..')
+
+#%%
 
 molecules = ['Copper','Zinc','Aluminium','Cobalt','Manganese','Chloroacetic','Mercury','Chromium',
              'Nitrate','Chloride','DMSO','Methomyl','MCPA','Chlorfenvinphos','Lindane','Anthracene',
@@ -107,30 +114,11 @@ if __name__ == '__main__':
     control_IGT = get_dataset(control_data,mean = False,spike = False)
     
     #Save each series in the array as Copper0.csv, Copper1.csv etc.
-    
-    #Write plots for seperate data
-    
-    
-    #%% Plots
-    # colors = {'E': '#de8e0d', 'G': '#057d25', 'R': '#1607e8'}
-    # figures = {s:plt.figure(figsize = (10,6)) for s in specie}
-    # axes = {s:figures[s].add_axes([0.1,0.1,0.8,0.8]) for s in specie}
-    # for i in range(len(spike_data)):
-    #     spike = spike_data[i]
-    #     control = control_data[i]
-    #     for s in specie:
-    #         try:
-    #             axes[s].plot(spike.IGT_[s].index/60,spike.IGT_[s].values,color = spike.species_colors[s])
-    #         except:
-    #             axes[s].plot(spike.IGT[s].index/60,spike.IGT[s].values,color = spike.species_colors[s])
-                
-    #         try:
-    #             if s == 'R':
-    #                 axes[s].plot(control.IGT_[s].index/60,control.IGT_[s].values/10,color = 'black',alpha = 0.5)
-    #             else:
-    #                 axes[s].plot(control.IGT_[s].index/60,control.IGT_[s].values,color = 'black',alpha = 0.5)
-    #         except:
-    #             if s == 'R':
-    #                 axes[s].plot(control.IGT[s].index/60,control.IGT[s].values,color = 'black',alpha = 0.5)
-    #             else:
-    #                 axes[s].plot(control.IGT[s].index/60,control.IGT[s].values/10,color = 'black',alpha = 0.5)
+    write = True
+    if write:
+        output = r'D:\VP\ARTICLE2\ArticleRawData\{}'.format(substance)
+        for s in specie:
+            output_dir = r'{}\{}'.format(output,specie[s])
+            for i in range(len(spike_IGT[s])):
+                d_.save_series_to_csv(spike_IGT[s][i],r'{}\{}{}.csv'.format(output_dir,substance,i))
+                d_.save_series_to_csv(control_IGT[s][i],r'{}\{}{}_.csv'.format(output_dir,substance,i))

@@ -417,6 +417,37 @@ def dope_params(df, Tox, start_date, end_date):
     """
     return dopage,date_range,conc,sub,molecule,etude
 
+def save_series_to_csv(series, filename):
+    """
+    Save a Pandas Series to a two-column CSV file.
+
+    Parameters:
+    - series: Pandas Series to be saved.
+    - filename: Name of the CSV file.
+
+    Example:
+    save_series_to_csv(pd.Series([1, 2, 3], name='Column'), 'output.csv')
+    """
+    df = pd.DataFrame({'time': series.index.values, 'values': series.values})
+    df.to_csv(filename, index=False, header = False)
+    
+def read_csv_to_series(filename):
+    """
+    Read a CSV file into a Pandas Series.
+
+    Parameters:
+    - filename: Name of the CSV file.
+
+    Returns:
+    - Pandas Series.
+
+    Example:
+    read_csv_to_series('output.csv')
+    """
+    df = pd.read_csv(filename, header=None, index_col=0)
+    series = df.iloc[:, 0]
+    return series
+
 def plot_16(df,title  = '',mark = None):
     
     """

@@ -44,10 +44,16 @@ def get_dataset(data, mean=True, spike = True):
     dataset = {s:[] for s in specie}
     for i in range(len(data)):
         for s in specie:
-            try:
-                arr = data[i].IGT_[s]
-            except:
-                arr = data[i].IGT[s]
+            if mean:
+                try:
+                    arr = data[i].mean_[s]
+                except:
+                    arr = data[i].mean[s]
+            else:
+                try:
+                    arr = data[i].IGT_[s]
+                except:
+                    arr = data[i].IGT[s]
             arr = arr[arr.index > -3600]
             arr = arr[arr.index < 7200]
             
@@ -64,7 +70,7 @@ if __name__ == '__main__':
     plt.close('all')
     
     specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
-    substance = 'Copper'
+    substance = 'Zinc'
         
     #Read register for all dopage of molecule m
     df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}_custom.csv'.format(substance),index_col=None)
@@ -110,8 +116,17 @@ if __name__ == '__main__':
         control_data.append(data_)
         
     #%% Isolate spike and control data per species, further smooth it and write to file if write is true
-    spike_IGT = get_dataset(spike_data,mean = False)
-    control_IGT = get_dataset(control_data,mean = False,spike = False)
+    # extension = 'IGT'
+    # mean = False
+    
+    # spike_IGT = get_dataset(spike_data,mean = False)
+    # control_IGT = get_dataset(control_data,mean = False,spike = False)
+    
+    extension = 'mean'
+    mean = True
+    
+    spike_mean = get_dataset(spike_data,mean = mean)
+    control_mean = get_dataset(control_data,mean = mean,spike = False)
     
     #Save each series in the array as Copper0.csv, Copper1.csv etc.
     write = True
@@ -119,6 +134,10 @@ if __name__ == '__main__':
         output = r'D:\VP\ARTICLE2\ArticleRawData\{}'.format(substance)
         for s in specie:
             output_dir = r'{}\{}'.format(output,specie[s])
-            for i in range(len(spike_IGT[s])):
-                d_.save_series_to_csv(spike_IGT[s][i],r'{}\{}{}.csv'.format(output_dir,substance,i))
-                d_.save_series_to_csv(control_IGT[s][i],r'{}\{}{}_.csv'.format(output_dir,substance,i))
+            # for i in range(len(spike_IGT[s])):
+            #     d_.save_series_to_csv(spike_IGT[s][i],r'{}\{}{}_{}.csv'.format(output_dir,substance,i,extension))
+            #     d_.save_series_to_csv(control_IGT[s][i],r'{}\{}{}_{}_.csv'.format(output_dir,substance,i,extension))
+            
+            for i in range(len(spike_mean[s])):
+                d_.save_series_to_csv(spike_mean[s][i],r'{}\{}{}_{}.csv'.format(output_dir,substance,i,extension))
+                d_.save_series_to_csv(control_mean[s][i],r'{}\{}{}_{}_.csv'.format(output_dir,substance,i,extension))

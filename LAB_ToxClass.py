@@ -804,12 +804,12 @@ class ToxPLOT:
 if __name__ == '__main__':
     
     #dope_df = dope_read_extend()
-    #data = csvDATA(r'I:\TXM760-PC\20210513-230436',dope_df)
-    #data = csvDATA_comp({'E':r'I:\TXM760-PC\20210506-230001','G':r'I:\TXM760-PC\20210506-230001','R':r'I:\TXM762-PC\20210513-232418'})
+    #data = csvDATA(r'I:\TXM766-PC\20210513-231811',dope_df)
+    #data = csvDATA_comp({'E':r'I:\TXM766-PC\20210506-231541','G':r'I:\TXM766-PC\20210506-231541','R':r'I:\TXM766-PC\20210513-231811'})
     #fig,axes = ToxPLOT(data).plotIGT() #gammarus IGT needs verifying!
     #data.write_data(r'D:\VP\ARTICLE2\ArticleData')
     
     #exmple for bioessai with other reg
     #dope_df = dope_read_extend('bioessai_reg')
-    data = xlsDATA(r'I:\TXM766-PC\20210528-115655')
+    data = xlsDATA(r'I:\TXM766-PC\20210520-225527')
     fig,axes = ToxPLOT(data.csvdata).plotIGT() #gammarus IGT needs verifying!    

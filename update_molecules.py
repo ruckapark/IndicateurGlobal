@@ -2,6 +2,8 @@
 """
 Created on Fri Oct 20 16:22:50 2023
 
+Update all tested substances with their accompanying concentrations in molecules.csv
+
 @author: George
 """
 

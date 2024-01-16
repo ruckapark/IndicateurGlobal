@@ -102,9 +102,10 @@ class xlsDATA:
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
         self.mapping = d_.read_mapping(self.Tox)
         self.data = self.get_data()
+        self.check_dead()
         
-        #self.write_data()
-        #self.csvdata = csvDATA(root,dope_df,)
+        self.write_data()
+        self.csvdata = csvDATA(root,dope_df)
 
     def find_tox(self):
         return int(self.root.split('\\')[1].split('-')[0][-3:])
@@ -119,6 +120,20 @@ class xlsDATA:
         dfs = d_.calibrate(dfs,self.Tox,starttime)
         dfs = d_.check_mapping(dfs,self.mapping)
         return dfs
+    
+    def check_dead(self):
+        filename = r'{}\morts.csv'.format(self.root)
+        if not os.path.isfile(filename):
+            morts = {self.species[s]:d_.check_dead(self.data[s],s) for s in self.species}
+            with open(filename, 'w', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                # Write data rows
+                for species, values in morts.items():
+                    if not values:  # Check if the values list is empty
+                        csv_writer.writerow([species, ''])  # Add a comma after the species name
+                    else:
+                        csv_writer.writerow([species] + values)
+
     
     def find_dopage_entry(self,dope_df):
         row = None
@@ -795,6 +810,6 @@ if __name__ == '__main__':
     #data.write_data(r'D:\VP\ARTICLE2\ArticleData')
     
     #exmple for bioessai with other reg
-    dope_df = dope_read_extend('bioessai_reg')
-    data = xlsDATA(r'I:\TXM762-PC\20231216-082510',dope_df)
+    #dope_df = dope_read_extend('bioessai_reg')
+    data = xlsDATA(r'I:\TXM766-PC\20210528-115655')
     fig,axes = ToxPLOT(data.csvdata).plotIGT() #gammarus IGT needs verifying!    

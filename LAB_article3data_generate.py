@@ -47,7 +47,7 @@ substances = [
     'Carbaryl','Chlorothanolil','Chlorpyrifos','Cobalt','Copper','Cypermethrine','DDD(2-4)','Dicofol',
     'Dieldrin','H40','Hydrazine','Ibuprofen','Isodrin','L1000','Lindane','Mercury','Methomyl',
     'Nitric Acid','Pentachlorophenol','PiperonylButoxide','Quinoxyfen','Soja','Tebufenozide',
-    'Tetrachloroethylene','','Trichloroethylene','Trifluralin','Verapamil','Zinc'
+    'Tetrachloroethylene','Trichlorobenzene(123)','Trichloroethylene','Trifluralin','Verapamil','Zinc'
     ]
 
 #%% Main Code
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         mean_s.plot_raw()
         
     #write dataframes to csv files - no IGT in titles to avoid clash
-    if written:
+    if not written:
         root = r'D:\VP\ARTICLE3\ArticleData'
         dfs_IGT['E'].to_csv('{}\{}_X_i_data.csv'.format(root,'E'),index = False)
         dfs_IGT['G'].to_csv('{}\{}_Y_i_data.csv'.format(root,'G'),index = False)

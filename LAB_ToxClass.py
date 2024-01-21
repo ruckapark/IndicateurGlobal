@@ -632,7 +632,7 @@ class csvDATA:
 class csvDATA_comp:
     
     #not yet coded for generated data, only composite data
-    def __init__(self,root):
+    def __init__(self,root,spe = 1):
         
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
         self.colors = ['red','purple','brown','pink','grey','olive','cyan','blue','orange','green']
@@ -641,8 +641,8 @@ class csvDATA_comp:
         self.root = {s:root[s] for s in self.species}
         self.data = self.get_data()
         
-        self.Tox = self.data[[*self.species][1]].Tox
-        self.date = self.data[[*self.species][1]].date
+        self.Tox = self.data[[*self.species][spe]].Tox
+        self.date = self.data[[*self.species][spe]].date
         self.substance,self.molecule,self.concentration = self.get_info()
         
         #needed are IGT short and mean
@@ -671,6 +671,7 @@ class csvDATA_comp:
     
     def get_info(self):
         
+        #get the most commonly occuring dopage entry
         info = self.data[[*self.species][1]].dopage_entry
         return info['Substance'],info['Molecule'],info['Concentration']
     

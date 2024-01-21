@@ -47,7 +47,7 @@ substances = [
     'Carbaryl','Chlorothanolil','Chlorpyrifos','Cobalt','Copper','Cypermethrine','DDD(2-4)','Dicofol',
     'Dieldrin','H40','Hydrazine','Ibuprofen','Isodrin','L1000','Lindane','Mercury','Methomyl',
     'Nitric Acid','Pentachlorophenol','PiperonylButoxide','Quinoxyfen','Soja','Tebufenozide',
-    'Tetrachloroethylene','Trichlorobenzene(123)','Trichloroethylene','Trifluralin','Verapamil','Zinc'
+    'Tetrachloroethylene','','Trichloroethylene','Trifluralin','Verapamil','Zinc'
     ]
 
 #%% Main Code
@@ -64,8 +64,14 @@ if __name__ == "__main__":
     
     if not written:
         for s in datasets:
-            for r in datasets[s]:
-                data = TOX.csvDATA_comp(datasets[s][r])
+            
+            #define species in composite data that takes information value
+            if s == 'Trichlorobenzene(123)' or s == 'Pentachlorophenol':
+                spe = 0
+            else:
+                spe = 1
+            for i in datasets[s]:
+                data = TOX.csvDATA_comp(datasets[s][i],spe = 0)
                 data.write_data(r'D:\VP\ARTICLE3\ArticleData')
     
     for s in datasets:
@@ -105,7 +111,7 @@ if __name__ == "__main__":
         mean_s.plot_raw()
         
     #write dataframes to csv files - no IGT in titles to avoid clash
-    if not written:
+    if written:
         root = r'D:\VP\ARTICLE3\ArticleData'
         dfs_IGT['E'].to_csv('{}\{}_X_i_data.csv'.format(root,'E'),index = False)
         dfs_IGT['G'].to_csv('{}\{}_Y_i_data.csv'.format(root,'G'),index = False)
@@ -114,7 +120,7 @@ if __name__ == "__main__":
         dfs_mean['G'].to_csv('{}\{}_Y_m_data.csv'.format(root,'G'),index = False)
         dfs_mean['R'].to_csv('{}\{}_Z_m_data.csv'.format(root,'R'),index = False)
        
-    """
+    
     #%% data analysis
     plt.close('all')
     
@@ -138,4 +144,3 @@ if __name__ == "__main__":
         for x,sub in enumerate(datasets):
             for r in range(len(datasets[sub])):
                 axe[x,i].plot(df.index,df['{}{}'.format(sub,r)],color = IGT_s.species_colors[s])
-    """

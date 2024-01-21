@@ -70,7 +70,7 @@ if __name__ == '__main__':
     plt.close('all')
     
     specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
-    substance = 'Zinc'
+    substance = '4-octylphenol'
         
     #Read register for all dopage of molecule m
     df = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\Molecules\{}_custom.csv'.format(substance),index_col=None)
@@ -115,6 +115,7 @@ if __name__ == '__main__':
             data_ = TOX.csvDATA_comp(root_)
         control_data.append(data_)
         
+    
     #%% Isolate spike and control data per species, further smooth it and write to file if write is true
     # extension = 'IGT'
     # mean = False
@@ -129,7 +130,7 @@ if __name__ == '__main__':
     control_mean = get_dataset(control_data,mean = mean,spike = False)
     
     #Save each series in the array as Copper0.csv, Copper1.csv etc.
-    write = True
+    write = False
     if write:
         output = r'D:\VP\ARTICLE2\ArticleRawData\{}'.format(substance)
         for s in specie:

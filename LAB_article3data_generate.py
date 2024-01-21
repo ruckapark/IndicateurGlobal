@@ -42,12 +42,12 @@ def read_custom_reg(sub,reg = r'D:\VP\Viewpoint_data\REGS\Molecules'):
 
 #%% Registers
 substances = [
-    '1-2Dic','1-chlorodecane','2A1','4-octylphenol','124Tri','A736','Acetone','Acide Acrylique',
-    'alpha endo','Aluminium','Anthracene','Benzene','Benzo(a)pyrene','beta endo','Biphenyl',
-    'Carbaryl','Chlorothanolil','Chlorpyrifos','Cobalt','Copper','Cypermethrin','DDD','Dicofol',
-    'Dieldrin','H40','Hyrdrazine','Ibuprofen','Isodrin','L1000','Lindane','Mercury','Methomyl',
-    'Nitric Acid','Pentachlorophenol','PipeonylButoxide','Quinoxyfen','Soja','Tebufenozide',
-    'Tetrachloroethylene','Trichlorobenzene123','Trichloroethylene','Trifluralin','Verapamil','Zinc'
+    '1-2Dichloroethane','1-chlorodecane','2A1','4-octylphenol','124-Trichlorobenzene','A736','Acetone','Acide Acrylique',
+    'alphaEndosulfan','Aluminium','Anthracene','Benzene','Benzo(a)pyrene','betaEndosulfan','Biphenyl',
+    'Carbaryl','Chlorothanolil','Chlorpyrifos','Cobalt','Copper','Cypermethrine','DDD(2-4)','Dicofol',
+    'Dieldrin','H40','Hydrazine','Ibuprofen','Isodrin','L1000','Lindane','Mercury','Methomyl',
+    'Nitric Acid','Pentachlorophenol','PiperonylButoxide','Quinoxyfen','Soja','Tebufenozide',
+    'Tetrachloroethylene','Trichlorobenzene(123)','Trichloroethylene','Trifluralin','Verapamil','Zinc'
     ]
 
 #%% Main Code
@@ -57,16 +57,16 @@ if __name__ == "__main__":
     datasets = {}
     for s in substances: datasets.update({s:read_custom_reg(s)})
     
-    input_directory = r'D:\VP\ARTICLE2\ArticleData'  #find data means or IGTs
+    input_directory = r'D:\VP\ARTICLE3\ArticleData'  #find data means or IGTs
     
-    written = False
+    written = True
     cols = []
     
     if not written:
         for s in datasets:
             for r in datasets[s]:
                 data = TOX.csvDATA_comp(datasets[s][r])
-                data.write_data(r'D:\VP\ARTICLE2\ArticleData')
+                data.write_data(r'D:\VP\ARTICLE3\ArticleData')
     
     for s in datasets:
         for i in range(len(datasets[s])): cols.append('{}{}'.format(s,i))
@@ -76,7 +76,8 @@ if __name__ == "__main__":
     
     dfs_IGT,dfs_mean = ({s:None for s in ['E','G','R']} for i in range(2))
     dfs_IGT_s,dfs_mean_s = ({s:None for s in ['E','G','R']} for i in range(2))
-     
+    
+    #%%
     for i in range(len(IGTs)):
         IGT,mean = IGTs[i],means[i]
     
@@ -104,8 +105,8 @@ if __name__ == "__main__":
         mean_s.plot_raw()
         
     #write dataframes to csv files - no IGT in titles to avoid clash
-    if not written:
-        root = r'D:\VP\ARTICLE2\ArticleData'
+    if written:
+        root = r'D:\VP\ARTICLE3\ArticleData'
         dfs_IGT['E'].to_csv('{}\{}_X_i_data.csv'.format(root,'E'),index = False)
         dfs_IGT['G'].to_csv('{}\{}_Y_i_data.csv'.format(root,'G'),index = False)
         dfs_IGT['R'].to_csv('{}\{}_Z_i_data.csv'.format(root,'R'),index = False)

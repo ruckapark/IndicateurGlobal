@@ -2,6 +2,8 @@
 """
 Created on Tue Jan 16 15:06:03 2024
 
+For article 2 plot data with accompanying molecules
+
 @author: George
 """
 import os

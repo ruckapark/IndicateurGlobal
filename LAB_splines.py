@@ -40,6 +40,7 @@ class ToxSplines:
     def __init__(self,filepath):
         
         self.title = filepath.split('\\')[-1]
+        self.sup_title,self.axe_title = self.get_title()
         self.species = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
         self.data = self.read_input(filepath)
         self.active_species = list(self.data.columns)
@@ -51,7 +52,19 @@ class ToxSplines:
         self.t,self.c,self.k = ({s:None for s in self.active_species} for i in range(3))
         for s in self.active_species:
             self.get_bSpline(s)
-            self.eval_spline(s)      
+            self.eval_spline(s) 
+            
+    def get_title(self):
+        title = self.title
+        if 'IGT' in title:
+            measure = 'Normalised Avoidance Activity (mm/20s)'
+        else:
+            measure = 'Normalised Mean Locomotor Activity (mm/20s)'
+        substance = title.split('_')[0]
+        date = title.split('_')[-1].split('.')[0]
+        Tox = int(title.split('_')[1][:3])
+        Apparatus = int(Tox%759)
+        return 'Substance-{}   Spike-{}   Apparatus-{}/10'.format(substance,date,Apparatus),measure
 
     def read_input(self,filepath):
         
@@ -63,14 +76,32 @@ class ToxSplines:
         data.index = data.index / 60
         return data
     
-    def plot_raw(self,short = True):
+    def plot_raw(self,short = True,fname = None):
         
-        fig,axes = plt.subplots(len(self.active_species),1,figsize = (15,15),sharex = True)
-        fig.suptitle(self.title)
+        sns.set_style(style = 'whitegrid')
+        
+        fig,axes = plt.subplots(len(self.active_species),1,figsize = (7,7),sharex = True)
+        fig.suptitle(self.sup_title,fontsize = 15)
+        axes[0].set_title(self.axe_title,fontsize = 14)
         for i,s in enumerate(self.active_species):
             axes[i].plot(self.data.index,self.data[s],color = self.species_colors[s])
             axes[i].plot(self.data.index,self.data['{}smooth'.format(s)],color = 'red',linestyle = '--')
-            axes[i].set_title(self.species[self.active_species[i]])
+            axes[i].set_ylabel(self.species[self.active_species[i]],fontsize = 14)
+            
+            #fit within -0.8 and 0.8 unless already higher
+            lims = axes[i].get_ylim()
+            axe_lims = [-0.6,0.6]
+            if lims[0] < axe_lims[0]:
+                axe_lims[0] = lims[0]
+            if lims[1] > axe_lims[1]:
+                axe_lims[1] = lims[1]
+            axes[i].set_ylim(axe_lims)
+            
+        axes[-1].set_xlabel('Time Post Spike (Minutes)',fontsize = 15)
+        
+        #Save figure
+        if fname:            
+            fig.savefig(fname)
         
     
     def get_bSpline(self,col,order = 3,k = 30):

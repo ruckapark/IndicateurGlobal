@@ -105,7 +105,7 @@ if __name__ == "__main__":
         mean_s.plot_raw()
         
     #write dataframes to csv files - no IGT in titles to avoid clash
-    if written:
+    if not written:
         root = r'D:\VP\ARTICLE3\ArticleData'
         dfs_IGT['E'].to_csv('{}\{}_X_i_data.csv'.format(root,'E'),index = False)
         dfs_IGT['G'].to_csv('{}\{}_Y_i_data.csv'.format(root,'G'),index = False)
@@ -113,7 +113,8 @@ if __name__ == "__main__":
         dfs_mean['E'].to_csv('{}\{}_X_m_data.csv'.format(root,'E'),index = False)
         dfs_mean['G'].to_csv('{}\{}_Y_m_data.csv'.format(root,'G'),index = False)
         dfs_mean['R'].to_csv('{}\{}_Z_m_data.csv'.format(root,'R'),index = False)
-        
+       
+    """
     #%% data analysis
     plt.close('all')
     
@@ -137,3 +138,4 @@ if __name__ == "__main__":
         for x,sub in enumerate(datasets):
             for r in range(len(datasets[sub])):
                 axe[x,i].plot(df.index,df['{}{}'.format(sub,r)],color = IGT_s.species_colors[s])
+    """

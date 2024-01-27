@@ -157,6 +157,12 @@ if __name__ == '__main__':
     symbols = ['o', 's', 'd', 'X', '^']
     custom_palette = ['#386cb0', '#fdb462', '#7fc97f', '#d73027', '#66c2a5', '#e34a33', '#b2df8a', '#8856a7', '#fdae61']
     custom_palette = ['#386cb0', '#e3c956', '#548c54', '#d73027', '#66c2a5', '#e333a8', '#b2df8a', '#8856a7', '#fdae61']
+    
+    #class palette
+    class_palette = ['#bcbd22', '#d62728', '#2ca02c', '#ff7f0e', '#e377c2', '#1f77b4', '#8c564b']
+    classes = ['Insecticide','Metal','Other Pesticide','PAH','PPCP','Solvent','Other']
+    class_colors = dict(zip(classes,class_palette))
+    
     for i,s in enumerate(substances):
         marker = symbols[i//len(custom_palette)]
         color = custom_palette[i%len(custom_palette)]        
@@ -189,6 +195,21 @@ if __name__ == '__main__':
             y_typol2[i] = 'Class 3'
         elif y_typol2[i] == 'Class 5':
             y_typol2[i] = 'Class 4'
+            
+    #%% Plot y_class and 
+    class_all = [y_class[index_y[s][0]] for s in substances]
+    typol_all = [y_typol2[index_y[s][0]] for s in substances]
+    
+    #begin bar plot
+    
+    #make new palette for typol according to document
+    
+    for c in classes:
+        for s in substances:
+            if y_class[index_y[s][0]] == c:
+                print(s,len(index_y[s]))
+    
+    #%%
     
     scores_class.scoreplot(y = y_class)
     scores_class.scoreplot(y = y_typol)
@@ -220,7 +241,6 @@ if __name__ == '__main__':
         sparsity = np.mean(normalized_distances)
         sparsity_dict[cluster] = sparsity
     
-    
     # Sort the dictionary by values in ascending order
     sorted_dict = dict(sorted(sparsity_dict.items(), key=lambda item: item[1]))
     
@@ -234,7 +254,7 @@ if __name__ == '__main__':
     ax.set_title('Cluster Sparsity in Ascending Order')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=90)  # Rotate x-axis labels
     
-    ax.set_yscale('log')
+    #ax.set_yscale('log')
     
     # Show the plot
     plt.show()
@@ -249,7 +269,7 @@ if __name__ == '__main__':
     
     # Apply k-means clustering with the custom distance metric
     n_clusters = 5  # Replace with the desired number of clusters
-    kmeans = KMeans(n_clusters=n_clusters)
+    kmeans = KMeans(n_clusters=n_clusters,random_state=42)
     labels = kmeans.fit_predict(scores)
     
     # Access cluster centers and labels
@@ -265,4 +285,85 @@ if __name__ == '__main__':
     
     ax_FPCA.tick_params(labelsize = 13)
     
-    #%% calculate sub cluster distances
+    #%% elbow method - an evaluate cluster consistency
+    
+    sse = []
+    for k in range(1, 12):
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans.fit(scores)
+        sse.append(kmeans.inertia_)
+    
+    # Plot the elbow curve
+    plt.figure()
+    plt.plot(range(1, 12), sse, marker='o')
+    plt.xlabel('Number of Clusters (k)')
+    plt.ylabel('Sum of Squared Distances')
+    plt.title('Elbow Method for Optimal k')
+    plt.show()
+    
+    #%% silhouette method
+    from sklearn.metrics import silhouette_score
+
+    silhouette_scores = []
+    for k in range(2, 12):
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans.fit(scores)
+        silhouette_scores.append(silhouette_score(scores, kmeans.labels_))
+    
+    # Plot silhouette scores
+    plt.figure()
+    plt.plot(range(2, 12), silhouette_scores, marker='o')
+    plt.xlabel('Number of Clusters (k)')
+    plt.ylabel('Silhouette Score')
+    plt.title('Silhouette Method for Optimal k')
+    plt.show()
+    
+    #%% cluster consistency
+    
+    limit_sparsity = 0.8 
+    assignment_index = 0
+    
+    consistencies = []
+    
+    for k in range(2, 15):
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans.fit(scores)
+        labels = kmeans.fit_predict(scores)
+        consistency = 0
+        for s in substances:
+            if sparsity_dict[s] > 0.8: 
+                pass
+            elif cluster_points[s].shape[0] == 1:
+                pass
+            else:
+                y_pred = labels[index_y[s]]
+                counts = np.bincount(y_pred)
+                y_max = np.argmax(counts)
+                y_true = np.ones_like(y_pred) * y_max
+                score = np.sum(y_pred == y_true)/len(y_pred)
+                consistency += score
+        consistencies.append(consistency)
+    
+    plt.figure()
+    plt.plot(range(2,15), consistencies)
+    plt.xlabel('Number of Clusters (k)')
+    plt.ylabel('Cluster consistency')
+    plt.title('Assessment of intra cluster consistency')
+    plt.show()
+    
+    
+    #%% Comparison - with same number of cluster
+    from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score #comparison
+    from sklearn.metrics import confusion_matrix #ground truth vs. TyPol or Class
+    
+    #%% Calculate sparsity metric with all lower than Anthracene
+    #from sklearn.metrics import jaccard_score
+            
+    
+    
+    #%% Hierarchical clustering to visualise tree
+    
+    
+    #%% Clustering on B-Spline components
+    
+    

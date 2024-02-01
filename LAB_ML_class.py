@@ -88,12 +88,12 @@ class Scores_data:
         else:
             print('Method Unknown')
         
-    def scoreplot(self,fPC_x = 1,fPC_y = 2,y = None):
+    def scoreplot(self,fPC_x = 1,fPC_y = 2,y = None,palette = None):
         
         if not y: y = self.y
         x_,y_ = self.data_[:,fPC_x-1],self.data_[:,fPC_y-1]
         fig,ax = plt.subplots(figsize=(16, 14))
-        sns.scatterplot(x=x_, y=y_,hue = y,ax = ax,legend = True)
+        sns.scatterplot(x=x_, y=y_,hue = y,ax = ax,legend = True,palette = palette)
         ax.set_xlabel("fPC 1 score")
         ax.set_ylabel("fPC 2 score")
         ax.set_title("FPCA scores - method: {}".format(method))
@@ -117,11 +117,12 @@ class ML_FDA:
 if __name__ == '__main__':
     
     plt.close('all')
+    sns.set_style('white')
     
     #Either multidimensional by default or by species
     method = 'Default'
     
-    #read in data
+    #Read in data
     directory = r'D:\VP\ARTICLE3\ML_paramaters'
     df_variance = pd.read_csv(r'{}\explained_variance.csv'.format(directory),index_col=0)
     df_scores = pd.read_csv(r'{}\fPCA_score_{}.csv'.format(directory,method),index_col=0)
@@ -135,6 +136,7 @@ if __name__ == '__main__':
     scores_class = Scores_data(df_scores[df_scores.columns[1:]].values, y)
     
     scores = scores_class.data_
+    scores_ = scores*variance
     y = scores_class.y
     substances = pd.Series(y).unique()
     
@@ -162,6 +164,10 @@ if __name__ == '__main__':
     class_palette = ['#bcbd22', '#d62728', '#2ca02c', '#ff7f0e', '#e377c2', '#1f77b4', '#8c564b']
     classes = ['Insecticide','Metal','Other Pesticide','PAH','PPCP','Solvent','Other']
     class_colors = dict(zip(classes,class_palette))
+    
+    typol_palette = ['#000000','#ff0000','#00ff00','#0000ff','#ff00ff','#a3a3a3']
+    typol_classes = ['Class 1','Class 2','Class 3','Class 4','Metal','Other']
+    typol_colors = dict(zip(typol_classes,typol_palette))
     
     for i,s in enumerate(substances):
         marker = symbols[i//len(custom_palette)]
@@ -200,19 +206,26 @@ if __name__ == '__main__':
     class_all = [y_class[index_y[s][0]] for s in substances]
     typol_all = [y_typol2[index_y[s][0]] for s in substances]
     
+    df_class = pd.DataFrame(index = np.arange(len(substances)),columns = ['Name','Repetitions','Class'])
+    for i,s in enumerate(substances):
+        df_class.iloc[i] = [s,len(index_y[s]),y_class[index_y[s][0]]]
+        
+    df_class = df_class.sort_values(['Class','Name']).reset_index(drop = True)
+    
     #begin bar plot
-    
-    #make new palette for typol according to document
-    
-    for c in classes:
-        for s in substances:
-            if y_class[index_y[s][0]] == c:
-                print(s,len(index_y[s]))
+    fig_bar,ax_bar = plt.subplots(figsize=(6,9))
+    sns.barplot(data = df_class,x = 'Repetitions',y = 'Name',ax = ax_bar,hue = 'Class')
+    plt.tight_layout()
+                
     
     #%%
     
-    scores_class.scoreplot(y = y_class)
-    scores_class.scoreplot(y = y_typol)
+    #reorder custom palettes: 
+    custom_class = ['#1f77b4','#8c564b','#bcbd22','#d62728','#ff7f0e','#2ca02c','#e377c2']
+    custom_typol = ['#a3a3a3','#ff0000','#ff00ff','#000000','#0000ff','#00ff00']
+    
+    scores_class.scoreplot(y = y_class,palette = custom_class)
+    scores_class.scoreplot(y = y_typol,palette = custom_typol)
     
     #Calculate molecule cluster centres
     centres = np.zeros((len(substances),scores.shape[1]))
@@ -245,8 +258,8 @@ if __name__ == '__main__':
     sorted_dict = dict(sorted(sparsity_dict.items(), key=lambda item: item[1]))
     
     # Create a bar plot using Seaborn
-    fig,ax = plt.subplots(figsize=(16, 14))
-    sns.barplot(x=list(sorted_dict.keys()), y=list(sorted_dict.values()),ax = ax)
+    fig,ax = plt.subplots(figsize=(9,6))
+    sns.barplot(x=list(sorted_dict.keys()), y=list(sorted_dict.values()),ax = ax,color = 'blue')
     
     # Set labels and title
     ax.set_xlabel('Cluster')
@@ -254,10 +267,11 @@ if __name__ == '__main__':
     ax.set_title('Cluster Sparsity in Ascending Order')
     ax.set_xticklabels(ax.get_xticklabels(), rotation=90)  # Rotate x-axis labels
     
-    #ax.set_yscale('log')
+    ax.set_yscale('log')
+    ax.axhline(0.8,color = 'red',linestyle = '--')
     
     # Show the plot
-    plt.show()
+    plt.tight_layout()
     
     
     
@@ -268,9 +282,10 @@ if __name__ == '__main__':
     #     return np.sum(np.abs(x - y))
     
     # Apply k-means clustering with the custom distance metric
-    n_clusters = 5  # Replace with the desired number of clusters
+    n_clusters = 9  # Replace with the desired number of clusters
     kmeans = KMeans(n_clusters=n_clusters,random_state=42)
-    labels = kmeans.fit_predict(scores)
+    labels = kmeans.fit_predict(scores_)
+    final_labels = labels.copy()
     
     # Access cluster centers and labels
     cluster_centers = kmeans.cluster_centers_
@@ -278,24 +293,29 @@ if __name__ == '__main__':
     print("Labels:", labels)
     
     fig_FPCA,ax_FPCA = plt.subplots(figsize=(20, 18))
-    sns.scatterplot(x=x_, y=y_,hue = labels,ax = ax_FPCA,legend = True)
+    sns.scatterplot(x=x_, y=y_,hue = labels,ax = ax_FPCA,legend = True,palette = "Spectral")
     ax_FPCA.set_xlabel("fPC 1 score")
     ax_FPCA.set_ylabel("fPC 2 score")
     ax_FPCA.set_title("FPCA scores - method: {}".format(method))
     
     ax_FPCA.tick_params(labelsize = 13)
     
+    cluster_index = {s:labels[index_y[s]] for s in substances}
+    
+    hex_colors_spectral = ['#d4464e', '#f47543', '#fdae60','#fecf8b', '#fefcbe', '#e6f58f','#aacd9f', '#66c2a5', '#3292bb']
+    
+    
     #%% elbow method - an evaluate cluster consistency
     
     sse = []
-    for k in range(1, 12):
+    for k in range(1, 15):
         kmeans = KMeans(n_clusters=k, random_state=42)
-        kmeans.fit(scores)
+        kmeans.fit(scores_)
         sse.append(kmeans.inertia_)
     
     # Plot the elbow curve
     plt.figure()
-    plt.plot(range(1, 12), sse, marker='o')
+    plt.plot(range(1, 15), sse, marker='o')
     plt.xlabel('Number of Clusters (k)')
     plt.ylabel('Sum of Squared Distances')
     plt.title('Elbow Method for Optimal k')
@@ -305,14 +325,14 @@ if __name__ == '__main__':
     from sklearn.metrics import silhouette_score
 
     silhouette_scores = []
-    for k in range(2, 12):
+    for k in range(2, 15):
         kmeans = KMeans(n_clusters=k, random_state=42)
-        kmeans.fit(scores)
-        silhouette_scores.append(silhouette_score(scores, kmeans.labels_))
+        kmeans.fit(scores_)
+        silhouette_scores.append(silhouette_score(scores_, kmeans.labels_))
     
     # Plot silhouette scores
     plt.figure()
-    plt.plot(range(2, 12), silhouette_scores, marker='o')
+    plt.plot(range(2, 15), silhouette_scores, marker='o')
     plt.xlabel('Number of Clusters (k)')
     plt.ylabel('Silhouette Score')
     plt.title('Silhouette Method for Optimal k')
@@ -327,8 +347,8 @@ if __name__ == '__main__':
     
     for k in range(2, 15):
         kmeans = KMeans(n_clusters=k, random_state=42)
-        kmeans.fit(scores)
-        labels = kmeans.fit_predict(scores)
+        kmeans.fit(scores_)
+        labels = kmeans.fit_predict(scores_)
         consistency = 0
         for s in substances:
             if sparsity_dict[s] > 0.8: 
@@ -358,9 +378,81 @@ if __name__ == '__main__':
     
     #%% Calculate sparsity metric with all lower than Anthracene
     #from sklearn.metrics import jaccard_score
+    
+    #%% Visualise class attribution for Clusters by class
+    cluster_lengths = np.zeros(n_clusters)
+    for i in range(n_clusters):
+        cluster_lengths[i] = np.sum(labels == i)
+    cluster_proportions_class = {n:np.zeros(len(classes)) for n in range(n_clusters)}    
+    for i,k in enumerate(labels):
+        c = classes.index(y_class[i])
+        cluster_proportions_class[k][c] += 1
+    for i,k in enumerate(cluster_proportions_class):
+        cluster_proportions_class[k] = cluster_proportions_class[k]/cluster_lengths[i]
+        
+    #make array where row 1 is all values for corresponding clusters
+    class_proportions_array = np.column_stack(list(cluster_proportions_class.values()))
+    clusters = ['Cluster {}'.format(i+1) for i in np.arange(n_clusters)]
+    cluster_proportions = {c:class_proportions_array[i] for i,c in enumerate(classes)}
+    
+    width = 0.5
+
+    fig_class, ax_class = plt.subplots(figsize = (8,4))
+    bottom = np.zeros(n_clusters)
+
+    for cluster, proportion in cluster_proportions.items():
+        color = class_colors[cluster]
+        p = ax_class.bar(clusters, proportion, width, label=cluster, bottom=bottom, color=color)
+        bottom += proportion
+
+    ax_class.set_title("Micropollutant Class Associations")
+    ax_class.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    ax_class.set_xticklabels(clusters, rotation=45, ha='right')
+    plt.tight_layout()
+    
+    #PLOT OVER ALL SUBSTANCES
+    
+    
+    #%% Visualise class attribution for Clusters by TyPol Class
+    
+    #BUG THIS HAS FAILED
+    for i in range(len(y_typol)):
+        if y_typol[i] == 'Class 0':
+            y_typol[i] = 'Other'
+        elif y_typol[i] == 'Class 5':
+            y_typol[i] = 'Metal'
             
+    cluster_lengths = np.zeros(n_clusters)
+    for i in range(n_clusters):
+        cluster_lengths[i] = np.sum(labels == i)
+    cluster_proportions_class = {n:np.zeros(len(typol_classes)) for n in range(n_clusters)}    
+    for i,k in enumerate(labels):
+        c = typol_classes.index(y_typol[i])
+        cluster_proportions_class[k][c] += 1
+    for i,k in enumerate(cluster_proportions_class):
+        cluster_proportions_class[k] = cluster_proportions_class[k]/cluster_lengths[i]
+        
+    #make array where row 1 is all values for corresponding clusters
+    class_proportions_array = np.column_stack(list(cluster_proportions_class.values()))
+    clusters = ['Cluster {}'.format(i+1) for i in np.arange(n_clusters)]
+    cluster_proportions = {c:class_proportions_array[i] for i,c in enumerate(typol_classes)}
     
+    width = 0.5
+
+    fig_class, ax_class = plt.subplots(figsize = (8,4))
+    bottom = np.zeros(n_clusters)
+
+    for cluster, proportion in cluster_proportions.items():
+        color = typol_colors[cluster]
+        p = ax_class.bar(clusters, proportion, width, label=cluster, bottom=bottom, color=color)
+        bottom += proportion
+
+    ax_class.set_title("TyPol Cluster Associations")
+    ax_class.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    ax_class.set_xticklabels(clusters, rotation=45, ha='right')
+    plt.tight_layout()
     
+
     #%% Hierarchical clustering to visualise tree
     
     

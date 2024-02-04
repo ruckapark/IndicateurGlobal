@@ -15,6 +15,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances
 
 from matplotlib.lines import Line2D
+import matplotlib.patches as mpatches
 
 def index_dictionary(y, unique_elements):
     index_dict = {}
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     fig_FPCA,ax_FPCA = plt.subplots(figsize=(16, 14))
     for i in range(scores.shape[0]):
         s = y[i]
-        ax_FPCA.scatter(scores[i,0],scores[i,1],marker = plot_params[s][0],color = plot_params[s][1],s = 25)
+        ax_FPCA.scatter(scores[i,0],scores[i,1],marker = plot_params[s][0],color = plot_params[s][1],s = 45)
         
     #Plot legend
     handles,labels = [],[]
@@ -189,7 +190,8 @@ if __name__ == '__main__':
         handles.append(handle)
         labels.append(label)
         
-    ax_FPCA.legend(handles=handles, labels=labels,loc='center left', bbox_to_anchor=(1, 0.5),fontsize = 8)
+    ax_FPCA.legend(handles=handles, labels=labels,loc='center left', bbox_to_anchor=(1, 0.5),fontsize = 10)
+    plt.tight_layout()
     
     #%%read in molecules class
     molecules = pd.read_csv(r'D:\VP\Viewpoint_data\REGS\molecules.csv',index_col = 0)
@@ -214,7 +216,8 @@ if __name__ == '__main__':
     
     #begin bar plot
     fig_bar,ax_bar = plt.subplots(figsize=(6,9))
-    sns.barplot(data = df_class,x = 'Repetitions',y = 'Name',ax = ax_bar,hue = 'Class')
+    sns.barplot(data = df_class,x = 'Repetitions',y = 'Name',ax = ax_bar,hue = 'Class',dodge = False)
+    plt.legend(fontsize=13.8,loc = 7)
     plt.tight_layout()
                 
     
@@ -277,6 +280,11 @@ if __name__ == '__main__':
     
     #%%perform k_means on scores dataset
     
+    matplot_colors = [
+        '#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd',
+        '#8c654b','#e377c2','#7f7f7f','#bcbd22','#17becf'
+        ]
+    
     # Define a custom distance metric (e.g., L1 norm for demonstration purposes)
     # def custom_distance(x, y):
     #     return np.sum(np.abs(x - y))
@@ -292,8 +300,8 @@ if __name__ == '__main__':
     print("Cluster Centers:\n", cluster_centers)
     print("Labels:", labels)
     
-    fig_FPCA,ax_FPCA = plt.subplots(figsize=(20, 18))
-    sns.scatterplot(x=x_, y=y_,hue = labels,ax = ax_FPCA,legend = True,palette = "Spectral")
+    fig_FPCA,ax_FPCA = plt.subplots(figsize=(16, 14))
+    sns.scatterplot(x=x_, y=y_,hue = labels,ax = ax_FPCA,legend = False,palette = matplot_colors)
     ax_FPCA.set_xlabel("fPC 1 score")
     ax_FPCA.set_ylabel("fPC 2 score")
     ax_FPCA.set_title("FPCA scores - method: {}".format(method))
@@ -301,10 +309,19 @@ if __name__ == '__main__':
     ax_FPCA.tick_params(labelsize = 13)
     
     cluster_index = {s:labels[index_y[s]] for s in substances}
+    kmeans_scores = dict(zip(np.arange(9),[np.where(labels == n)[0] for n in range(9)]))
+    kmeans_centres = [[np.mean(scores[:,0][kmeans_scores[n]]),np.mean(scores[:,1][kmeans_scores[n]])] for n in range(9)]
+    
+    for k,c in enumerate(kmeans_centres):
+        ax_FPCA.scatter(x = c[0],y = c[1],marker = 'x',s = 80,color = matplot_colors[k])
+        
+    handles = [mpatches.Patch(color=color, label=legend) for legend, color in zip(['Cluster {} \n n-{} \n '.format(i,len(kmeans_scores[i-1])) for i in range(1,10)], matplot_colors)]
+    ax_FPCA.legend(handles=handles, loc='center left', bbox_to_anchor=(1, 0.5),fontsize = 15)
+    plt.tight_layout()
     
     hex_colors_spectral = ['#d4464e', '#f47543', '#fdae60','#fecf8b', '#fefcbe', '#e6f58f','#aacd9f', '#66c2a5', '#3292bb']
     
-    
+    """
     #%% elbow method - an evaluate cluster consistency
     
     sse = []
@@ -362,8 +379,9 @@ if __name__ == '__main__':
                 y_true = np.ones_like(y_pred) * y_max
                 score = np.sum(y_pred == y_true)/len(y_pred)
                 consistency += score
-        consistencies.append(consistency)
+        consistencies.append(consistency/28)
     
+    #%%
     plt.figure()
     plt.plot(range(2,15), consistencies)
     plt.xlabel('Number of Clusters (k)')
@@ -371,7 +389,7 @@ if __name__ == '__main__':
     plt.title('Assessment of intra cluster consistency')
     plt.show()
     
-    
+    """
     #%% Comparison - with same number of cluster
     from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score #comparison
     from sklearn.metrics import confusion_matrix #ground truth vs. TyPol or Class

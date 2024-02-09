@@ -84,6 +84,7 @@ dics = [
 
 #%% main code
 if __name__ == '__main__':
+    sns.set_style('white')
     
     reference_distributions = {
         'E':{'median':80,'std':20},
@@ -158,9 +159,10 @@ if __name__ == '__main__':
     #visualise IGT
     fig = plt.figure(figsize = (13,7))
     axe = fig.add_axes([0.1,0.1,0.8,0.8])
-    axe.plot(quantile_low.index,quantile_low,'blue',label = 'Quantile low')
-    axe.plot(quantile_high.index,quantile_high,'red',label = 'Quantile high')
-    axe.axvline(dopage,color = 'black')
+    axe.plot(quantile_low.index,quantile_low,'blue',label = 'Hyperactivity')
+    axe.plot(quantile_high.index,quantile_high,'red',label = 'Hypoactivity')
+    axe.axvline(dopage,color = 'black',label = 'Spike')
+    
     
     # if root in methomyls:
     #     sub = 'Methomyl'
@@ -178,8 +180,8 @@ if __name__ == '__main__':
     if range_low < pre_spike_parameters['median'] < range_high:
         print('ok')
         
-        axe.axhline(pre_spike_parameters['median'],color = 'blue')
-        axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
+        axe.axhline(pre_spike_parameters['median'],color = 'green',label = 'High quantile average')
+        axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'green',linestyle = '--',label = 'High quantile zero offset')
         axe.axhspan(pre_spike_parameters['median'], pre_spike_parameters['median']-2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
         
         quantile_high = quantile_high - (pre_spike_parameters['median']-2*pre_spike_parameters['std'])
@@ -187,6 +189,8 @@ if __name__ == '__main__':
         
         quantile_low = quantile_low**2
         quantile_high = -(quantile_high**2)
+        
+        axe.legend(fontsize = 18)
         
         fig = plt.figure(figsize = (13,7))
         axe = fig.add_axes([0.1,0.1,0.8,0.8])
@@ -230,8 +234,8 @@ if __name__ == '__main__':
     if range_low < pre_spike_parameters['median'] < range_high:
         print('ok')
         
-        axe.axhline(pre_spike_parameters['median'],color = 'blue')
-        axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'blue',linestyle = '--')
+        axe.axhline(pre_spike_parameters['median'],color = 'green')
+        axe.axhline(pre_spike_parameters['median']-2*pre_spike_parameters['std'],color = 'green',linestyle = '--')
         axe.axhspan(pre_spike_parameters['median'], pre_spike_parameters['median']-2*pre_spike_parameters['std'], facecolor='orange', alpha=0.5)
         
         quantile_high = quantile_high - (pre_spike_parameters['median']-2*pre_spike_parameters['std'])

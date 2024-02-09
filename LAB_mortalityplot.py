@@ -26,7 +26,8 @@ mortality_bycage = {'E':{i:0 for i in range(1,17)},
                     'R':{i:0 for i in range(1,17)}}
 
 specie = {'E':'Erpobdella','G':'Gammarus','R':'Radix'}
-colors = {'E':'#119c36','G':'#db9e0f','R':'#3e16de'}
+colors = {'E':'#db9e0f','G':'#119c36','R':'#3e16de'}
+dark = ['#db9e0f','#119c36','#3e16de']
 
 for Tox in range(760,770):
     
@@ -61,7 +62,7 @@ sns.set_style("white")
 
 #plot overall mortality counts
 #distribution per species for counts
-fig,axe = plt.subplots(1,3,figsize = (16,7))
+fig,axe = plt.subplots(1,3,figsize = (16,5))
 plt.suptitle('Mortality Count distribution')
 for i,s in enumerate(mortality_counts):
     sns.histplot(np.array(mortality_counts[s]),ax=axe[i],color = colors[s],kde = True)
@@ -83,7 +84,7 @@ df_mortality_bydate = pd.DataFrame(df_mortality_bydate)
 g = sns.catplot(
     data=df_mortality_bydate, kind="bar",
     x="Date", y="Mortality", hue="Species",
-    palette="dark", alpha=.8
+    palette=dark, alpha=.8
 )
 g.set_axis_labels("","")
 g.legend.set_title("")
@@ -101,7 +102,7 @@ df_mortality_bycage = pd.DataFrame(df_mortality_bycage)
 g = sns.catplot(
     data=df_mortality_bycage, kind="bar",
     x="Cage", y="Mortality", hue="Species",
-    palette="dark", alpha=.8
+    palette=dark, alpha=.8
 )
 g.set_axis_labels("Cage","")
 g.legend.set_title("")

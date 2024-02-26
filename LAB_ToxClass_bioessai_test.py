@@ -186,17 +186,11 @@ class csvDATA:
             }
         
         #absolute values
-        self.qhigh_distributions = {
-            'E':{'qhigh':65.0},
-            'G':{'qhigh':71.8},
-            'R':{'qhigh':4.65}
-            }
-        
-        self.qhigh_squaredistributions = {
-            'E':{'qhigh':65.0**2},
-            'G':{'qhigh':71.8**2},
-            'R':{'qhigh':4.65**2}
-            }
+        # self.qhigh_distributions = {
+        #     'E':{'qhigh':65.0},
+        #     'G':{'qhigh':71.8},
+        #     'R':{'qhigh':4.65}
+        #     }
         
         self.qlow_distributions = {
             'E':{'qhigh':47.9},
@@ -204,15 +198,9 @@ class csvDATA:
             'R':{'qhigh':3.23}
             }
         
-        self.qlow_squaredistributions = {
-            'E':{'qhigh':47.9**2},
-            'G':{'qhigh':38.0**2},
-            'R':{'qhigh':3.23**2}
-            }
-        
         self.igt_q0,self.igt_q1,self.igt_q2 = 0.05,0.129167,0.1909
         self.low_quantiles = {'E':self.igt_q1,'G':self.igt_q1,'R':self.igt_q1}
-        self.high_quantiles = {'E':1-self.igt_q1,'G':1-self.igt_q0,'R':1-self.igt_q2}
+        #self.high_quantiles = {'E':1-self.igt_q1,'G':1-self.igt_q0,'R':1-self.igt_q2}
         
         #read deads
         self.morts = d_.read_dead(root)
@@ -255,36 +243,25 @@ class csvDATA:
         self.mean_raw = self.get_mean_raw()
         self.mean_raw_short = self.get_mean_raw(short = True)
         
-        #get unfiltered IGT components
-        #self.q_raw_low = self.get_quantile_raw()
-        #self.q_raw_low_short = self.get_quantile_raw(short = True)
-        
-        #self.q_low = self.get_quantile()
-        #self.q_low_short = self.get_quantile(short = True)
-        
         self.q_low = self.get_quantile_raw(raw = False)
         self.q_low_short = self.get_quantile_raw(raw = False,short = True)
         
-        self.q_raw_high = self.get_quantile_raw(high = True)
-        self.q_raw_high_short = self.get_quantile_raw(high = True,short = True)
+        # self.q_raw_high = self.get_quantile_raw(high = True)
+        # self.q_raw_high_short = self.get_quantile_raw(high = True,short = True)
         
-        self.q_high = self.get_quantile(high = True)
-        self.q_high_short = self.get_quantile(high = True,short = True)
+        # self.q_high = self.get_quantile(high = True)
+        # self.q_high_short = self.get_quantile(high = True,short = True)
         
-        #check if datasets are representative to calculate IGT
-        self.parameters = self.check_reference(plot = False)
-        
-        #lower high quantile
-        self.q_high_adj = self.adjust_qhigh()
-        self.q_high_adj_short = self.adjust_qhigh(short = True)
+        #BUG check if datasets are representative to calculate IGT
+        #self.parameters = self.check_reference(plot = False)
         
         #filter series' with moving averages
         self.mean = self.get_mean()
         self.mean_short = self.get_mean(short = True)
         
         #calculate IGT
-        self.IGT = self.combine_IGT()
-        self.IGT_short = self.combine_IGT(short = True)
+        self.IGT = self.q_low
+        self.IGT_short = self.q_low_short
         
         # #normalise the two metrics
         self.IGT_ = self.scale_IGT(short = True)
@@ -356,7 +333,7 @@ class csvDATA:
             
         for s in self.active_species:
             df = dfs[s].copy()
-            df = df[df.index > self.dopage - pd.Timedelta(hours = 0.2)] #some margin
+            df = df[df.index > self.dopage - pd.Timedelta(hours = 0.1)] #some margin
             df = df[df.index < self.dopage + pd.Timedelta(hours = 4.1)] #gives some margin
             zero_index = np.argmin(abs((self.dopage - df.index).total_seconds())) - 1
             index = (df.index - df.index[zero_index]).total_seconds()
@@ -471,72 +448,6 @@ class csvDATA:
                     q[s] = smoothing_PARAMETERS(self.method).moving_mean(self.q_raw_low[s])  
         return q
     
-    
-    def adjust_qhigh(self,short = False):
-        
-        """ Shift down IGT high, but also take into account high median value for scaling """
-        
-        q_high_adj = {s:None for s in self.species}
-        
-        for s in self.active_species:
-            
-            #scale factor - if median 45 down to 0, IGT low you be same as 80 down to zero - maybe not for radix
-            scale_factor = self.reference_distributions[s]['median']/self.parameters[s]['median']
-            
-            if short:
-                quantile_high = self.q_high_short[s] - (self.parameters[s]['median']-2*self.parameters[s]['std'])
-            else:
-                quantile_high = self.q_high[s] - (self.parameters[s]['median']-2*self.parameters[s]['std'])
-            
-            quantile_high[quantile_high >= 0] = 0.0
-            q_high_adj[s] = quantile_high*scale_factor
-        
-        return q_high_adj
-    
-    
-    def combine_IGT(self,short = False):
-        """ Combine high and low IGT to one signal """
-        
-        IGTs = {s:None for s in self.species}
-        
-        for s in self.active_species:
-            
-            if short:
-                qlow,qhigh = self.q_low_short[s].copy(),self.q_high_adj_short[s].copy()
-            else:
-                qlow,qhigh = self.q_low[s].copy(),self.q_high_adj[s].copy()
-                
-            #different moving mean methods lead to nan appearance    
-            qlow = qlow.loc[qhigh.index]
-            
-            # qlow = qlow**2
-            # qhigh = -(qhigh**2)
-            
-            qlow[qlow < 0.2] = 0.0
-            qhigh[qhigh > -0.2] = 0.0
-            
-            IGT = pd.DataFrame(index = qlow.index,columns = ['low','high','total'])
-            IGT['low'],IGT['high'] = qlow,qhigh
-            IGT['total'] = (1*(IGT['low'] > 0)) * (1*(IGT['high'] < 0))
-            
-            IGT_series = np.zeros(IGT.shape[0])
-            
-            for i in range(IGT.shape[0]):
-                
-                if IGT['total'].iloc[i] == 0:
-                    if IGT['low'].iloc[i] > 0:
-                        IGT_series[i] = IGT['low'].iloc[i]
-                    else:
-                        IGT_series[i] = IGT['high'].iloc[i]
-                else:
-                    if IGT['low'].iloc[i] > abs(IGT['high'].iloc[i]):
-                        IGT_series[i] = IGT['low'].iloc[i]
-                    else:
-                        IGT_series[i] = IGT['high'].iloc[i]
-            
-            IGTs[s] = pd.Series(IGT_series,index = IGT.index)
-        return IGTs
-    
     def scale_mean(self,short = True):
         
         mean_ = {s:None for s in self.species}
@@ -594,12 +505,9 @@ class csvDATA:
             IGT = self.IGT.copy()
             
         for s in self.active_species:
-            qhigh = IGT[s][IGT[s] < 0]/np.abs(self.qhigh_distributions[s]['qhigh'])
+            #only consider low quantile for bioessai
             qlow = IGT[s][IGT[s] >= 0]/np.abs(self.qlow_distributions[s]['qhigh'])
             q_ = pd.Series(index = IGT[s].index)
-            
-            #add qhigh and qlow values (if qhigh exists)
-            if qhigh.shape[0]: q_.loc[qhigh.index] = qhigh
             q_.loc[qlow.index] = qlow
             
             #power scaling
@@ -779,7 +687,52 @@ class ToxPLOT:
                     if mins:
                         ind = df.index / 60 
                     else:
-                        index = df.index
+                        ind = df.index
+                    axes[i].plot(ind,df.values,color = self.data.species_colors[s])
+                    axes[i].set_title(self.data.species[s])
+                    
+                if mins: axes[-1].set_xlabel(('Temps (minutes)'))
+                    
+        return fig,axes
+    
+    def plotmean(self,spec = None,short = True,mins = False):
+        
+        if self.composite:
+            fig,axes = plt.subplots(3,1,figsize = (15,15),sharex = True)
+            try:
+                fig.suptitle('{}  {}'.format(self.data.substance,self.data.concentration))
+            except:
+                pass
+            
+            for i,s in enumerate(self.data.species):
+                axes[i].plot(self.data.mean[s].index,self.data.mean[s].values,color = self.data.species_colors[s])
+                axes[i].set_title(self.data.species[s])
+                
+        else:
+            if spec:
+                fig = plt.figure(figsize = (13,8))
+                axe = fig.add_axes([0.1,0.1,0.8,0.8])
+                axe.plot(self.data.mean_short[spec].index,self.data.mean_short[spec].values)
+                axe.set_title(self.data.species[spec])
+            else:
+                
+                fig,axes = plt.subplots(3,1,figsize = (8,8),sharex = True)
+                if mins: axes[-1].set_xlabel(('Temps (minutes)'))
+                try:
+                    fig.suptitle('Tox{}  {}  {}'.format(self.data.Tox,self.data.dopage_entry['Substance'],self.data.date))
+                except:
+                    pass
+                
+                for i,s in enumerate(self.data.species):
+                    if s not in self.data.active_species: continue
+                    if short:
+                        df = self.data.mean_short[s]
+                    else:
+                        df = self.data.mean[s]
+                    if mins:
+                        ind = df.index / 60 
+                    else:
+                        ind = df.index
                     axes[i].plot(ind,df.values,color = self.data.species_colors[s])
                     axes[i].set_title(self.data.species[s])
                     
@@ -811,7 +764,7 @@ class ToxPLOT:
 
 if __name__ == '__main__':
     
-    #TODO - remove negative IGT for bioessai? or give both as possibility
+    plt.close('all')
     
     #read in bioessai as dope register
     dope_df = dope_read_extend('bioessai_reg')
@@ -827,3 +780,4 @@ if __name__ == '__main__':
     
     #show figure
     fig,axes = ToxPLOT(data).plotIGT(mins = True)
+    fig,axes = ToxPLOT(data).plotmean(mins = True)
